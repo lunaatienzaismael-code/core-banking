@@ -7,12 +7,13 @@
       "phase": 3,
       "use_case": null,
       "type": "build",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 5,
-      "branch": null,
-      "pr": null
+      "branch": "build/T-001-openapi-generator",
+      "pr": null,
+      "review_rounds": 1
     },
     {
       "id": "T-002",
