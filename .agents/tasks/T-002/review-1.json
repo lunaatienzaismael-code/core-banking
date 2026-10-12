@@ -1,0 +1,15 @@
+{
+ "task_id":"T-002","round":1,"base":"c21a4037bd898b42e61df602318a316b44538a73","head":"WORKTREE","verdict":"approve",
+ "summary":"Framework-free domain types match the brief. Money uses long plus Currency with exact arithmetic, normal sides and sign-derived posting direction are correct, and every criterion has a named test. Tests pass (51/51). Only minor test gaps remain.",
+ "acceptance_criteria":[
+  {"id":"B1","status":"met","evidence":"MoneyTest#rejectsCodesThatAreNotIso4217, rejectsMissingCurrency, rejectsAdditionAcrossCurrencies, rejectsSubtractionAcrossCurrencies, additionOverflowFailsInsteadOfWrappingAround, subtractionOverflowFailsInsteadOfWrappingAround"},
+  {"id":"B2","status":"met","evidence":"AccountTypeTest#accountTypeFixesTheNormalBalanceSide covers all 5 types"},
+  {"id":"B3","status":"met","evidence":"AccountTest#openedAccountKeepsItsCurrencyTypeAndPolicy, cannotBeBuiltWithoutCurrencyTypeOrPolicy"},
+  {"id":"B4","status":"met","evidence":"PostingLineTest#positiveAmountIsADebit, negativeAmountIsACredit, rejectsZeroAmount"},
+  {"id":"B5","status":"met","evidence":"AccountTest#debitNormalAccountReportsTheNetOfItsPostings, creditNormalAccountReportsTheNegatedNetOfItsPostings, accountWithoutPostingsHasZeroBalance, rejectsANetInAnotherCurrency, balanceOfPostingLinesSumsDebitsMinusCreditsFromTheNormalSide, balanceOfFailsLoudlyWhenTheSumOverflows"}
+ ],
+ "findings":[
+  {"severity":"minor","category":"testing","file":"ledger-service/src/test/java/com/ledgerflow/ledger/domain/MoneyTest.java","line":null,"description":"Null currency code (Money.of(1, null)) is not tested; it throws NullPointerException while other bad codes throw InvalidCurrencyException. Inconsistent and unproven.","suggestion":"Decide the exception for a null code and add a test."},
+  {"severity":"minor","category":"testing","file":"ledger-service/src/test/java/com/ledgerflow/ledger/domain/AccountTest.java","line":null,"description":"Credit-normal balanceFromNet with Long.MIN_VALUE (negate overflow) is not tested at Account level, only at Money level.","suggestion":"Add a test asserting ArithmeticException."}
+ ]
+}

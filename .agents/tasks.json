@@ -7,12 +7,12 @@
       "phase": 3,
       "use_case": null,
       "type": "build",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 5,
       "branch": "build/T-001-openapi-generator",
-      "pr": null,
+      "pr": 10,
       "review_rounds": 1
     },
     {
@@ -21,12 +21,13 @@
       "phase": 3,
       "use_case": "UC1",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 6,
-      "branch": null,
-      "pr": null
+      "branch": "feat/T-002-account-domain-model",
+      "pr": null,
+      "review_rounds": 1
     },
     {
       "id": "T-003",
