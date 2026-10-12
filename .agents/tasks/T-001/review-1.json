@@ -1,0 +1,10 @@
+{"task_id":"T-001","round":1,"base":"658ee73160a71d82cfba9f53cc3a4cd6394b8fb4","head":"WORKTREE","verdict":"approve",
+"summary":"Tooling decided (ADR 0008), wired in parent pluginManagement, contract with Problem schema and problem+json responses present, Problem DTO generated into the web adapter, build green (16/16). Only minor gaps.",
+"acceptance_criteria":[
+{"id":"B1","status":"met","evidence":"docs/adr/0008-openapi-tooling.md lists three options and decision; row added in docs/adr/README.md"},
+{"id":"B2","status":"met","evidence":"ledger-service/src/main/openapi/ledger-api.yaml: openapi 3.1.0, info, servers, Problem schema, BadRequest/NotFound application/problem+json responses"},
+{"id":"B3","status":"met","evidence":"test-summary.json pass 16/16; target/generated-sources contains generated Problem.java; JaCoCo excludes added in pom.xml"},
+{"id":"B4","status":"met","evidence":"ProblemContractTest#generatedProblemModelLivesInTheInboundWebAdapter; api package has no interface yet since paths is empty"}],
+"findings":[
+{"severity":"minor","category":"testing","file":"ledger-service/src/test/java/com/ledgerflow/ledger/adapter/in/web/ProblemContractTest.java","line":null,"description":"Tests the generated Problem model, not the contract file; nothing asserts the BadRequest/NotFound problem+json responses exist, and the api package is unexercised.","suggestion":"Acceptable until T-003 adds endpoints that reference these responses; ensure they are used there."},
+{"severity":"nit","category":"api","file":"ledger-service/src/main/openapi/ledger-api.yaml","line":null,"description":"Problem.status has minimum/maximum while other members are unconstrained; fine but consider additionalProperties for RFC 9457 extension members.","suggestion":"Optional."}]}

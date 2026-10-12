@@ -43,6 +43,8 @@ in PostgreSQL through every hexagonal layer.
   (`{"amount": 0, "currency": "EUR"}`, minor units).
 - The Problem Details handler is the single place mapping exceptions to HTTP
   (ADR 0006); T-004 extends it with 404.
+- Error responses in the contract reference the shared `BadRequest` / `NotFound`
+  components from T-001 (T-001 review-1 minor: they are unused until here).
 - Tests: service unit test (port mocked), `@WebMvcTest` for 201/400 mapping,
   persistence adapter IT, one end-to-end IT over HTTP.
 
