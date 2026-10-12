@@ -12,7 +12,7 @@ starts.
   - [x] `docs/spec.md` (purpose, actors, use cases with Given/When/Then, scope)
   - [x] `docs/roadmap.md`
 
-- [ ] **Phase 1 — Walking skeleton**
+- [x] **Phase 1 — Walking skeleton**
   - [x] Maven multi-module parent + `ledger-service`, hexagonal packages, health
         endpoint (no business logic)
   - [x] ArchUnit dependency rules (reusable across services)
@@ -22,7 +22,7 @@ starts.
   - [x] `infra/docker-compose.yml` (Postgres only) + multi-stage `Dockerfile`
   - [x] GitHub Actions CI (build, Spotless, unit + integration, ArchUnit, JaCoCo)
   - [x] `scripts/test-summary.sh` (compact JSON from Surefire/Failsafe)
-  - [ ] Git/GitHub: `.gitignore`, PR template, milestones, minimal README, branch
+  - [x] Git/GitHub: `.gitignore`, PR template, milestones, minimal README, branch
         protection on `main`
 
 - [ ] **Phase 2 — Minimal agent infrastructure**
