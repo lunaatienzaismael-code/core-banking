@@ -1,0 +1,36 @@
+# LedgerFlow
+
+Event-driven, SEPA-style payments platform built around a **double-entry
+ledger**. A backend portfolio project: reasoned decisions, correct distributed
+consistency, serious tests and a readable Git history.
+
+> Status: **walking skeleton** (Phase 1). See the [roadmap](docs/roadmap.md).
+
+## Stack
+
+Java 21 · Spring Boot 4 · Maven multi-module · PostgreSQL + Liquibase ·
+hexagonal architecture enforced by ArchUnit · Testcontainers · Docker.
+
+## Run it
+
+Requirements: JDK 21 and a running Docker daemon.
+
+```bash
+./mvnw -B verify                                  # format check, unit + ArchUnit, Testcontainers ITs, coverage
+docker compose -f infra/docker-compose.yml up -d  # local PostgreSQL
+./mvnw -pl ledger-service spring-boot:run         # http://localhost:8080/actuator/health
+```
+
+Compact test report (JSON): `scripts/test-summary.sh`.
+Mutation testing (on demand): `./mvnw -pl ledger-service -am test-compile org.pitest:pitest-maven:mutationCoverage`.
+
+## Layout
+
+| Path | Purpose |
+|------|---------|
+| `architecture-rules/` | Reusable ArchUnit rules for the hexagonal layout (ADR 0002) |
+| `ledger-service/` | Double-entry ledger service |
+| `infra/` | Local dependencies (`docker compose`) |
+| `docs/` | [Specification](docs/spec.md), [roadmap](docs/roadmap.md), [ADRs](docs/adr/README.md) |
+
+All example data (IBANs, names, amounts) is fictitious.

@@ -13,15 +13,15 @@ starts.
   - [x] `docs/roadmap.md`
 
 - [ ] **Phase 1 — Walking skeleton**
-  - [ ] Maven multi-module parent + `ledger-service`, hexagonal packages, health
+  - [x] Maven multi-module parent + `ledger-service`, hexagonal packages, health
         endpoint (no business logic)
-  - [ ] ArchUnit dependency rules (reusable across services)
-  - [ ] Test base: JUnit 5, AssertJ, Mockito, Testcontainers + PostgreSQL, empty
+  - [x] ArchUnit dependency rules (reusable across services)
+  - [x] Test base: JUnit 5, AssertJ, Mockito, Testcontainers + PostgreSQL, empty
         Liquibase changelog integration test
-  - [ ] Quality: Spotless, JaCoCo (low threshold), PIT on demand
-  - [ ] `infra/docker-compose.yml` (Postgres only) + multi-stage `Dockerfile`
-  - [ ] GitHub Actions CI (build, Spotless, unit + integration, ArchUnit, JaCoCo)
-  - [ ] `scripts/test-summary.sh` (compact JSON from Surefire/Failsafe)
+  - [x] Quality: Spotless, JaCoCo (low threshold), PIT on demand
+  - [x] `infra/docker-compose.yml` (Postgres only) + multi-stage `Dockerfile`
+  - [x] GitHub Actions CI (build, Spotless, unit + integration, ArchUnit, JaCoCo)
+  - [x] `scripts/test-summary.sh` (compact JSON from Surefire/Failsafe)
   - [ ] Git/GitHub: `.gitignore`, PR template, milestones, minimal README, branch
         protection on `main`
 
