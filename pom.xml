@@ -88,6 +88,8 @@
                                 <generateModelTests>false</generateModelTests>
                                 <generateModelDocumentation>false</generateModelDocumentation>
                                 <generateSupportingFiles>false</generateSupportingFiles>
+                                <!-- Keeps contract types apart from domain types of the same name (Account, Money...). -->
+                                <modelNameSuffix>Dto</modelNameSuffix>
                                 <configOptions>
                                     <interfaceOnly>true</interfaceOnly>
                                     <skipDefaultInterface>true</skipDefaultInterface>
