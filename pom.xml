@@ -18,6 +18,7 @@
 
     <modules>
         <module>architecture-rules</module>
+        <module>ledger-service</module>
     </modules>
 
     <properties>
