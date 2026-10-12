@@ -18,6 +18,12 @@ class PostingLineTest {
     }
 
     @Test
+    void magnitudeIsTheUnsignedAmountForEitherSide() {
+        assertThat(line(Money.of(500, "EUR")).magnitude()).isEqualTo(Money.of(500, "EUR"));
+        assertThat(line(Money.of(-500, "EUR")).magnitude()).isEqualTo(Money.of(500, "EUR"));
+    }
+
+    @Test
     void rejectsZeroAmount() {
         assertThatThrownBy(() -> line(Money.of(0, "EUR")))
                 .isInstanceOf(InvalidPostingException.class)

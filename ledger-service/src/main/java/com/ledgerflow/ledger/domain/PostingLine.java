@@ -21,4 +21,9 @@ public record PostingLine(PostingId id, TransactionId transactionId, AccountId a
     public Side side() {
         return amount.isPositive() ? Side.DEBIT : Side.CREDIT;
     }
+
+    /** The unsigned amount; {@link #side()} carries the direction. */
+    public Money magnitude() {
+        return amount.isPositive() ? amount : amount.negate();
+    }
 }

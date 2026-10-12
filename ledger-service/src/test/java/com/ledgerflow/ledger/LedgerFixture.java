@@ -29,8 +29,13 @@ public final class LedgerFixture {
 
     /** Inserts a balanced transaction: {@code +amount} on the debited account, {@code -amount} on the credited one. */
     public UUID transfer(UUID debited, UUID credited, long amount, String currency) {
+        return transfer(debited, credited, amount, currency, OffsetDateTime.now());
+    }
+
+    /** As {@link #transfer(UUID, UUID, long, String)}, with the transaction occurring at {@code occurredAt}. */
+    public UUID transfer(UUID debited, UUID credited, long amount, String currency, OffsetDateTime occurredAt) {
         var transaction = UUID.randomUUID();
-        jdbc.update("insert into transactions (id, occurred_at) values (?, ?)", transaction, OffsetDateTime.now());
+        jdbc.update("insert into transactions (id, occurred_at) values (?, ?)", transaction, occurredAt);
         posting(transaction, debited, amount, currency);
         posting(transaction, credited, -amount, currency);
         return transaction;
