@@ -1,0 +1,18 @@
+{
+  "task_id": "T-004",
+  "round": 1,
+  "base": "a3b2ae72ba673a4884cea436c9eee7435f90a168",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Balance endpoint derives the balance from a SQL SUM over postings, applies the normal side in the domain, exact long conversion, 404/400/500 Problem Details, contract and Liquibase updated. Criteria proven by real-PostgreSQL ITs; no blocker or major found.",
+  "acceptance_criteria": [
+    {"id": "AC1.2", "status": "met", "evidence": "AccountBalanceIT#debitNormalAccountWithMixedPostingsReportsDebitsMinusCredits, #creditNormalAccountWithMixedPostingsReportsCreditsMinusDebits, #accountWithoutPostingsHasZeroBalance, #postingsOfOtherAccountsAreNotCounted; PostingPersistenceAdapterIT overflow test"},
+    {"id": "AC1.4", "status": "met", "evidence": "AccountBalanceIT#unknownAccountIsProblemDetails404; AccountControllerTest#balanceOfUnknownAccountIsNotFoundAsProblemDetails; GetAccountBalanceServiceTest#unknownAccountIsReportedAsNotFoundWithoutReadingPostings"},
+    {"id": "B1", "status": "met", "evidence": "0002-create-transactions-and-postings.yaml (amount<>0 check, char(3), index on account_id, no balance column); AccountBalanceIT#noBalanceColumnExists; PostingPersistenceAdapterIT schema rejection tests"},
+    {"id": "B2", "status": "met", "evidence": "AccountBalanceIT#malformedAccountIdIsProblemDetails400; AccountControllerTest#balanceWithMalformedIdIsRejectedAsProblemDetails"}
+  ],
+  "findings": [
+    {"severity": "minor", "category": "money", "file": "ledger-service/src/main/java/com/ledgerflow/ledger/adapter/out/persistence/PostingPersistenceAdapter.java", "line": 29, "description": "Overflow on the SUM surfaces as ArithmeticException and thus a generic 500; Money.negate on Long.MIN_VALUE for credit-normal accounts does the same. Loud failure is as the brief asks, but the credit-normal negate edge is untested.", "suggestion": "Optionally add a test for a net of Long.MIN_VALUE on a credit-normal account.", "rule": "ADR 0004"},
+    {"severity": "nit", "category": "testing", "file": "ledger-service/src/test/java/com/ledgerflow/ledger/LedgerFixture.java", "line": 22, "description": "Fixture hardcodes overdraft_policy ALLOWED for every account; fine for now but could be a parameter when UC2 needs it.", "suggestion": "Defer until needed."}
+  ]
+}
