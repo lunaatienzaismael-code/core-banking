@@ -1,0 +1,19 @@
+{
+  "task_id": "T-003",
+  "round": 1,
+  "base": "6209759",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Open-account flow is complete across contract, use case, service, JPA adapter, Liquibase and Problem Details handler. Tests pass (67/67) and cover each criterion. Only minor test-coverage gaps remain.",
+  "acceptance_criteria": [
+    {"id": "AC1.1", "status": "met", "evidence": "OpenAccountIT#openedAccountHasUniqueIdGivenCurrencyAndZeroBalance, #openAccountResponseCarriesTheAccountAndItsLocation (type/normal side/zero balance); AccountPersistenceAdapterIT#savedAccountIsStoredWithItsAttributesAndAnInitialVersion; OpenAccountServiceTest. Empty movement list deferred to T-005 per brief."},
+    {"id": "B1", "status": "met", "evidence": "AccountControllerTest#openAccountReturns201WithLocationAndTheNewAccount; OpenAccountIT Location regex match."},
+    {"id": "B2", "status": "met", "evidence": "AccountControllerTest#invalidRequestIsRejectedAsProblemDetails (missing currency, lowercase, unknown type, missing policy, malformed JSON) and #wellFormedButUnknownCurrencyCodeIsRejectedAsProblemDetails; OpenAccountIT#unknownCurrencyIsRejectedAsProblemDetailsAndNothingIsStored."},
+    {"id": "B3", "status": "met", "evidence": "changes/0001-create-accounts.yaml (uuid pk, char(3), type, overdraft_policy, version, created_at, CHECK constraints); ddl-auto validate; AccountPersistenceAdapterIT row/version/constraint tests; test-summary pass."}
+  ],
+  "findings": [
+    {"severity": "minor", "category": "testing", "file": "ledger-service/src/test/java/com/ledgerflow/ledger/adapter/in/web/AccountControllerTest.java", "line": null, "description": "B2 names an unknown overdraft policy value, but only an unknown type and a missing policy are tested.", "suggestion": "Add an unknown overdraftPolicy value (e.g. SOMETIMES) to the parameterized invalid-request cases.", "rule": "B2"},
+    {"severity": "minor", "category": "testing", "file": "ledger-service/src/test/java/com/ledgerflow/ledger/OpenAccountIT.java", "line": null, "description": "The end-to-end test does not read back the persisted type/overdraft_policy for an account created over HTTP; this is only covered at adapter level.", "suggestion": "Assert the stored row's type and overdraft_policy in the HTTP IT."},
+    {"severity": "nit", "category": "api", "file": "ledger-service/src/main/java/com/ledgerflow/ledger/adapter/in/web/ProblemDetailsHandler.java", "line": null, "description": "No fallback handler for unexpected exceptions, so a 500 is not guaranteed to be Problem Details.", "suggestion": "Consider a generic Exception handler returning a 500 problem without internals, perhaps in a later task.", "rule": "ADR 0006"}
+  ]
+}

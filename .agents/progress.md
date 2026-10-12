@@ -13,3 +13,7 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-12 · T-001 · done · PR #10 merged
 2026-10-12 · T-002 · started · feat/T-002-account-domain-model (issue #6)
 2026-10-12 · T-002 · reviewed · round 1 approve (0 blockers, 0 majors, 2 minors fixed)
+2026-10-12 · T-002 · in_review · PR #11
+2026-10-12 · T-002 · done · PR #11 merged
+2026-10-12 · T-003 · started · feat/T-003-open-account-endpoint (issue #7)
+2026-10-12 · T-003 · reviewed · round 1 approve (0 blockers, 0 majors, 2 minors fixed, 1 nit → T-004)
