@@ -9,9 +9,110 @@ info:
 servers:
   - url: http://localhost:8080
     description: Local development
-paths: {}
+tags:
+  - name: Accounts
+    description: Ledger accounts and their derived balances.
+paths:
+  /accounts:
+    post:
+      tags: [Accounts]
+      operationId: openAccount
+      summary: Open an account
+      description: |
+        Opens an account in one currency. The account type fixes its normal
+        balance side; a new account has a zero balance and no movements.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenAccountRequest'
+      responses:
+        '201':
+          description: Account opened.
+          headers:
+            Location:
+              description: URI of the new account.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 components:
   schemas:
+    CurrencyCode:
+      description: ISO-4217 alphabetic currency code.
+      type: string
+      pattern: '^[A-Z]{3}$'
+      example: EUR
+    AccountType:
+      description: |
+        Accounting classification. ASSET and EXPENSE are debit-normal;
+        LIABILITY, EQUITY and INCOME are credit-normal. A customer deposit
+        account is a LIABILITY of the bank.
+      type: string
+      enum: [ASSET, LIABILITY, EQUITY, INCOME, EXPENSE]
+    Side:
+      description: Side of double-entry bookkeeping.
+      type: string
+      enum: [DEBIT, CREDIT]
+    OverdraftPolicy:
+      description: Whether the balance may go below zero on the account's normal side.
+      type: string
+      enum: [ALLOWED, NOT_ALLOWED]
+    Money:
+      description: Exact amount in integer minor units (e.g. cents) of an ISO-4217 currency.
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: integer
+          format: int64
+          example: 0
+        currency:
+          $ref: '#/components/schemas/CurrencyCode'
+    OpenAccountRequest:
+      type: object
+      required: [currency, type, overdraftPolicy]
+      properties:
+        currency:
+          $ref: '#/components/schemas/CurrencyCode'
+        type:
+          $ref: '#/components/schemas/AccountType'
+        overdraftPolicy:
+          $ref: '#/components/schemas/OverdraftPolicy'
+      example:
+        currency: EUR
+        type: LIABILITY
+        overdraftPolicy: NOT_ALLOWED
+    Account:
+      type: object
+      required: [id, currency, type, normalBalanceSide, overdraftPolicy, balance]
+      properties:
+        id:
+          type: string
+          format: uuid
+        currency:
+          $ref: '#/components/schemas/CurrencyCode'
+        type:
+          $ref: '#/components/schemas/AccountType'
+        normalBalanceSide:
+          $ref: '#/components/schemas/Side'
+        overdraftPolicy:
+          $ref: '#/components/schemas/OverdraftPolicy'
+        balance:
+          $ref: '#/components/schemas/Money'
+      example:
+        id: 3f1c2b7e-0000-4000-8000-000000000001
+        currency: EUR
+        type: LIABILITY
+        normalBalanceSide: CREDIT
+        overdraftPolicy: NOT_ALLOWED
+        balance: {amount: 0, currency: EUR}
     Problem:
       description: Problem Details for HTTP APIs (RFC 9457).
       type: object
