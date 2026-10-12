@@ -21,3 +21,7 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-12 · T-003 · done · PR #12 merged
 2026-10-12 · T-004 · started · feat/T-004-account-balance-endpoint
 2026-10-12 · T-004 · reviewed · round 1 approve (0 blockers, 0 majors, 1 minor already covered by AccountTest, 1 nit deferred)
+2026-10-12 · T-004 · in_review · PR #13
+2026-10-12 · T-004 · done · PR #13 merged
+2026-10-12 · T-005 · started · feat/T-005-account-movements-endpoint
+2026-10-12 · T-005 · reviewed · round 1 approve (0 blockers, 0 majors, 0 minors)
