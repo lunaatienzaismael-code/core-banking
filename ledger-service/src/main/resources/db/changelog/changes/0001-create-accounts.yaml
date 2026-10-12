@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0001-create-accounts
+      author: ledgerflow
+      comment: Ledger accounts (UC1). No balance column - balances are derived from postings (ADR 0004).
+      changes:
+        - createTable:
+            tableName: accounts
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_accounts
+              - column:
+                  name: currency
+                  type: char(3)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: overdraft_policy
+                  type: varchar(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  defaultValueComputed: now()
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: >-
+              ALTER TABLE accounts
+                ADD CONSTRAINT ck_accounts_currency CHECK (currency ~ '^[A-Z]{3}$'),
+                ADD CONSTRAINT ck_accounts_type CHECK (type IN ('ASSET', 'LIABILITY', 'EQUITY', 'INCOME', 'EXPENSE')),
+                ADD CONSTRAINT ck_accounts_overdraft_policy CHECK (overdraft_policy IN ('ALLOWED', 'NOT_ALLOWED'))

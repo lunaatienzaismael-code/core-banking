@@ -5,6 +5,11 @@ spring:
     url: ${LEDGER_DB_URL:jdbc:postgresql://localhost:5432/ledger}
     username: ${LEDGER_DB_USER:ledger}
     password: ${LEDGER_DB_PASSWORD:ledger}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Liquibase owns the schema; Hibernate only checks that the mappings match it.
+      ddl-auto: validate
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
   mvc:
