@@ -6,10 +6,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.ledgerflow.ledger.application.port.in.AccountBalanceView;
 import com.ledgerflow.ledger.application.port.in.AccountView;
+import com.ledgerflow.ledger.application.port.in.GetAccountBalanceUseCase;
 import com.ledgerflow.ledger.application.port.in.OpenAccountCommand;
 import com.ledgerflow.ledger.application.port.in.OpenAccountUseCase;
 import com.ledgerflow.ledger.domain.AccountId;
+import com.ledgerflow.ledger.domain.AccountNotFoundException;
 import com.ledgerflow.ledger.domain.AccountType;
 import com.ledgerflow.ledger.domain.Money;
 import com.ledgerflow.ledger.domain.OverdraftPolicy;
@@ -38,6 +41,9 @@ class AccountControllerTest {
 
     @MockitoBean
     private OpenAccountUseCase openAccount;
+
+    @MockitoBean
+    private GetAccountBalanceUseCase getAccountBalance;
 
     @Test
     void openAccountReturns201WithLocationAndTheNewAccount() {
@@ -91,6 +97,54 @@ class AccountControllerTest {
         assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Invalid currency");
         assertThat(result).bodyJson().extractingPath("$.detail").asString().contains("ABC");
         verifyNoInteractions(openAccount);
+    }
+
+    @Test
+    void balanceReturns200WithTheNormalSideAndTheBalance() {
+        when(getAccountBalance.balanceOf(new AccountId(ID)))
+                .thenReturn(new AccountBalanceView(new AccountId(ID), Side.CREDIT, Money.of(7_500, "EUR")));
+
+        var result = mvc.get().uri("/accounts/{id}/balance", ID).exchange();
+
+        assertThat(result).hasStatusOk().bodyJson().isLenientlyEqualTo("""
+                        {"accountId": "3f1c2b7e-0000-4000-8000-000000000001", "normalBalanceSide": "CREDIT",
+                         "balance": {"amount": 7500, "currency": "EUR"}}""");
+    }
+
+    @Test
+    void balanceOfUnknownAccountIsNotFoundAsProblemDetails() {
+        when(getAccountBalance.balanceOf(new AccountId(ID))).thenThrow(new AccountNotFoundException(new AccountId(ID)));
+
+        var result = mvc.get().uri("/accounts/{id}/balance", ID).exchange();
+
+        assertThat(result).hasStatus(HttpStatus.NOT_FOUND).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(result).bodyJson().extractingPath("$.status").isEqualTo(404);
+        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Account not found");
+        assertThat(result).bodyJson().extractingPath("$.detail").asString().contains(ID.toString());
+    }
+
+    @Test
+    void balanceWithMalformedIdIsRejectedAsProblemDetails() {
+        var result = mvc.get().uri("/accounts/{id}/balance", "not-a-uuid").exchange();
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(result).bodyJson().extractingPath("$.status").isEqualTo(400);
+        verifyNoInteractions(getAccountBalance);
+    }
+
+    @Test
+    void unexpectedFailureIsA500ProblemDetailsWithoutInternals() {
+        when(getAccountBalance.balanceOf(new AccountId(ID)))
+                .thenThrow(new IllegalStateException("connection pool exhausted at db-host-7"));
+
+        var result = mvc.get().uri("/accounts/{id}/balance", ID).exchange();
+
+        assertThat(result)
+                .hasStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                .hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(result).bodyJson().extractingPath("$.status").isEqualTo(500);
+        assertThat(result).bodyJson().extractingPath("$.detail").isEqualTo("An unexpected error occurred.");
+        assertThat(result).bodyText().doesNotContain("db-host-7").doesNotContain("IllegalStateException");
     }
 
     private MvcTestResult post(String body) {

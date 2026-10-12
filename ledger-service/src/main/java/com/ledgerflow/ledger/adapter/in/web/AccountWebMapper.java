@@ -1,11 +1,13 @@
 package com.ledgerflow.ledger.adapter.in.web;
 
+import com.ledgerflow.ledger.adapter.in.web.model.AccountBalanceDto;
 import com.ledgerflow.ledger.adapter.in.web.model.AccountDto;
 import com.ledgerflow.ledger.adapter.in.web.model.AccountTypeDto;
 import com.ledgerflow.ledger.adapter.in.web.model.MoneyDto;
 import com.ledgerflow.ledger.adapter.in.web.model.OpenAccountRequestDto;
 import com.ledgerflow.ledger.adapter.in.web.model.OverdraftPolicyDto;
 import com.ledgerflow.ledger.adapter.in.web.model.SideDto;
+import com.ledgerflow.ledger.application.port.in.AccountBalanceView;
 import com.ledgerflow.ledger.application.port.in.AccountView;
 import com.ledgerflow.ledger.application.port.in.OpenAccountCommand;
 import com.ledgerflow.ledger.domain.AccountType;
@@ -33,6 +35,10 @@ final class AccountWebMapper {
                 toDto(view.normalBalanceSide()),
                 toDto(view.overdraftPolicy()),
                 toDto(view.balance()));
+    }
+
+    static AccountBalanceDto toDto(AccountBalanceView view) {
+        return new AccountBalanceDto(view.accountId().value(), toDto(view.normalBalanceSide()), toDto(view.balance()));
     }
 
     static MoneyDto toDto(Money money) {

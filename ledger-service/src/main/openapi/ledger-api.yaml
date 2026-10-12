@@ -42,7 +42,38 @@ paths:
                 $ref: '#/components/schemas/Account'
         '400':
           $ref: '#/components/responses/BadRequest'
+  /accounts/{accountId}/balance:
+    get:
+      tags: [Accounts]
+      operationId: getAccountBalance
+      summary: Get an account's balance
+      description: |
+        Balance derived from the account's postings (ADR 0004), reported from
+        its normal balance side: Σ debits − Σ credits for a debit-normal
+        account, Σ credits − Σ debits for a credit-normal one.
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      responses:
+        '200':
+          description: The account's current balance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountBalance'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
+  parameters:
+    AccountId:
+      name: accountId
+      in: path
+      required: true
+      description: Account identifier.
+      schema:
+        type: string
+        format: uuid
   schemas:
     CurrencyCode:
       description: ISO-4217 alphabetic currency code.
@@ -113,6 +144,21 @@ components:
         normalBalanceSide: CREDIT
         overdraftPolicy: NOT_ALLOWED
         balance: {amount: 0, currency: EUR}
+    AccountBalance:
+      type: object
+      required: [accountId, normalBalanceSide, balance]
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        normalBalanceSide:
+          $ref: '#/components/schemas/Side'
+        balance:
+          $ref: '#/components/schemas/Money'
+      example:
+        accountId: 3f1c2b7e-0000-4000-8000-000000000001
+        normalBalanceSide: CREDIT
+        balance: {amount: 12500, currency: EUR}
     Problem:
       description: Problem Details for HTTP APIs (RFC 9457).
       type: object
