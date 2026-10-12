@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lunaatienzaismael-code/core-banking/.agents/templates/tasks.schema.json",
+  "title": "LedgerFlow task list",
+  "description": "Shape of .agents/tasks.json. Written only by the orchestrator, edited field by field, never regenerated.",
+  "type": "object",
+  "required": ["tasks"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "tasks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/task" }
+    }
+  },
+  "$defs": {
+    "task": {
+      "type": "object",
+      "required": ["id", "title", "phase", "use_case", "type", "status", "depends_on", "acceptance_criteria", "issue", "branch", "pr"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^T-[0-9]{3}$", "description": "Stable, never reused." },
+        "title": { "type": "string", "maxLength": 80 },
+        "phase": { "type": "integer", "minimum": 0 },
+        "use_case": { "type": ["string", "null"], "pattern": "^UC[0-9]+$", "description": "Spec use case, or null for enabling work." },
+        "type": { "enum": ["feat", "fix", "refactor", "test", "docs", "build", "ci", "chore"], "description": "Conventional Commit type; also the branch prefix." },
+        "status": { "enum": ["todo", "in_progress", "in_review", "done", "blocked"] },
+        "depends_on": { "type": "array", "items": { "type": "string", "pattern": "^T-[0-9]{3}$" }, "uniqueItems": true },
+        "acceptance_criteria": { "type": "array", "items": { "type": "string", "pattern": "^AC[0-9]+\\.[0-9]+$" }, "uniqueItems": true, "description": "Spec criteria this task delivers (may be empty for enabling work)." },
+        "issue": { "type": ["integer", "null"], "description": "GitHub issue number, once created." },
+        "branch": { "type": ["string", "null"], "pattern": "^(feat|fix|refactor|test|docs|build|ci|chore)/T-[0-9]{3}-[a-z0-9-]+$" },
+        "pr": { "type": ["integer", "null"] },
+        "review_rounds": { "type": "integer", "minimum": 0, "description": "Number of review-N.json files produced." },
+        "blocked_reason": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

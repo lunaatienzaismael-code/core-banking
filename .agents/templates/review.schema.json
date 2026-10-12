@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lunaatienzaismael-code/core-banking/.agents/templates/review.schema.json",
+  "title": "Evaluator review",
+  "description": "Written by the evaluator subagent to .agents/tasks/<id>/review-<round>.json. One file per round; never overwritten.",
+  "type": "object",
+  "required": ["task_id", "round", "base", "head", "verdict", "summary", "acceptance_criteria", "findings"],
+  "additionalProperties": false,
+  "properties": {
+    "task_id": { "type": "string", "pattern": "^T-[0-9]{3}$" },
+    "round": { "type": "integer", "minimum": 1 },
+    "base": { "type": "string", "description": "Commit the diff was taken from (merge base with main)." },
+    "head": { "type": "string", "description": "Commit (or 'WORKTREE' for uncommitted changes) that was reviewed." },
+    "verdict": {
+      "enum": ["approve", "request_changes"],
+      "description": "approve only when no blocker or major finding remains and every acceptance criterion is met."
+    },
+    "summary": { "type": "string", "maxLength": 600 },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "description": "AC id from the spec, or a brief-local id like B1." },
+          "status": { "enum": ["met", "not_met", "partial"] },
+          "evidence": { "type": "string", "description": "Test class#method or file:line proving it, or why it is missing." }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "category", "file", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "severity": { "enum": ["blocker", "major", "minor", "nit"] },
+          "category": {
+            "enum": ["acceptance", "money", "concurrency", "idempotency", "invariant", "architecture", "testing", "api", "persistence", "security", "docs", "style"]
+          },
+          "file": { "type": "string" },
+          "line": { "type": ["integer", "null"] },
+          "description": { "type": "string", "maxLength": 500 },
+          "suggestion": { "type": "string", "maxLength": 500 },
+          "rule": { "type": "string", "description": "What it violates, e.g. 'ADR 0004', 'skill java-testing', 'AC2.2'." }
+        }
+      }
+    }
+  }
+}
