@@ -30,6 +30,7 @@
         <jacoco.version>0.8.15</jacoco.version>
         <pitest.version>1.30.0</pitest.version>
         <pitest-junit5.version>1.2.3</pitest-junit5.version>
+        <openapi-generator.version>7.26.0</openapi-generator.version>
 
         <!-- Ratcheted up to real coverage at the end of each feature phase (ADR 0003). -->
         <jacoco.minimum.line>0.30</jacoco.minimum.line>
@@ -68,6 +69,40 @@
                     <configuration>
                         <argLine>@{argLine} -XX:+EnableDynamicAgentLoading</argLine>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <!-- OpenAPI-first (ADR 0008): a service declares only inputSpec, apiPackage and modelPackage. -->
+                    <groupId>org.openapitools</groupId>
+                    <artifactId>openapi-generator-maven-plugin</artifactId>
+                    <version>${openapi-generator.version}</version>
+                    <executions>
+                        <execution>
+                            <id>generate-api</id>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                            <configuration>
+                                <generatorName>spring</generatorName>
+                                <generateApiTests>false</generateApiTests>
+                                <generateApiDocumentation>false</generateApiDocumentation>
+                                <generateModelTests>false</generateModelTests>
+                                <generateModelDocumentation>false</generateModelDocumentation>
+                                <generateSupportingFiles>false</generateSupportingFiles>
+                                <configOptions>
+                                    <interfaceOnly>true</interfaceOnly>
+                                    <skipDefaultInterface>true</skipDefaultInterface>
+                                    <useSpringBoot4>true</useSpringBoot4>
+                                    <useJackson3>true</useJackson3>
+                                    <useTags>true</useTags>
+                                    <useBeanValidation>true</useBeanValidation>
+                                    <openApiNullable>false</openApiNullable>
+                                    <documentationProvider>none</documentationProvider>
+                                    <annotationLibrary>none</annotationLibrary>
+                                    <hideGenerationTimestamp>true</hideGenerationTimestamp>
+                                </configOptions>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.pitest</groupId>
@@ -144,6 +179,9 @@
                     <excludes>
                         <!-- Spring Boot bootstrap classes hold no logic. -->
                         <exclude>**/*Application.class</exclude>
+                        <!-- Generated from the OpenAPI contract (ADR 0008). -->
+                        <exclude>com/ledgerflow/*/adapter/in/web/api/**</exclude>
+                        <exclude>com/ledgerflow/*/adapter/in/web/model/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
