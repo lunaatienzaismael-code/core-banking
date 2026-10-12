@@ -2,18 +2,24 @@ package com.ledgerflow.ledger.adapter.in.web;
 
 import com.ledgerflow.ledger.adapter.in.web.model.AccountBalanceDto;
 import com.ledgerflow.ledger.adapter.in.web.model.AccountDto;
+import com.ledgerflow.ledger.adapter.in.web.model.AccountMovementsDto;
 import com.ledgerflow.ledger.adapter.in.web.model.AccountTypeDto;
 import com.ledgerflow.ledger.adapter.in.web.model.MoneyDto;
+import com.ledgerflow.ledger.adapter.in.web.model.MovementDto;
 import com.ledgerflow.ledger.adapter.in.web.model.OpenAccountRequestDto;
 import com.ledgerflow.ledger.adapter.in.web.model.OverdraftPolicyDto;
 import com.ledgerflow.ledger.adapter.in.web.model.SideDto;
 import com.ledgerflow.ledger.application.port.in.AccountBalanceView;
 import com.ledgerflow.ledger.application.port.in.AccountView;
+import com.ledgerflow.ledger.application.port.in.MovementView;
 import com.ledgerflow.ledger.application.port.in.OpenAccountCommand;
 import com.ledgerflow.ledger.domain.AccountType;
 import com.ledgerflow.ledger.domain.Money;
 import com.ledgerflow.ledger.domain.OverdraftPolicy;
 import com.ledgerflow.ledger.domain.Side;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.UUID;
 
 /** Explicit mapping between contract DTOs and use case types (ADR 0002 rule 7). Exhaustive switches fail to compile when either side gains a value. */
 final class AccountWebMapper {
@@ -39,6 +45,20 @@ final class AccountWebMapper {
 
     static AccountBalanceDto toDto(AccountBalanceView view) {
         return new AccountBalanceDto(view.accountId().value(), toDto(view.normalBalanceSide()), toDto(view.balance()));
+    }
+
+    static AccountMovementsDto toDto(UUID accountId, List<MovementView> movements) {
+        return new AccountMovementsDto(
+                accountId, movements.stream().map(AccountWebMapper::toDto).toList());
+    }
+
+    static MovementDto toDto(MovementView movement) {
+        return new MovementDto(
+                movement.postingId().value(),
+                movement.transactionId().value(),
+                toDto(movement.amount()),
+                toDto(movement.direction()),
+                movement.occurredAt().atOffset(ZoneOffset.UTC));
     }
 
     static MoneyDto toDto(Money money) {

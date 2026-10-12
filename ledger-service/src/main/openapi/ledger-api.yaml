@@ -64,6 +64,27 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+  /accounts/{accountId}/movements:
+    get:
+      tags: [Accounts]
+      operationId: getAccountMovements
+      summary: List an account's movements
+      description: |
+        Every posting line of the account, oldest first (transaction time, then
+        posting id). Amounts are unsigned; `direction` says debit or credit.
+      parameters:
+        - $ref: '#/components/parameters/AccountId'
+      responses:
+        '200':
+          description: The account's movements; empty for an account without postings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountMovements'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   parameters:
     AccountId:
@@ -159,6 +180,44 @@ components:
         accountId: 3f1c2b7e-0000-4000-8000-000000000001
         normalBalanceSide: CREDIT
         balance: {amount: 12500, currency: EUR}
+    Movement:
+      description: One posting line of an account.
+      type: object
+      required: [postingId, transactionId, amount, direction, occurredAt]
+      properties:
+        postingId:
+          type: string
+          format: uuid
+        transactionId:
+          type: string
+          format: uuid
+          description: The ledger transaction this posting line belongs to.
+        amount:
+          $ref: '#/components/schemas/Money'
+        direction:
+          $ref: '#/components/schemas/Side'
+        occurredAt:
+          type: string
+          format: date-time
+    AccountMovements:
+      type: object
+      required: [accountId, movements]
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        movements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Movement'
+      example:
+        accountId: 3f1c2b7e-0000-4000-8000-000000000001
+        movements:
+          - postingId: 9b2d4e10-0000-4000-8000-000000000101
+            transactionId: 5a7c1f22-0000-4000-8000-000000000201
+            amount: {amount: 10000, currency: EUR}
+            direction: CREDIT
+            occurredAt: '2026-01-15T09:30:00Z'
     Problem:
       description: Problem Details for HTTP APIs (RFC 9457).
       type: object

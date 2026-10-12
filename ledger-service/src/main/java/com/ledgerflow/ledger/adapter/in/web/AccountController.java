@@ -3,8 +3,10 @@ package com.ledgerflow.ledger.adapter.in.web;
 import com.ledgerflow.ledger.adapter.in.web.api.AccountsApi;
 import com.ledgerflow.ledger.adapter.in.web.model.AccountBalanceDto;
 import com.ledgerflow.ledger.adapter.in.web.model.AccountDto;
+import com.ledgerflow.ledger.adapter.in.web.model.AccountMovementsDto;
 import com.ledgerflow.ledger.adapter.in.web.model.OpenAccountRequestDto;
 import com.ledgerflow.ledger.application.port.in.GetAccountBalanceUseCase;
+import com.ledgerflow.ledger.application.port.in.GetAccountMovementsUseCase;
 import com.ledgerflow.ledger.application.port.in.OpenAccountUseCase;
 import com.ledgerflow.ledger.domain.AccountId;
 import java.util.UUID;
@@ -18,10 +20,15 @@ class AccountController implements AccountsApi {
 
     private final OpenAccountUseCase openAccount;
     private final GetAccountBalanceUseCase getAccountBalance;
+    private final GetAccountMovementsUseCase getAccountMovements;
 
-    AccountController(OpenAccountUseCase openAccount, GetAccountBalanceUseCase getAccountBalance) {
+    AccountController(
+            OpenAccountUseCase openAccount,
+            GetAccountBalanceUseCase getAccountBalance,
+            GetAccountMovementsUseCase getAccountMovements) {
         this.openAccount = openAccount;
         this.getAccountBalance = getAccountBalance;
+        this.getAccountMovements = getAccountMovements;
     }
 
     @Override
@@ -38,5 +45,11 @@ class AccountController implements AccountsApi {
     public ResponseEntity<AccountBalanceDto> getAccountBalance(UUID accountId) {
         var balance = getAccountBalance.balanceOf(new AccountId(accountId));
         return ResponseEntity.ok(AccountWebMapper.toDto(balance));
+    }
+
+    @Override
+    public ResponseEntity<AccountMovementsDto> getAccountMovements(UUID accountId) {
+        var movements = getAccountMovements.movementsOf(new AccountId(accountId));
+        return ResponseEntity.ok(AccountWebMapper.toDto(accountId, movements));
     }
 }
