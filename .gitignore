@@ -1,0 +1,29 @@
+# Build
+target/
+build/
+*.class
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local session / agent state (not versioned)
+.session/
+.claude/settings.local.json
+.agents/tasks/*/logs/
+
+# Env
+.env
