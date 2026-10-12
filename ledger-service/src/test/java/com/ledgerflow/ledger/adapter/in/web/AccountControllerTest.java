@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 import com.ledgerflow.ledger.application.port.in.AccountBalanceView;
 import com.ledgerflow.ledger.application.port.in.AccountView;
 import com.ledgerflow.ledger.application.port.in.GetAccountBalanceUseCase;
+import com.ledgerflow.ledger.application.port.in.GetAccountMovementsUseCase;
+import com.ledgerflow.ledger.application.port.in.MovementView;
 import com.ledgerflow.ledger.application.port.in.OpenAccountCommand;
 import com.ledgerflow.ledger.application.port.in.OpenAccountUseCase;
 import com.ledgerflow.ledger.domain.AccountId;
@@ -16,8 +18,12 @@ import com.ledgerflow.ledger.domain.AccountNotFoundException;
 import com.ledgerflow.ledger.domain.AccountType;
 import com.ledgerflow.ledger.domain.Money;
 import com.ledgerflow.ledger.domain.OverdraftPolicy;
+import com.ledgerflow.ledger.domain.PostingId;
 import com.ledgerflow.ledger.domain.Side;
+import com.ledgerflow.ledger.domain.TransactionId;
+import java.time.Instant;
 import java.util.Currency;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,6 +50,9 @@ class AccountControllerTest {
 
     @MockitoBean
     private GetAccountBalanceUseCase getAccountBalance;
+
+    @MockitoBean
+    private GetAccountMovementsUseCase getAccountMovements;
 
     @Test
     void openAccountReturns201WithLocationAndTheNewAccount() {
@@ -130,6 +139,47 @@ class AccountControllerTest {
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(result).bodyJson().extractingPath("$.status").isEqualTo(400);
         verifyNoInteractions(getAccountBalance);
+    }
+
+    @Test
+    void movementsReturn200WithEachLineItsDirectionAndTransaction() {
+        var posting = UUID.fromString("9b2d4e10-0000-4000-8000-000000000101");
+        var transaction = UUID.fromString("5a7c1f22-0000-4000-8000-000000000201");
+        when(getAccountMovements.movementsOf(new AccountId(ID)))
+                .thenReturn(List.of(new MovementView(
+                        new PostingId(posting),
+                        new TransactionId(transaction),
+                        Money.of(10_000, "EUR"),
+                        Side.CREDIT,
+                        Instant.parse("2026-01-15T09:30:00Z"))));
+
+        var result = mvc.get().uri("/accounts/{id}/movements", ID).exchange();
+
+        assertThat(result).hasStatusOk().bodyJson().isLenientlyEqualTo("""
+                        {"accountId": "3f1c2b7e-0000-4000-8000-000000000001", "movements": [
+                          {"postingId": "9b2d4e10-0000-4000-8000-000000000101",
+                           "transactionId": "5a7c1f22-0000-4000-8000-000000000201",
+                           "amount": {"amount": 10000, "currency": "EUR"}, "direction": "CREDIT",
+                           "occurredAt": "2026-01-15T09:30:00Z"}]}""");
+    }
+
+    @Test
+    void movementsOfUnknownAccountAreNotFoundAsProblemDetails() {
+        when(getAccountMovements.movementsOf(new AccountId(ID)))
+                .thenThrow(new AccountNotFoundException(new AccountId(ID)));
+
+        var result = mvc.get().uri("/accounts/{id}/movements", ID).exchange();
+
+        assertThat(result).hasStatus(HttpStatus.NOT_FOUND).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Account not found");
+    }
+
+    @Test
+    void movementsWithMalformedIdAreRejectedAsProblemDetails() {
+        var result = mvc.get().uri("/accounts/{id}/movements", "not-a-uuid").exchange();
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        verifyNoInteractions(getAccountMovements);
     }
 
     @Test
