@@ -1,4 +1,70 @@
 {
   "$schema": "./templates/tasks.schema.json",
-  "tasks": []
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "ADR 0008 and openapi-generator with initial contract",
+      "phase": 3,
+      "use_case": null,
+      "type": "build",
+      "status": "todo",
+      "depends_on": [],
+      "acceptance_criteria": [],
+      "issue": 5,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "id": "T-002",
+      "title": "Account domain model and derived balance",
+      "phase": 3,
+      "use_case": "UC1",
+      "type": "feat",
+      "status": "todo",
+      "depends_on": [],
+      "acceptance_criteria": [],
+      "issue": 6,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "id": "T-003",
+      "title": "Open an account end to end",
+      "phase": 3,
+      "use_case": "UC1",
+      "type": "feat",
+      "status": "todo",
+      "depends_on": ["T-001", "T-002"],
+      "acceptance_criteria": ["AC1.1"],
+      "issue": 7,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "id": "T-004",
+      "title": "Query an account's derived balance",
+      "phase": 3,
+      "use_case": "UC1",
+      "type": "feat",
+      "status": "todo",
+      "depends_on": ["T-003"],
+      "acceptance_criteria": ["AC1.2", "AC1.4"],
+      "issue": 8,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "id": "T-005",
+      "title": "Query an account's movements",
+      "phase": 3,
+      "use_case": "UC1",
+      "type": "feat",
+      "status": "todo",
+      "depends_on": ["T-004"],
+      "acceptance_criteria": ["AC1.3"],
+      "issue": 9,
+      "branch": null,
+      "pr": null
+    }
+  ]
 }
