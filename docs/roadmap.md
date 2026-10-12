@@ -25,12 +25,12 @@ starts.
   - [x] Git/GitHub: `.gitignore`, PR template, milestones, minimal README, branch
         protection on `main`
 
-- [ ] **Phase 2 — Minimal agent infrastructure**
-  - [ ] `CLAUDE.md` (<120 lines)
-  - [ ] `.agents/` state (progress, tasks.json, templates, per-task folders)
-  - [ ] Subagents `test-runner` (Haiku) and `evaluator` (Sonnet)
-  - [ ] Seed skills: `java-hexagonal`, `java-testing`, `task-planning`
-  - [ ] Commands: `/plan-feature`, `/next-task`, `/status`
+- [x] **Phase 2 — Minimal agent infrastructure**
+  - [x] `CLAUDE.md` (<120 lines)
+  - [x] `.agents/` state (progress, tasks.json, templates, per-task folders)
+  - [x] Subagents `test-runner` (Haiku) and `evaluator` (Sonnet)
+  - [x] Seed skills: `java-hexagonal`, `java-testing`, `task-planning`
+  - [x] Commands: `/plan-feature`, `/next-task`, `/status` (user-invoked skills)
 
 - [ ] **Phase 3 — First vertical (UC1)**: open account, query balance and
       movements, end to end across all layers with tests. Reference implementation.

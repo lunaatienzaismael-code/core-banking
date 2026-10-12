@@ -4,7 +4,7 @@ Event-driven, SEPA-style payments platform built around a **double-entry
 ledger**. A backend portfolio project: reasoned decisions, correct distributed
 consistency, serious tests and a readable Git history.
 
-> Status: **walking skeleton** (Phase 1). See the [roadmap](docs/roadmap.md).
+> Status: **walking skeleton + agent infrastructure** (Phase 2). See the [roadmap](docs/roadmap.md).
 
 ## Stack
 
@@ -31,6 +31,7 @@ Mutation testing (on demand): `./mvnw -pl ledger-service -am test-compile org.pi
 | `architecture-rules/` | Reusable ArchUnit rules for the hexagonal layout (ADR 0002) |
 | `ledger-service/` | Double-entry ledger service |
 | `infra/` | Local dependencies (`docker compose`) |
+| `CLAUDE.md`, `.claude/`, `.agents/` | Agent workflow: guide, subagents, skills and file-based task state |
 | `docs/` | [Specification](docs/spec.md), [roadmap](docs/roadmap.md), [ADRs](docs/adr/README.md) |
 
 All example data (IBANs, names, amounts) is fictitious.
