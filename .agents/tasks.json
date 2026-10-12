@@ -49,12 +49,12 @@
       "phase": 3,
       "use_case": "UC1",
       "type": "feat",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-003"],
       "acceptance_criteria": ["AC1.2", "AC1.4"],
       "issue": 8,
       "branch": "feat/T-004-account-balance-endpoint",
-      "pr": null,
+      "pr": 13,
       "review_rounds": 1
     },
     {
@@ -63,12 +63,13 @@
       "phase": 3,
       "use_case": "UC1",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-004"],
       "acceptance_criteria": ["AC1.3"],
       "issue": 9,
-      "branch": null,
-      "pr": null
+      "branch": "feat/T-005-account-movements-endpoint",
+      "pr": null,
+      "review_rounds": 1
     }
   ]
 }

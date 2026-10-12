@@ -1,0 +1,23 @@
+{
+  "task_id": "T-005",
+  "round": 1,
+  "base": "dbc3c9ea9b116cf44c2f59688a75ac6a84d51a15",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Movements endpoint is cleanly layered (use case, read-only service, SQL adapter, explicit web mapper), contract updated, amounts unsigned with direction derived from sign, ordering by occurred_at then posting id proven with out-of-order inserts on real PostgreSQL. All criteria proven by named tests; no blocker or major findings.",
+  "acceptance_criteria": [
+    {"id": "AC1.3", "status": "met", "evidence": "AccountMovementsIT#movementsAreTheAccountsPostingLinesInChronologicalOrder; PostingPersistenceAdapterIT#movementsAreOrderedByTransactionTimeRegardlessOfInsertOrder, #movementsHoldOnlyThisAccountsSignedLines"},
+    {"id": "B1", "status": "met", "evidence": "AccountMovementsIT#unknownAccountIsProblemDetails404; AccountControllerTest#movementsOfUnknownAccountAreNotFoundAsProblemDetails; GetAccountMovementsServiceTest#unknownAccountIsReportedAsNotFoundWithoutReadingPostings"},
+    {"id": "B2", "status": "met", "evidence": "AccountMovementsIT#newlyOpenedAccountHasNoMovements; PostingPersistenceAdapterIT#accountWithoutPostingsHasNoMovements"}
+  ],
+  "findings": [
+    {
+      "severity": "nit",
+      "category": "testing",
+      "file": "ledger-service/src/test/java/com/ledgerflow/ledger/AccountMovementsIT.java",
+      "line": null,
+      "description": "Tests use @DisplayName with AC ids while the brief asks for tests named after the behaviour; method names are behavioural so this is acceptable. Tie-break by posting id is only proven at adapter level, not end to end.",
+      "suggestion": "Optional: none required."
+    }
+  ]
+}
