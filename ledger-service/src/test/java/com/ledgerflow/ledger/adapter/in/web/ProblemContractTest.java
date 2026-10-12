@@ -2,7 +2,7 @@ package com.ledgerflow.ledger.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ledgerflow.ledger.adapter.in.web.model.Problem;
+import com.ledgerflow.ledger.adapter.in.web.model.ProblemDto;
 import java.net.URI;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -16,17 +16,17 @@ class ProblemContractTest {
 
     @Test
     void generatedProblemModelLivesInTheInboundWebAdapter() {
-        assertThat(Problem.class.getPackageName()).isEqualTo("com.ledgerflow.ledger.adapter.in.web.model");
+        assertThat(ProblemDto.class.getPackageName()).isEqualTo("com.ledgerflow.ledger.adapter.in.web.model");
     }
 
     @Test
     void problemTypeDefaultsToAboutBlank() {
-        assertThat(new Problem().getType()).isEqualTo(URI.create("about:blank"));
+        assertThat(new ProblemDto().getType()).isEqualTo(URI.create("about:blank"));
     }
 
     @Test
     void problemSerializesWithRfc9457MemberNames() {
-        var problem = new Problem()
+        var problem = new ProblemDto()
                 .title("Not Found")
                 .status(404)
                 .detail("Account does not exist")
