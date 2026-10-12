@@ -13,6 +13,7 @@ decisions are not deleted; a new ADR supersedes them and says so.
 | [0005](0005-git-flow-and-merge-strategy.md) | Git Flow and Merge Strategy | Accepted |
 | [0006](0006-api-and-error-model.md) | API Style and Error Model | Accepted |
 | [0007](0007-deployment.md) | Deployment and Local Environment | Accepted |
+| [0008](0008-openapi-tooling.md) | OpenAPI-First Tooling | Accepted |
 
 ## Deferred decisions (ADRs to be written later)
 
