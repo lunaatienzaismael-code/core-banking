@@ -4,3 +4,6 @@ databaseChangeLog:
   - include:
       file: changes/0001-create-accounts.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/0002-create-transactions-and-postings.yaml
+      relativeToChangelogFile: true

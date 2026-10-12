@@ -1,0 +1,75 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0002-create-transactions-and-postings
+      author: ledgerflow
+      comment: >-
+        Ledger transactions and their signed postings (debit +, credit -). Still no balance column - an account's
+        balance is the sum of its postings (ADR 0004). Written only by test fixtures until UC2.
+      changes:
+        - addUniqueConstraint:
+            tableName: accounts
+            columnNames: id, currency
+            constraintName: uq_accounts_id_currency
+        - createTable:
+            tableName: transactions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_transactions
+              - column:
+                  name: occurred_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: postings
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_postings
+              - column:
+                  name: transaction_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_postings_transaction
+                    references: transactions(id)
+              - column:
+                  name: account_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: currency
+                  type: char(3)
+                  constraints:
+                    nullable: false
+        # Composite key: a posting is always in its account's currency, so summing by account is enough.
+        - addForeignKeyConstraint:
+            baseTableName: postings
+            baseColumnNames: account_id, currency
+            referencedTableName: accounts
+            referencedColumnNames: id, currency
+            constraintName: fk_postings_account_currency
+        - sql:
+            sql: >-
+              ALTER TABLE postings
+                ADD CONSTRAINT ck_postings_amount_non_zero CHECK (amount <> 0),
+                ADD CONSTRAINT ck_postings_currency CHECK (currency ~ '^[A-Z]{3}$')
+        - createIndex:
+            tableName: postings
+            indexName: ix_postings_account_id
+            columns:
+              - column:
+                  name: account_id
