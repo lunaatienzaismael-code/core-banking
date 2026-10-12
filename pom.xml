@@ -74,7 +74,7 @@
                     <artifactId>pitest-maven</artifactId>
                     <version>${pitest.version}</version>
                     <configuration>
-                        <!-- On demand only (ADR 0003): mvn -pl <module> pitest:mutationCoverage -->
+                        <!-- On demand only (ADR 0003): ./mvnw -pl <module> -am test-compile org.pitest:pitest-maven:mutationCoverage -->
                         <targetClasses>
                             <param>com.ledgerflow.*.domain.*</param>
                             <param>com.ledgerflow.*.application.*</param>
