@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.ledgerflow.ledger.TestcontainersConfiguration;
 import com.ledgerflow.ledger.application.port.out.AccountRepository;
 import com.ledgerflow.ledger.domain.Account;
+import com.ledgerflow.ledger.domain.AccountId;
 import com.ledgerflow.ledger.domain.AccountType;
 import com.ledgerflow.ledger.domain.OverdraftPolicy;
 import java.util.Currency;
@@ -40,6 +41,19 @@ class AccountPersistenceAdapterIT {
                 .containsEntry("overdraft_policy", "NOT_ALLOWED")
                 .containsEntry("version", 0L);
         assertThat(row.get("created_at")).isNotNull();
+    }
+
+    @Test
+    void savedAccountIsFoundByIdWithTheSameAttributes() {
+        var account = Account.open(Currency.getInstance("SEK"), AccountType.ASSET, OverdraftPolicy.ALLOWED);
+        accounts.save(account);
+
+        assertThat(accounts.findById(account.id())).contains(account);
+    }
+
+    @Test
+    void unknownIdIsNotFound() {
+        assertThat(accounts.findById(AccountId.random())).isEmpty();
     }
 
     @Test
