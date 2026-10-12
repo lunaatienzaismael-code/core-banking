@@ -21,12 +21,12 @@
       "phase": 3,
       "use_case": "UC1",
       "type": "feat",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 6,
       "branch": "feat/T-002-account-domain-model",
-      "pr": null,
+      "pr": 11,
       "review_rounds": 1
     },
     {
@@ -35,12 +35,13 @@
       "phase": 3,
       "use_case": "UC1",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-001", "T-002"],
       "acceptance_criteria": ["AC1.1"],
       "issue": 7,
-      "branch": null,
-      "pr": null
+      "branch": "feat/T-003-open-account-endpoint",
+      "pr": null,
+      "review_rounds": 1
     },
     {
       "id": "T-004",

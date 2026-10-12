@@ -47,6 +47,8 @@ postings, from its normal side; unknown accounts get a Problem Details 404.
 - Aggregate in SQL (`SUM(amount)` filtered by account), apply the normal side
   in the domain (T-002). PostgreSQL `SUM(bigint)` returns `numeric`: convert
   with an exact check so an out-of-range total fails loudly.
+- While extending `ProblemDetailsHandler`, add a fallback for unexpected
+  exceptions: 500 Problem Details without internals (T-003 review-1 nit).
 - Named tests: debit-normal and credit-normal accounts with mixed postings,
   account with no postings, postings of other accounts not counted.
 
