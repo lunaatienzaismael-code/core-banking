@@ -40,8 +40,11 @@ Then append one line to `.agents/progress.md`:
 Ask the user before creating anything on GitHub. On OK:
 
 - Ensure the phase milestone exists (`gh api repos/:owner/:repo/milestones`).
-- Create one issue per task: title `T-xxx — <title>`, body = goal + criteria +
-  link to the brief path, milestone = the phase.
+- Create one issue per task: title `T-xxx — <title>`, milestone = the phase,
+  body = the brief's goal, the AC ids it covers, and a footer line
+  "Brief: <brief path> · Depends on: <ids or none>".
+  Do not copy criteria, scope or notes: the brief is the source of truth, and
+  a copy drifts silently when the brief changes.
 - Write each issue number into the task's `issue` field and the brief header.
 
 Finish with a two-line summary: tasks created and the suggested first `/next-task`.
