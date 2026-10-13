@@ -1,0 +1,17 @@
+{
+  "task_id": "T-009",
+  "round": 1,
+  "base": "9e10ee79c32873ab3d255b324475e5befaccaaa5",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Minimal, in-scope change: line 0.30 to 0.90, new branch 0.75 limit via a property, ADR 0003 updated with ratchet rule and history. Exclusions untouched. Headroom is about 6 points on line and 8 on branch. Build passes 115/115.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "pom.xml:36-37 properties and the BRANCH COVEREDRATIO limit at pom.xml:~221-225 in the shared rule; measured 96.5% line and 83.3% branch for ledger-service, 100% for architecture-rules."},
+    {"id": "B2", "status": "met", "evidence": "pom.xml excludes diff is empty; only *Application and the generated OpenAPI api/model packages remain excluded."},
+    {"id": "B3", "status": "met", "evidence": "Build pass log maven-20261013-170928.log; orchestrator negative check in a throwaway worktree failed on branch 0.45<0.75 and line 0.79<0.90 (reported, not committed)."},
+    {"id": "B4", "status": "met", "evidence": "docs/adr/0003-testing-strategy.md: ratchet rule bullet, property locations, and Threshold history table with dated rows."}
+  ],
+  "findings": [
+    {"severity": "nit", "category": "docs", "file": "docs/adr/0003-testing-strategy.md", "line": null, "description": "The ADR says thresholds apply per module and excludes only bootstrap and generated code; accurate, but the 2026-10-12 history row date is inferred and not verifiable from the diff.", "suggestion": "Confirm the date against git log if it matters."}
+  ]
+}

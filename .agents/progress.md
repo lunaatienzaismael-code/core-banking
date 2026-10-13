@@ -40,3 +40,7 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-13 · T-007 · done · PR #20 merged
 2026-10-13 · T-008 · started · chore/T-008-persistence-skill (issue #17)
 2026-10-13 · T-008 · reviewed · round 1 approve (0 blockers, 0 majors, 0 minors)
+2026-10-13 · T-008 · in_review · PR #21
+2026-10-13 · T-008 · done · PR #21 merged
+2026-10-13 · T-009 · started · build/T-009-jacoco-thresholds (issue #18)
+2026-10-13 · T-009 · reviewed · round 1 approve (0 blockers, 0 majors, 0 minors)
