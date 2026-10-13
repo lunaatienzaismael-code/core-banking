@@ -1,0 +1,16 @@
+{
+  "task_id": "T-006",
+  "round": 1,
+  "base": "46fa7a0fcdb340f2a15589eda67b991dc7286ac1",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Skills now point at real UC1 paths (all verified to exist), java-testing gains rule 11 covering enumerated cases and money edges, and next-task/CLAUDE.md add the PR verdict comment. Skills stay under 100 lines. No findings.",
+  "acceptance_criteria": [
+    { "id": "B1", "status": "met", "evidence": "java-hexagonal SKILL.md Reference examples: one path with a why-line per placement row (domain, use case/command/view, service, controller+mapper, Problem Details handler, JPA entity/adapter/mapper, SQL read adapter)." },
+    { "id": "B2", "status": "met", "evidence": "java-testing SKILL.md Reference examples: MoneyTest, OpenAccountServiceTest, AccountControllerTest, PostingPersistenceAdapterIT, AccountBalanceIT, LedgerFixture, HexagonalArchitectureTest." },
+    { "id": "B3", "status": "met", "evidence": "java-testing SKILL.md rule 11 covers each enumerated case and money edges (zero, overflow, Long.MIN_VALUE negation, currency mismatch) at the arithmetic layer." },
+    { "id": "B4", "status": "met", "evidence": "next-task/SKILL.md step 5 adds gh pr comment with verdict counts and review path; CLAUDE.md per-task flow updated." },
+    { "id": "B5", "status": "met", "evidence": "Re-ran path check over all ledger-service and architecture-rules paths in both skills: none missing; build pass 103/103." }
+  ],
+  "findings": []
+}
