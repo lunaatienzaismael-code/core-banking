@@ -52,7 +52,8 @@ propose commits → **user OK** → push + PR `Closes #N` → evaluator verdict 
 PR comment → user merges → `done`.
 
 - Skills: `java-hexagonal` (placement, layering, money), `java-testing`
-  (what/how to test), `task-planning` (splitting and briefs).
+  (what/how to test), `persistence-postgres-liquibase` (changesets, JPA,
+  `JdbcClient`, persistence tests), `task-planning` (splitting and briefs).
 - Subagents: `test-runner` (Haiku) runs the build, returns only JSON;
   `evaluator` (Sonnet) reviews diff vs brief with clean context, writes
   `review-N.json`, returns only the verdict.
@@ -100,7 +101,6 @@ Add agent infrastructure only when a trigger fires; propose it, do not just add 
   propose a skill rule, or an ArchUnit test if it is machine-checkable.
 - `code-explorer` subagent (Haiku, read-only): when code exceeds ~4–5
   modules/use cases.
-- `persistence-postgres-liquibase` skill: Phase 4, from the first real adapter.
 - `kafka-events` skill: first use case that publishes/consumes events (Phase 7).
 - `spring-boot-conventions` skill: ≥ 2 inbound adapters and stable
   config/error conventions.
