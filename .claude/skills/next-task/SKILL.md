@@ -52,5 +52,8 @@ Run one task end to end. You are the orchestrator: the only writer of
   compile and pass tests. Wait for the user's OK before committing.
 - On OK to publish: push, open a PR with `.github/pull_request_template.md`,
   `Closes #<issue>`, milestone of the phase, and the evaluator verdict + review
-  path. Set `pr` and `status: "in_review"`; append `· in_review · PR #<pr>`.
+  path. Right after opening it, post the evaluator verdict (counts by
+  severity) and the latest `review-N.json` path as a PR comment with
+  `gh pr comment <pr> --body …`. Set `pr` and `status: "in_review"`; append
+  `· in_review · PR #<pr>`.
 - Never merge; the user merges. Step 0 marks it done next time.
