@@ -11,6 +11,7 @@ import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaCodeUnit;
 import com.tngtech.archunit.core.domain.JavaField;
+import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.CompositeArchRule;
@@ -28,9 +29,9 @@ import java.util.Set;
  * {@code application.port.out}, {@code application.service}, {@code adapter.in.*}, {@code adapter.out.*}
  * and {@code config}.
  *
- * <p>Beyond dependencies, it also checks the conventions of ADR 0002 and ADR 0004 that ArchUnit can see: no floating
+ * <p>Beyond dependencies, it also checks the conventions of ADRs 0002, 0004 and 0006 that ArchUnit can see: no floating
  * point in the core, generated web DTOs kept in the web adapter, transactions on use cases only, one domain exception
- * base and JPA mappings in the persistence adapter.
+ * base, JPA mappings in the persistence adapter and a Problem Details fallback in the web adapter.
  *
  * <p>Every rule tolerates an empty layer, so a service can start with only some layers present.
  */
@@ -40,6 +41,9 @@ public final class HexagonalArchitecture {
             Set.of(double.class.getName(), float.class.getName(), Double.class.getName(), Float.class.getName());
     private static final List<String> TRANSACTIONAL =
             List.of("org.springframework.transaction.annotation.Transactional", "jakarta.transaction.Transactional");
+    private static final String REST_CONTROLLER = "org.springframework.web.bind.annotation.RestController";
+    private static final String REST_CONTROLLER_ADVICE = "org.springframework.web.bind.annotation.RestControllerAdvice";
+    private static final String EXCEPTION_HANDLER = "org.springframework.web.bind.annotation.ExceptionHandler";
     private static final List<String> JPA_MAPPINGS = List.of(
             "jakarta.persistence.Entity", "jakarta.persistence.Embeddable", "jakarta.persistence.MappedSuperclass");
 
@@ -275,6 +279,50 @@ public final class HexagonalArchitecture {
                 .allowEmptyShould(true);
     }
 
+    /** ADR 0006: every error leaves the API as Problem Details, including unexpected ones. */
+    public ArchRule webAdapterHasProblemDetailsFallback() {
+        return classes()
+                .that()
+                .resideInAPackage(webAdapter)
+                .should(new ArchCondition<JavaClass>("be covered by a @RestControllerAdvice handling Exception") {
+                    private boolean hasController;
+                    private boolean hasFallback;
+
+                    @Override
+                    public void check(JavaClass javaClass, ConditionEvents events) {
+                        hasController |= javaClass.isAnnotatedWith(REST_CONTROLLER);
+                        hasFallback |= javaClass.isAnnotatedWith(REST_CONTROLLER_ADVICE)
+                                && javaClass.getMethods().stream().anyMatch(HexagonalArchitecture::handlesAnyException);
+                    }
+
+                    @Override
+                    public void finish(ConditionEvents events) {
+                        if (hasController && !hasFallback) {
+                            events.add(SimpleConditionEvent.violated(
+                                    webAdapter,
+                                    "web adapter has a @RestController but no @RestControllerAdvice with"
+                                            + " @ExceptionHandler(Exception.class): unexpected errors would not be"
+                                            + " Problem Details"));
+                        }
+                    }
+                })
+                .as("the web adapter maps unexpected exceptions to Problem Details")
+                .allowEmptyShould(true);
+    }
+
+    /** {@code @ExceptionHandler(Exception.class)}, or a handler without value whose parameter is {@code Exception}. */
+    private static boolean handlesAnyException(JavaMethod method) {
+        return method.tryGetAnnotationOfType(EXCEPTION_HANDLER)
+                .map(handler -> {
+                    Object value = handler.get("value").orElse(new JavaClass[0]);
+                    List<JavaClass> handled = value instanceof JavaClass[] types && types.length > 0
+                            ? List.of(types)
+                            : method.getRawParameterTypes();
+                    return handled.stream().anyMatch(type -> type.getName().equals(Exception.class.getName()));
+                })
+                .orElse(false);
+    }
+
     private static DescribedPredicate<JavaAnnotation<?>> anyOf(List<String> annotations) {
         return DescribedPredicate.describe(
                 "any of " + annotations,
@@ -295,7 +343,8 @@ public final class HexagonalArchitecture {
                 webModelStaysInTheWebAdapter(),
                 transactionsOnlyOnApplicationServices(),
                 domainExceptionsShareOneBase(),
-                jpaMappingsOnlyInPersistenceAdapter());
+                jpaMappingsOnlyInPersistenceAdapter(),
+                webAdapterHasProblemDetailsFallback());
     }
 
     /** Checks every rule and reports all violations together. */
