@@ -33,12 +33,21 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["severity", "category", "file", "description"],
+        "required": ["severity", "category", "defect_type", "file", "description"],
         "additionalProperties": false,
         "properties": {
           "severity": { "enum": ["blocker", "major", "minor", "nit"] },
           "category": {
             "enum": ["acceptance", "money", "concurrency", "idempotency", "invariant", "architecture", "testing", "api", "persistence", "security", "docs", "style"]
+          },
+          "defect_type": {
+            "enum": [
+              "untested-enumerated-case", "money-edge-wrong-layer", "indirect-test", "weak-assertion",
+              "missing-invariant-test", "unmapped-error", "contract-gap", "layering-violation",
+              "concurrency-gap", "unbacked-doc-claim", "test-data-gap", "naming-convention",
+              "scope-creep", "other"
+            ],
+            "description": "What went wrong, independent of the area in 'category'. Defined in .agents/README.md; drives the growth rule (scripts/review-defects.sh)."
           },
           "file": { "type": "string" },
           "line": { "type": ["integer", "null"] },

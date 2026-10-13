@@ -102,8 +102,10 @@ PR comment → user merges → `done`.
 
 Add agent infrastructure only when a trigger fires; propose it, do not just add it.
 
-- **Growth rule:** when the evaluator flags the same defect type in two tasks,
-  propose a skill rule, or an ArchUnit test if it is machine-checkable.
+- **Growth rule:** when the evaluator flags the same `defect_type` in two
+  tasks, propose a skill rule, an ArchUnit test if it is machine-checkable, or
+  an evaluator check. `scripts/review-defects.sh` detects it (alerts for types
+  missing from `.agents/growth-rules.json`); `/next-task` and `/status` run it.
 - `code-explorer` subagent (Haiku, read-only): when code exceeds ~4–5
   modules/use cases.
 - `kafka-events` skill: first use case that publishes/consumes events (Phase 7).

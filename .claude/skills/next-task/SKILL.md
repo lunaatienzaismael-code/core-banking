@@ -43,8 +43,11 @@ Run one task end to end. You are the orchestrator: the only writer of
 - On `request_changes`: read the review file, fix blockers and majors (minors
   when cheap), re-run test-runner, review again. After round 3 without
   approval, stop and ask the user.
-- If the same defect type was already flagged in another task, propose a skill
-  rule or an ArchUnit test (growth rule in `CLAUDE.md`).
+- After each review, run `scripts/review-defects.sh`. For every entry in
+  `alerts` (a `defect_type` in 2+ tasks with no rule in
+  `.agents/growth-rules.json`), tell the user and propose the exact text of a
+  skill rule, an ArchUnit test or an evaluator check (growth rule in
+  `CLAUDE.md`); once applied, record it in `growth-rules.json`.
 
 ## 5. Propose and publish (only with explicit OK)
 
