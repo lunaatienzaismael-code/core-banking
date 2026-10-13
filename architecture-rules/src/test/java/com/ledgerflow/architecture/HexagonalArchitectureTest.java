@@ -65,7 +65,8 @@ class HexagonalArchitectureTest {
                 violation("transactionaloutsideservice", HexagonalArchitecture::transactionsOnlyOnApplicationServices),
                 violation("nodomainexceptionbase", HexagonalArchitecture::domainExceptionsShareOneBase),
                 violation("exceptionoutsidebase", HexagonalArchitecture::domainExceptionsShareOneBase),
-                violation("entityoutsidepersistence", HexagonalArchitecture::jpaMappingsOnlyInPersistenceAdapter));
+                violation("entityoutsidepersistence", HexagonalArchitecture::jpaMappingsOnlyInPersistenceAdapter),
+                violation("nofallbackhandler", HexagonalArchitecture::webAdapterHasProblemDetailsFallback));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -115,6 +116,30 @@ class HexagonalArchitectureTest {
                         (Function<HexagonalArchitecture, ArchRule>)
                                 HexagonalArchitecture::jpaMappingsOnlyInPersistenceAdapter,
                         List.of("OutboxRecord", "AuditStamp", "BaseRecord")));
+    }
+
+    @Test
+    void fallbackDeclaredThroughTheHandlerParameterCounts() {
+        String base = FIXTURES + "fallbackbyparameter";
+
+        assertThat(HexagonalArchitecture.of(base)
+                        .webAdapterHasProblemDetailsFallback()
+                        .evaluate(importPackage(base))
+                        .hasViolation())
+                .isFalse();
+    }
+
+    @Test
+    void missingFallbackIsReportedWithTheReason() {
+        String base = FIXTURES + "nofallbackhandler";
+
+        String report = HexagonalArchitecture.of(base)
+                .webAdapterHasProblemDetailsFallback()
+                .evaluate(importPackage(base))
+                .getFailureReport()
+                .toString();
+
+        assertThat(report).contains("no @RestControllerAdvice with @ExceptionHandler(Exception.class)");
     }
 
     @Test

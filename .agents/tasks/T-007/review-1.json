@@ -14,6 +14,6 @@
     {"id": "B6", "status": "met", "evidence": "Fixtures per rule; compliantServicePassesEveryRule and emptyServicePassesEveryRule; build log 113/113 pass; java-hexagonal checklist updated"}
   ],
   "findings": [
-    {"severity": "nit", "category": "testing", "file": "architecture-rules/src/test/java/com/ledgerflow/architecture/HexagonalArchitectureTest.java", "line": null, "description": "ruleDetectsItsViolation for webmodelleak and exceptionoutsidebase only asserts that some violation exists, not the offending class; the valid fixture does not exercise Jakarta @Transactional on a service.", "suggestion": "Optionally assert offender names as in the enumerated cases.", "rule": "skill java-testing"}
+    {"severity": "nit", "category": "testing", "defect_type": "untested-enumerated-case", "file": "architecture-rules/src/test/java/com/ledgerflow/architecture/HexagonalArchitectureTest.java", "line": null, "description": "ruleDetectsItsViolation for webmodelleak and exceptionoutsidebase only asserts that some violation exists, not the offending class; the valid fixture does not exercise Jakarta @Transactional on a service.", "suggestion": "Optionally assert offender names as in the enumerated cases.", "rule": "skill java-testing"}
   ]
 }

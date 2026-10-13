@@ -2,7 +2,7 @@
 name: status
 description: Show a compact LedgerFlow status - phase, tasks by state, current branch, latest review, open PR checks.
 disable-model-invocation: true
-allowed-tools: Read, Bash(git status:*), Bash(git branch:*), Bash(git log:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh pr view:*)
+allowed-tools: Read, Bash(git status:*), Bash(git branch:*), Bash(git log:*), Bash(gh pr list:*), Bash(gh pr checks:*), Bash(gh pr view:*), Bash(scripts/check-task-sync.sh), Bash(scripts/review-defects.sh)
 ---
 
 # /status
@@ -19,6 +19,13 @@ Gather:
    counts; `logs/test-summary.json` status if present.
 5. Open PRs: `gh pr list --state open` and `gh pr checks <n>` for each.
 6. Last 3 lines of `.agents/progress.md`.
+7. `scripts/check-task-sync.sh` — tasks.json vs GitHub (title, milestone,
+   state, `Depends on`).
+8. `scripts/review-defects.sh` — defect types seen in 2+ tasks without a rule.
 
 Output: a short header line (phase, branch), a task table, then one line with
 the suggested next action (e.g. "`/next-task T-004`" or "merge PR #12").
+If the sync check reports drift, add a "Discrepancias" line per item (task,
+field, both values) and say which side owns the field; do not fix it here.
+If the defects report has `alerts`, add a "Regla de crecimiento" line per
+defect type with its tasks.

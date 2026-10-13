@@ -62,6 +62,11 @@ PR comment → user merges → `done`.
 
 - I am the **single writer** of `.agents/tasks.json` (edit field by field,
   never regenerate) and `.agents/progress.md` (append-only).
+- **Source of truth:** `tasks.json` owns working state (`todo`,
+  `in_progress`, `in_review`, `blocked`), dependencies and ACs; GitHub owns
+  `done` (a task is done only when its PR is merged). Issues mirror
+  `tasks.json`; `scripts/check-task-sync.sh` reports any drift, and `/status`
+  runs it.
 - Subagents write only inside `.agents/tasks/<id>/` and return compact JSON
   plus paths.
 - Contracts: test summary JSON (header of `scripts/test-summary.sh`),
@@ -97,8 +102,10 @@ PR comment → user merges → `done`.
 
 Add agent infrastructure only when a trigger fires; propose it, do not just add it.
 
-- **Growth rule:** when the evaluator flags the same defect type in two tasks,
-  propose a skill rule, or an ArchUnit test if it is machine-checkable.
+- **Growth rule:** when the evaluator flags the same `defect_type` in two
+  tasks, propose a skill rule, an ArchUnit test if it is machine-checkable, or
+  an evaluator check. `scripts/review-defects.sh` detects it (alerts for types
+  missing from `.agents/growth-rules.json`); `/next-task` and `/status` run it.
 - `code-explorer` subagent (Haiku, read-only): when code exceeds ~4–5
   modules/use cases.
 - `kafka-events` skill: first use case that publishes/consumes events (Phase 7).

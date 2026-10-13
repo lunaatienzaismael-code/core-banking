@@ -11,6 +11,6 @@
     {"id": "B3", "status": "met", "evidence": ".claude/agents/evaluator.md rule 4 lists the skill; CLAUDE.md lists it under Skills and removes it from the Growth list."}
   ],
   "findings": [
-    {"severity": "nit", "category": "docs", "file": ".claude/skills/persistence-postgres-liquibase/SKILL.md", "line": 44, "description": "JPA rule 2 (@Version on updated aggregates, retries in the application service) is stated as practice, but no existing code updates an Account or retries yet; it is backed by ADR 0002/0004 and the entity's @Version only.", "suggestion": "Optional: note it is the ADR rule, not yet exercised.", "rule": "brief: no aspirational rules"}
+    {"severity": "nit", "category": "docs", "defect_type": "unbacked-doc-claim", "file": ".claude/skills/persistence-postgres-liquibase/SKILL.md", "line": 44, "description": "JPA rule 2 (@Version on updated aggregates, retries in the application service) is stated as practice, but no existing code updates an Account or retries yet; it is backed by ADR 0002/0004 and the entity's @Version only.", "suggestion": "Optional: note it is the ADR rule, not yet exercised.", "rule": "brief: no aspirational rules"}
   ]
 }

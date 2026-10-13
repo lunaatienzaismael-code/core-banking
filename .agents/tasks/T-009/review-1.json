@@ -12,6 +12,6 @@
     {"id": "B4", "status": "met", "evidence": "docs/adr/0003-testing-strategy.md: ratchet rule bullet, property locations, and Threshold history table with dated rows."}
   ],
   "findings": [
-    {"severity": "nit", "category": "docs", "file": "docs/adr/0003-testing-strategy.md", "line": null, "description": "The ADR says thresholds apply per module and excludes only bootstrap and generated code; accurate, but the 2026-10-12 history row date is inferred and not verifiable from the diff.", "suggestion": "Confirm the date against git log if it matters."}
+    {"severity": "nit", "category": "docs", "defect_type": "unbacked-doc-claim", "file": "docs/adr/0003-testing-strategy.md", "line": null, "description": "The ADR says thresholds apply per module and excludes only bootstrap and generated code; accurate, but the 2026-10-12 history row date is inferred and not verifiable from the diff.", "suggestion": "Confirm the date against git log if it matters."}
   ]
 }

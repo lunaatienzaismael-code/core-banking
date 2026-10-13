@@ -9,7 +9,7 @@
   {"id":"B5","status":"met","evidence":"AccountTest#debitNormalAccountReportsTheNetOfItsPostings, creditNormalAccountReportsTheNegatedNetOfItsPostings, accountWithoutPostingsHasZeroBalance, rejectsANetInAnotherCurrency, balanceOfPostingLinesSumsDebitsMinusCreditsFromTheNormalSide, balanceOfFailsLoudlyWhenTheSumOverflows"}
  ],
  "findings":[
-  {"severity":"minor","category":"testing","file":"ledger-service/src/test/java/com/ledgerflow/ledger/domain/MoneyTest.java","line":null,"description":"Null currency code (Money.of(1, null)) is not tested; it throws NullPointerException while other bad codes throw InvalidCurrencyException. Inconsistent and unproven.","suggestion":"Decide the exception for a null code and add a test."},
-  {"severity":"minor","category":"testing","file":"ledger-service/src/test/java/com/ledgerflow/ledger/domain/AccountTest.java","line":null,"description":"Credit-normal balanceFromNet with Long.MIN_VALUE (negate overflow) is not tested at Account level, only at Money level.","suggestion":"Add a test asserting ArithmeticException."}
+  {"severity":"minor","category":"testing","defect_type": "untested-enumerated-case","file":"ledger-service/src/test/java/com/ledgerflow/ledger/domain/MoneyTest.java","line":null,"description":"Null currency code (Money.of(1, null)) is not tested; it throws NullPointerException while other bad codes throw InvalidCurrencyException. Inconsistent and unproven.","suggestion":"Decide the exception for a null code and add a test."},
+  {"severity":"minor","category":"testing","defect_type": "money-edge-wrong-layer","file":"ledger-service/src/test/java/com/ledgerflow/ledger/domain/AccountTest.java","line":null,"description":"Credit-normal balanceFromNet with Long.MIN_VALUE (negate overflow) is not tested at Account level, only at Money level.","suggestion":"Add a test asserting ArithmeticException."}
  ]
 }
