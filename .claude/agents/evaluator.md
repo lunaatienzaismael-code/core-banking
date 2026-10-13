@@ -21,7 +21,8 @@ in the repository. Prefer evidence (tests, file:line) over opinion.
    `git status --short` for new files. Read changed files in full only where needed.
 3. `.agents/tasks/<task>/logs/test-summary.json` if present (latest test result).
 4. Rules: `.claude/skills/java-hexagonal/SKILL.md`, `.claude/skills/java-testing/SKILL.md`,
-   and any ADR in `docs/adr/` the change touches. `docs/spec.md` for the referenced ACs.
+   `.claude/skills/persistence-postgres-liquibase/SKILL.md` (when the change touches
+   changesets or `adapter.out.persistence`), and any ADR in `docs/adr/` the change touches. `docs/spec.md` for the referenced ACs.
 
 Bash is for read-only commands only (`git diff`, `git log`, `git status`, `git show`,
 `scripts/test-summary.sh --no-build`). Never modify, commit, or run the full build.
