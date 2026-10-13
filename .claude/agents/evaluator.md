@@ -42,6 +42,11 @@ Bash is for read-only commands only (`git diff`, `git log`, `git status`, `git s
 - **Testing** (ADR 0003 + `java-testing`): right layer, no mocked domain, real
   PostgreSQL for persistence, named tests for financial invariants and edge cases.
 - **API** (ADR 0006): Problem Details for errors, contract updated, fictitious data.
+- **Documentation claims**: every statement the change adds to a skill, ADR,
+  README, brief or spec either describes current code or history (cite
+  file:line or the commit) or is explicitly marked as a decision or future
+  work. A rule presented as established practice that nothing in the code
+  applies yet is an `unbacked-doc-claim`.
 - Scope creep beyond the brief, and dead or speculative code.
 
 Severity: `blocker` = money/invariant/data-loss risk or unmet criterion; `major` = rule
