@@ -54,8 +54,12 @@ Mutation testing on demand: see README.
 
 ## Reference examples
 
-<!-- Filled in Phase 4 with paths to real tests from the first vertical (UC1). -->
+Real UC1 tests (`ledger-service`), one per test kind:
 
-- Integration test base: `ledger-service/src/test/java/com/ledgerflow/ledger/LedgerServiceApplicationIT.java`
-- Testcontainers config: `ledger-service/src/test/java/com/ledgerflow/ledger/TestcontainersConfiguration.java`
-- Architecture test: `ledger-service/src/test/java/com/ledgerflow/ledger/HexagonalArchitectureTest.java`
+- Domain unit: `ledger-service/src/test/java/com/ledgerflow/ledger/domain/MoneyTest.java` — money edges and overflow; `ledger-service/src/test/java/com/ledgerflow/ledger/domain/AccountTest.java` for balance per normal side.
+- Service with mocked ports: `ledger-service/src/test/java/com/ledgerflow/ledger/application/service/OpenAccountServiceTest.java` — Mockito on the outbound port only.
+- `@WebMvcTest` slice: `ledger-service/src/test/java/com/ledgerflow/ledger/adapter/in/web/AccountControllerTest.java` — use case mocked, Problem Details asserted.
+- Adapter IT: `ledger-service/src/test/java/com/ledgerflow/ledger/adapter/out/persistence/PostingPersistenceAdapterIT.java` — real PostgreSQL, owns its data.
+- HTTP end-to-end IT with fixture: `ledger-service/src/test/java/com/ledgerflow/ledger/AccountBalanceIT.java` — `RANDOM_PORT`, `@DisplayName("AC1.2 …")` traceability.
+- Fixture: `ledger-service/src/test/java/com/ledgerflow/ledger/LedgerFixture.java` — inserts balanced postings until UC2 provides the write side.
+- ArchUnit: `ledger-service/src/test/java/com/ledgerflow/ledger/HexagonalArchitectureTest.java`; Testcontainers config: `ledger-service/src/test/java/com/ledgerflow/ledger/TestcontainersConfiguration.java`.

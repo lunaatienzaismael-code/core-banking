@@ -61,6 +61,15 @@ this skill covers what ArchUnit cannot see.
 
 ## Reference examples
 
-<!-- Filled in Phase 4 with paths to real code from the first vertical (UC1). -->
+Real UC1 code (`ledger-service`), one per row of the placement table:
 
+- Domain record: `ledger-service/src/main/java/com/ledgerflow/ledger/domain/Money.java` — invariants in the compact constructor, `*Exact` arithmetic, currency checks.
+- Domain aggregate + exception: `ledger-service/src/main/java/com/ledgerflow/ledger/domain/Account.java`, `ledger-service/src/main/java/com/ledgerflow/ledger/domain/DomainException.java` — balance from the normal side; exception hierarchy root.
+- Use case + command/view: `ledger-service/src/main/java/com/ledgerflow/ledger/application/port/in/OpenAccountUseCase.java`, `ledger-service/src/main/java/com/ledgerflow/ledger/application/port/in/OpenAccountCommand.java`, `ledger-service/src/main/java/com/ledgerflow/ledger/application/port/in/AccountView.java` — one use case per interface, records in and out.
+- Outbound port: `ledger-service/src/main/java/com/ledgerflow/ledger/application/port/out/AccountRepository.java` — speaks domain types only.
+- Service: `ledger-service/src/main/java/com/ledgerflow/ledger/application/service/OpenAccountService.java` — `@Service`, constructor injection, `@Transactional` boundary.
+- Web controller + mapper: `ledger-service/src/main/java/com/ledgerflow/ledger/adapter/in/web/AccountController.java`, `ledger-service/src/main/java/com/ledgerflow/ledger/adapter/in/web/AccountWebMapper.java` — implements the generated OpenAPI interface, injects `*UseCase` only.
+- Problem Details handler: `ledger-service/src/main/java/com/ledgerflow/ledger/adapter/in/web/ProblemDetailsHandler.java` — domain exceptions → RFC 9457, plus the 500 fallback.
+- JPA entity + adapter + mapper: `ledger-service/src/main/java/com/ledgerflow/ledger/adapter/out/persistence/AccountEntity.java`, `ledger-service/src/main/java/com/ledgerflow/ledger/adapter/out/persistence/AccountPersistenceAdapter.java`, `ledger-service/src/main/java/com/ledgerflow/ledger/adapter/out/persistence/AccountPersistenceMapper.java` — `CHAR` columns with `@JdbcTypeCode`, explicit mapping both ways.
+- SQL read adapter: `ledger-service/src/main/java/com/ledgerflow/ledger/adapter/out/persistence/PostingPersistenceAdapter.java` — `JdbcClient` for aggregate reads where JPA adds nothing.
 - Valid layout fixture: `architecture-rules/src/test/java/com/ledgerflow/architecture/fixture/valid/`
