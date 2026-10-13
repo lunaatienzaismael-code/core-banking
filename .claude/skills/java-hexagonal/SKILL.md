@@ -60,7 +60,9 @@ this skill covers what ArchUnit cannot see.
 - [ ] `HexagonalArchitectureTest` green. Besides dependencies it checks: no
       floating point in `domain`/`application`, web DTOs only in the web
       adapter, `@Transactional` only in `application.service`, domain
-      exceptions extend `DomainException`, JPA mappings only in persistence.
+      exceptions extend `DomainException`, JPA mappings only in persistence,
+      and a `@RestControllerAdvice` with `@ExceptionHandler(Exception.class)`
+      in every web adapter.
 
 ## Reference examples
 
