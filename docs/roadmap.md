@@ -32,7 +32,7 @@ starts.
   - [x] Seed skills: `java-hexagonal`, `java-testing`, `task-planning`
   - [x] Commands: `/plan-feature`, `/next-task`, `/status` (user-invoked skills)
 
-- [ ] **Phase 3 — First vertical (UC1)**: open account, query balance and
+- [x] **Phase 3 — First vertical (UC1)**: open account, query balance and
       movements, end to end across all layers with tests. Reference implementation.
 
 - [ ] **Phase 4 — Extract conventions from real code**

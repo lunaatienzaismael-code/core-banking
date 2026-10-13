@@ -25,3 +25,10 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-12 · T-004 · done · PR #13 merged
 2026-10-12 · T-005 · started · feat/T-005-account-movements-endpoint
 2026-10-12 · T-005 · reviewed · round 1 approve (0 blockers, 0 majors, 0 minors)
+2026-10-12 · T-005 · in_review · PR #14
+2026-10-12 · T-005 · done · PR #14 merged
+2026-10-12 · phase 3 · done · milestone closed (UC1: T-001..T-005)
+2026-10-12 · phase 3 · approved by user
+2026-10-12 · phase 4 · planned · conventions → T-006..T-009
+2026-10-13 · T-006 · started · chore/T-006-skills-reference-examples (issue #15)
+2026-10-13 · T-006 · reviewed · round 1 approve (0 blockers, 0 majors, 0 minors)

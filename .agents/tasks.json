@@ -63,13 +63,66 @@
       "phase": 3,
       "use_case": "UC1",
       "type": "feat",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-004"],
       "acceptance_criteria": ["AC1.3"],
       "issue": 9,
       "branch": "feat/T-005-account-movements-endpoint",
+      "pr": 14,
+      "review_rounds": 1
+    },
+    {
+      "id": "T-006",
+      "title": "Skills reference UC1 code; evaluator verdict on the PR",
+      "phase": 4,
+      "use_case": null,
+      "type": "chore",
+      "status": "in_progress",
+      "depends_on": [],
+      "acceptance_criteria": [],
+      "issue": 15,
+      "branch": "chore/T-006-skills-reference-examples",
       "pr": null,
       "review_rounds": 1
+    },
+    {
+      "id": "T-007",
+      "title": "ArchUnit rules extracted from UC1",
+      "phase": 4,
+      "use_case": null,
+      "type": "test",
+      "status": "todo",
+      "depends_on": [],
+      "acceptance_criteria": [],
+      "issue": 16,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "id": "T-008",
+      "title": "Skill persistence-postgres-liquibase",
+      "phase": 4,
+      "use_case": null,
+      "type": "chore",
+      "status": "todo",
+      "depends_on": ["T-006"],
+      "acceptance_criteria": [],
+      "issue": 17,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "id": "T-009",
+      "title": "Raise JaCoCo thresholds to real coverage",
+      "phase": 4,
+      "use_case": null,
+      "type": "build",
+      "status": "todo",
+      "depends_on": ["T-007"],
+      "acceptance_criteria": [],
+      "issue": 18,
+      "branch": null,
+      "pr": null
     }
   ]
 }
