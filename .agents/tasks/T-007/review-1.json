@@ -1,0 +1,19 @@
+{
+  "task_id": "T-007",
+  "round": 1,
+  "base": "970f8d3f6658e24a0626cf2154686537eae0e4f8",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Five rules added to HexagonalArchitecture and wired into rules(), each with a violating fixture and a ruleDetectsItsViolation case; enumerated cases (fields, params, returns, arrays, Spring/Jakarta, class/method, three JPA annotations) and the missing-base case are asserted by name. Compliant and empty fixtures pass; build 113/113.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "HexagonalArchitectureTest#ruleDetectsItsViolation[floatingpoint] and ruleReportsEveryCaseItEnumerates[floatingpoint] (field, array, param, return, constructor param)"},
+    {"id": "B2", "status": "met", "evidence": "ruleDetectsItsViolation[webmodelleak]; valid fixture controller uses model DTO and passes"},
+    {"id": "B3", "status": "met", "evidence": "ruleReportsEveryCaseItEnumerates[transactionaloutsideservice] covers Spring/Jakarta on class and method; valid service keeps @Transactional"},
+    {"id": "B4", "status": "met", "evidence": "ruleDetectsItsViolation[exceptionoutsidebase]; missingDomainExceptionBaseIsReportedRatherThanPassingVacuously"},
+    {"id": "B5", "status": "met", "evidence": "ruleReportsEveryCaseItEnumerates[entityoutsidepersistence] covers Entity, Embeddable, MappedSuperclass in other adapter/config/domain"},
+    {"id": "B6", "status": "met", "evidence": "Fixtures per rule; compliantServicePassesEveryRule and emptyServicePassesEveryRule; build log 113/113 pass; java-hexagonal checklist updated"}
+  ],
+  "findings": [
+    {"severity": "nit", "category": "testing", "file": "architecture-rules/src/test/java/com/ledgerflow/architecture/HexagonalArchitectureTest.java", "line": null, "description": "ruleDetectsItsViolation for webmodelleak and exceptionoutsidebase only asserts that some violation exists, not the offending class; the valid fixture does not exercise Jakarta @Transactional on a service.", "suggestion": "Optionally assert offender names as in the enumerated cases.", "rule": "skill java-testing"}
+  ]
+}
