@@ -62,6 +62,11 @@ PR comment → user merges → `done`.
 
 - I am the **single writer** of `.agents/tasks.json` (edit field by field,
   never regenerate) and `.agents/progress.md` (append-only).
+- **Source of truth:** `tasks.json` owns working state (`todo`,
+  `in_progress`, `in_review`, `blocked`), dependencies and ACs; GitHub owns
+  `done` (a task is done only when its PR is merged). Issues mirror
+  `tasks.json`; `scripts/check-task-sync.sh` reports any drift, and `/status`
+  runs it.
 - Subagents write only inside `.agents/tasks/<id>/` and return compact JSON
   plus paths.
 - Contracts: test summary JSON (header of `scripts/test-summary.sh`),

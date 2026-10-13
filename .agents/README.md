@@ -19,5 +19,10 @@ Rules:
 - Task ids (`T-001`, …) are stable and never reused.
 - Status flow: `todo → in_progress → in_review → done`, or `blocked` with a
   `blocked_reason`.
+- Source of truth: `tasks.json` owns working state, `depends_on` and
+  `acceptance_criteria`; GitHub owns `done` (merged PR). Each issue mirrors
+  its task: title `T-xxx — <title>`, the phase milestone, open/closed state and
+  a `Depends on: …` footer. `scripts/check-task-sync.sh` compares both sides
+  and prints JSON; fix drift on the side that does not own the field.
 - The test summary format is the contract in the header of
   `scripts/test-summary.sh`.
