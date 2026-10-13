@@ -47,6 +47,13 @@ A test pyramid with three deterministic layers:
 - **JaCoCo** enforces a minimum line/branch threshold. It starts deliberately
   low and is **ratcheted up to the real achieved coverage** at the end of each
   feature phase so it can only go up, never down.
+  - **Ratchet rule:** raise the thresholds when real coverage stays
+    comfortably above them, keeping a few points of headroom so small,
+    unrelated PRs do not fail on rounding. Never lower them, nor add a
+    JaCoCo exclusion to meet them, without a dated note below.
+  - Thresholds live in the parent `pom.xml` (`jacoco.minimum.line`,
+    `jacoco.minimum.branch`) and apply per module; only bootstrap
+    (`*Application`) and generated OpenAPI code are excluded.
 - **PIT** mutation testing is configured but run **on demand**, not in the
   default CI path, to keep CI fast.
 
@@ -57,3 +64,10 @@ A test pyramid with three deterministic layers:
 - The ratcheting JaCoCo threshold means a PR cannot silently reduce coverage.
 - The `java-testing` skill encodes what to test at each layer and what not to
   mock.
+
+## Threshold history
+
+| Date | Line | Branch | Measured | Note |
+|------|------|--------|----------|------|
+| 2026-10-12 | 0.30 | — | — | Initial, before any feature code (`c3a4026`). |
+| 2026-10-13 | 0.90 | 0.75 | `ledger-service` line 96.5 %, branch 83.3 %; `architecture-rules` 100 % / 100 % | End of UC1 (Phase 4, T-009). |
