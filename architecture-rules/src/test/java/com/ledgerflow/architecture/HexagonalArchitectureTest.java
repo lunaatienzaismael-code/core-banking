@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.lang.ArchRule;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,75 @@ class HexagonalArchitectureTest {
                 violation("inboundtooutbound", HexagonalArchitecture::inboundAdaptersDoNotDependOnOutboundAdapters),
                 violation("outboundtoinbound", HexagonalArchitecture::outboundAdaptersDoNotDependOnInboundAdapters),
                 violation("adapterstoadapters", HexagonalArchitecture::adaptersAreIndependentOfEachOther),
-                violation("cycle", HexagonalArchitecture::topLevelPackagesAreFreeOfCycles));
+                violation("cycle", HexagonalArchitecture::topLevelPackagesAreFreeOfCycles),
+                violation("floatingpoint", HexagonalArchitecture::coreHasNoFloatingPoint),
+                violation("webmodelleak", HexagonalArchitecture::webModelStaysInTheWebAdapter),
+                violation("transactionaloutsideservice", HexagonalArchitecture::transactionsOnlyOnApplicationServices),
+                violation("nodomainexceptionbase", HexagonalArchitecture::domainExceptionsShareOneBase),
+                violation("exceptionoutsidebase", HexagonalArchitecture::domainExceptionsShareOneBase),
+                violation("entityoutsidepersistence", HexagonalArchitecture::jpaMappingsOnlyInPersistenceAdapter));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("enumeratedCases")
+    void ruleReportsEveryCaseItEnumerates(
+            String fixture, Function<HexagonalArchitecture, ArchRule> rule, List<String> offenders) {
+        String base = FIXTURES + fixture;
+
+        String report = rule.apply(HexagonalArchitecture.of(base))
+                .evaluate(importPackage(base))
+                .getFailureReport()
+                .toString();
+
+        assertThat(report).contains(offenders);
+    }
+
+    static Stream<Arguments> enumeratedCases() {
+        return Stream.of(
+                Arguments.of(
+                        "floatingpoint",
+                        (Function<HexagonalArchitecture, ArchRule>) HexagonalArchitecture::coreHasNoFloatingPoint,
+                        List.of(
+                                "DoubleField.amount uses double",
+                                "DoubleArrayField.amounts uses double",
+                                "FloatParameter.scale(float) uses float",
+                                "BoxedDoubleReturn.rate() uses java.lang.Double",
+                                "BoxedFloatConstructorParameter.<init>(java.lang.Float) uses java.lang.Float")),
+                Arguments.of(
+                        "webmodelleak",
+                        (Function<HexagonalArchitecture, ArchRule>) HexagonalArchitecture::webModelStaysInTheWebAdapter,
+                        List.of("webmodelleak.config.Settings")),
+                Arguments.of(
+                        "exceptionoutsidebase",
+                        (Function<HexagonalArchitecture, ArchRule>) HexagonalArchitecture::domainExceptionsShareOneBase,
+                        List.of("InsufficientFundsException does not extend")),
+                Arguments.of(
+                        "transactionaloutsideservice",
+                        (Function<HexagonalArchitecture, ArchRule>)
+                                HexagonalArchitecture::transactionsOnlyOnApplicationServices,
+                        List.of(
+                                "SpringOnClass",
+                                "SpringOnMethod.handle()",
+                                "JakartaOnClass",
+                                "JakartaOnMethod.execute()")),
+                Arguments.of(
+                        "entityoutsidepersistence",
+                        (Function<HexagonalArchitecture, ArchRule>)
+                                HexagonalArchitecture::jpaMappingsOnlyInPersistenceAdapter,
+                        List.of("OutboxRecord", "AuditStamp", "BaseRecord")));
+    }
+
+    @Test
+    void missingDomainExceptionBaseIsReportedRatherThanPassingVacuously() {
+        String base = FIXTURES + "nodomainexceptionbase";
+
+        String report = HexagonalArchitecture.of(base)
+                .domainExceptionsShareOneBase()
+                .evaluate(importPackage(base))
+                .getFailureReport()
+                .toString();
+
+        assertThat(report).contains("has no base to extend: declare " + base + ".domain.DomainException");
     }
 
     private static Arguments violation(String fixture, Function<HexagonalArchitecture, ArchRule> rule) {

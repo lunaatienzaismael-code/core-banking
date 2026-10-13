@@ -2,13 +2,24 @@ package com.ledgerflow.architecture;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaAnnotation;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.domain.JavaCodeUnit;
+import com.tngtech.archunit.core.domain.JavaField;
+import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.CompositeArchRule;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Dependency rules of ADR 0002 for one service, expressed once and reused by every service module.
@@ -17,9 +28,20 @@ import java.util.Objects;
  * {@code application.port.out}, {@code application.service}, {@code adapter.in.*}, {@code adapter.out.*}
  * and {@code config}.
  *
+ * <p>Beyond dependencies, it also checks the conventions of ADR 0002 and ADR 0004 that ArchUnit can see: no floating
+ * point in the core, generated web DTOs kept in the web adapter, transactions on use cases only, one domain exception
+ * base and JPA mappings in the persistence adapter.
+ *
  * <p>Every rule tolerates an empty layer, so a service can start with only some layers present.
  */
 public final class HexagonalArchitecture {
+
+    private static final Set<String> FLOATING_POINT =
+            Set.of(double.class.getName(), float.class.getName(), Double.class.getName(), Float.class.getName());
+    private static final List<String> TRANSACTIONAL =
+            List.of("org.springframework.transaction.annotation.Transactional", "jakarta.transaction.Transactional");
+    private static final List<String> JPA_MAPPINGS = List.of(
+            "jakarta.persistence.Entity", "jakarta.persistence.Embeddable", "jakarta.persistence.MappedSuperclass");
 
     private final String domain;
     private final String application;
@@ -28,6 +50,10 @@ public final class HexagonalArchitecture {
     private final String adapterIn;
     private final String adapterOut;
     private final String config;
+    private final String webAdapter;
+    private final String webModel;
+    private final String persistenceAdapter;
+    private final String domainExceptionBase;
     private final String basePackage;
 
     private HexagonalArchitecture(String basePackage) {
@@ -39,6 +65,10 @@ public final class HexagonalArchitecture {
         this.adapterIn = basePackage + ".adapter.in..";
         this.adapterOut = basePackage + ".adapter.out..";
         this.config = basePackage + ".config..";
+        this.webAdapter = basePackage + ".adapter.in.web..";
+        this.webModel = basePackage + ".adapter.in.web.model..";
+        this.persistenceAdapter = basePackage + ".adapter.out.persistence..";
+        this.domainExceptionBase = basePackage + ".domain.DomainException";
     }
 
     public static HexagonalArchitecture of(String basePackage) {
@@ -143,6 +173,114 @@ public final class HexagonalArchitecture {
                 .allowEmptyShould(true);
     }
 
+    /** ADR 0004: money is {@code long} minor units, so no floating point type appears in the core's signatures. */
+    public ArchRule coreHasNoFloatingPoint() {
+        return classes()
+                .that()
+                .resideInAnyPackage(domain, application)
+                .should(new ArchCondition<JavaClass>("not use double, float, Double or Float in fields or signatures") {
+                    @Override
+                    public void check(JavaClass javaClass, ConditionEvents events) {
+                        for (JavaField field : javaClass.getFields()) {
+                            reportFloatingPoint(field.getRawType(), field.getFullName(), events);
+                        }
+                        for (JavaCodeUnit codeUnit : javaClass.getCodeUnits()) {
+                            reportFloatingPoint(codeUnit.getRawReturnType(), codeUnit.getFullName(), events);
+                            codeUnit.getRawParameterTypes()
+                                    .forEach(type -> reportFloatingPoint(type, codeUnit.getFullName(), events));
+                        }
+                    }
+                })
+                .as("domain and application use no floating point types")
+                .allowEmptyShould(true);
+    }
+
+    private static void reportFloatingPoint(JavaClass type, String member, ConditionEvents events) {
+        String name = type.getBaseComponentType().getName();
+        if (FLOATING_POINT.contains(name)) {
+            events.add(SimpleConditionEvent.violated(member, member + " uses " + name));
+        }
+    }
+
+    /** Rule 6 and ADR 0008: the generated contract DTOs are used inside the web adapter only. */
+    public ArchRule webModelStaysInTheWebAdapter() {
+        return classes()
+                .that()
+                .resideInAPackage(webModel)
+                .should()
+                .onlyHaveDependentClassesThat()
+                .resideInAPackage(webAdapter)
+                .as("generated web DTOs are used only in the web adapter")
+                .allowEmptyShould(true);
+    }
+
+    /** Rule 4: use cases are the transaction boundary. */
+    public ArchRule transactionsOnlyOnApplicationServices() {
+        ArchRule rule = CompositeArchRule.of(noClasses()
+                        .that()
+                        .resideOutsideOfPackage(applicationService)
+                        .should()
+                        .beAnnotatedWith(anyOf(TRANSACTIONAL))
+                        .allowEmptyShould(true))
+                .and(noMethods()
+                        .that()
+                        .areDeclaredInClassesThat()
+                        .resideOutsideOfPackage(applicationService)
+                        .should()
+                        .beAnnotatedWith(anyOf(TRANSACTIONAL))
+                        .allowEmptyShould(true));
+        return rule.as("@Transactional appears only on application services").allowEmptyShould(true);
+    }
+
+    /** Rule 7: every domain exception extends the service's {@code domain.DomainException}. */
+    public ArchRule domainExceptionsShareOneBase() {
+        return classes()
+                .that()
+                .resideInAPackage(domain)
+                .and()
+                .areAssignableTo(Throwable.class)
+                .should(new ArchCondition<JavaClass>("extend " + domainExceptionBase) {
+                    private boolean baseExists;
+
+                    @Override
+                    public void init(Collection<JavaClass> allObjectsToTest) {
+                        baseExists = allObjectsToTest.stream()
+                                .anyMatch(javaClass -> javaClass.getName().equals(domainExceptionBase));
+                    }
+
+                    @Override
+                    public void check(JavaClass javaClass, ConditionEvents events) {
+                        if (!baseExists) {
+                            events.add(SimpleConditionEvent.violated(
+                                    javaClass,
+                                    javaClass.getName() + " has no base to extend: declare " + domainExceptionBase));
+                        } else if (!javaClass.isAssignableTo(domainExceptionBase)) {
+                            events.add(SimpleConditionEvent.violated(
+                                    javaClass, javaClass.getName() + " does not extend " + domainExceptionBase));
+                        }
+                    }
+                })
+                .as("domain exceptions extend " + domainExceptionBase)
+                .allowEmptyShould(true);
+    }
+
+    /** Rule 6: JPA mappings belong to the persistence adapter. */
+    public ArchRule jpaMappingsOnlyInPersistenceAdapter() {
+        return noClasses()
+                .that()
+                .resideOutsideOfPackage(persistenceAdapter)
+                .should()
+                .beAnnotatedWith(anyOf(JPA_MAPPINGS))
+                .as("@Entity, @Embeddable and @MappedSuperclass live only in the persistence adapter")
+                .allowEmptyShould(true);
+    }
+
+    private static DescribedPredicate<JavaAnnotation<?>> anyOf(List<String> annotations) {
+        return DescribedPredicate.describe(
+                "any of " + annotations,
+                annotation -> annotations.contains(annotation.getRawType().getName()));
+    }
+
     public List<ArchRule> rules() {
         return List.of(
                 domainDependsOnlyOnTheJdk(),
@@ -152,7 +290,12 @@ public final class HexagonalArchitecture {
                 inboundAdaptersDoNotDependOnOutboundAdapters(),
                 outboundAdaptersDoNotDependOnInboundAdapters(),
                 adaptersAreIndependentOfEachOther(),
-                topLevelPackagesAreFreeOfCycles());
+                topLevelPackagesAreFreeOfCycles(),
+                coreHasNoFloatingPoint(),
+                webModelStaysInTheWebAdapter(),
+                transactionsOnlyOnApplicationServices(),
+                domainExceptionsShareOneBase(),
+                jpaMappingsOnlyInPersistenceAdapter());
     }
 
     /** Checks every rule and reports all violations together. */
