@@ -16,9 +16,11 @@ Source of truth: `docs/spec.md` (use cases and acceptance criteria), ADR 0005
    observable and testable (domain rule + its port + adapter + tests), not
    "all the entities" then "all the controllers". The exception is the first
    task of a use case, which may lay down the domain model alone if it is big.
-3. **Size:** reviewable in one sitting — aim for ≤ ~400 changed lines
-   (excluding generated code), ≤ ~5 commits. Too big → split by AC or by
-   happy path / error paths.
+3. **Size:** reviewable in one sitting — aim for ≤ ~400 changed lines of
+   **production code** (Java under `src/main/java`, not generated), ≤ ~5 commits.
+   Tests, contract, changesets and bookkeeping are not counted; expect tests
+   about as large as the code (UC1: PRs of 563–855 lines in total, see
+   Reference examples). Too big → split by AC or by happy path / error paths.
 4. **Order by dependency**; record it in `depends_on`. Prefer orders that keep
    `main` releasable after every PR.
 5. Enabling work (migration, config, contract) is its own task only when it is
@@ -68,8 +70,8 @@ What it shows:
   endpoint, so T-005 had to repeat it for movements as brief-local B1. An AC
   that spans several endpoints is better split into per-endpoint B criteria
   when planning.
-- Rule 3 in practice: production code stayed within ~330 lines per PR, but
-  with tests, contract and bookkeeping the PRs were 563–855 lines; tests were
-  roughly as large as the code they prove.
+- Rule 3: production code stayed within ~330 lines per PR; with tests,
+  contract and bookkeeping the PRs were 563–855 lines, and all passed review
+  in one round. That is why the limit counts production code only.
 - Briefs: `.agents/tasks/T-001/brief.md` … `.agents/tasks/T-005/brief.md`;
   UC2's plan (T-010..T-016) follows the same shape.
