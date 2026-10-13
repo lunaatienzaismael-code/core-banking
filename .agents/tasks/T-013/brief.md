@@ -43,7 +43,8 @@ or nothing is.
 - Lines are converted to signed `PostingLine`s (debit +, credit −) by the web
   mapper; the domain `Transaction` (T-011) validates balance and currency.
 - Problem `type` URIs follow the UC1 handler; one handler per new exception.
-- If the size passes ~400 lines, split the 422 error paths into a follow-up.
+- If production code passes ~400 lines (task-planning rule 3), split the 422
+  error paths into a follow-up.
 
 ## Definition of done
 
