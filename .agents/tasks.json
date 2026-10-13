@@ -91,12 +91,12 @@
       "phase": 4,
       "use_case": null,
       "type": "test",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 16,
       "branch": "test/T-007-archunit-conventions",
-      "pr": null,
+      "pr": 20,
       "review_rounds": 1
     },
     {
@@ -105,12 +105,13 @@
       "phase": 4,
       "use_case": null,
       "type": "chore",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-006"],
       "acceptance_criteria": [],
       "issue": 17,
-      "branch": null,
-      "pr": null
+      "branch": "chore/T-008-persistence-skill",
+      "pr": null,
+      "review_rounds": 1
     },
     {
       "id": "T-009",

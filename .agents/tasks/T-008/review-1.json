@@ -1,0 +1,16 @@
+{
+  "task_id": "T-008",
+  "round": 1,
+  "base": "e960803",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "New persistence skill (74 lines) matches the changesets, application.yml, entity, adapters, ITs and fixture. Evaluator and CLAUDE.md updated as required. No code changes; build green 115/115.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "SKILL.md 74 lines with trigger description; Liquibase, JPA, JPA-vs-JdbcClient, money-in-SQL and tests sections each verified against 0001/0002 changesets, application.yml (validate, open-in-view false), AccountEntity (@Version, @JdbcTypeCode CHAR), PostingPersistenceAdapter (sum + longValueExact), ITs asserting ck_accounts_type, ck_postings_amount_non_zero, fk_postings_account_currency."},
+    {"id": "B2", "status": "met", "evidence": "Reference examples section; all listed paths exist (master changelog, both changesets, application.yml, AccountEntity, AccountPersistenceAdapter/Mapper, PostingPersistenceAdapter, both ITs, LedgerFixture)."},
+    {"id": "B3", "status": "met", "evidence": ".claude/agents/evaluator.md rule 4 lists the skill; CLAUDE.md lists it under Skills and removes it from the Growth list."}
+  ],
+  "findings": [
+    {"severity": "nit", "category": "docs", "file": ".claude/skills/persistence-postgres-liquibase/SKILL.md", "line": 44, "description": "JPA rule 2 (@Version on updated aggregates, retries in the application service) is stated as practice, but no existing code updates an Account or retries yet; it is backed by ADR 0002/0004 and the entity's @Version only.", "suggestion": "Optional: note it is the ADR rule, not yet exercised.", "rule": "brief: no aspirational rules"}
+  ]
+}
