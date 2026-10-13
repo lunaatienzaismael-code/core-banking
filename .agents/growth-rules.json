@@ -1,0 +1,7 @@
+{
+  "description": "Defect types already turned into a deterministic or written rule (growth rule, CLAUDE.md). scripts/review-defects.sh alerts on any defect_type seen in 2+ tasks that is not listed here.",
+  "rules": {
+    "untested-enumerated-case": "skill java-testing rule 11 (T-006)",
+    "money-edge-wrong-layer": "skill java-testing rule 11 (T-006)"
+  }
+}

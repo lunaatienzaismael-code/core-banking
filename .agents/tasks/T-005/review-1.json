@@ -14,6 +14,7 @@
     {
       "severity": "nit",
       "category": "testing",
+      "defect_type": "naming-convention",
       "file": "ledger-service/src/test/java/com/ledgerflow/ledger/AccountMovementsIT.java",
       "line": null,
       "description": "Tests use @DisplayName with AC ids while the brief asks for tests named after the behaviour; method names are behavioural so this is acceptable. Tie-break by posting id is only proven at adapter level, not end to end.",

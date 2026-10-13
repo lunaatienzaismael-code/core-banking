@@ -51,3 +51,4 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-13 · phase 4 · closed · milestone #4 closed, tag v0.1.0 on a1ded52
 2026-10-13 · phase 5 · planned · UC2 → T-010..T-015 (balance: materialised counters + atomic conditional update)
 2026-10-13 · phase 5 · planned · T-016 PIT gate added (baseline 36/41, 88 %; 1 real survivor Money.isPositive); T-011 now depends on T-016
+2026-10-13 · methodology · review findings gain defect_type; 13 historic findings classified; alerts: indirect-test, unmapped-error, unbacked-doc-claim
