@@ -119,12 +119,12 @@
       "phase": 4,
       "use_case": null,
       "type": "build",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-007"],
       "acceptance_criteria": [],
       "issue": 18,
       "branch": "build/T-009-jacoco-thresholds",
-      "pr": null,
+      "pr": 22,
       "review_rounds": 1
     }
   ]

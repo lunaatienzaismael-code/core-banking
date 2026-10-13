@@ -35,12 +35,12 @@ starts.
 - [x] **Phase 3 — First vertical (UC1)**: open account, query balance and
       movements, end to end across all layers with tests. Reference implementation.
 
-- [ ] **Phase 4 — Extract conventions from real code**
-  - [ ] Fill skills' "Reference examples" with paths to real code
-  - [ ] Propose new rules (skill vs ArchUnit)
-  - [ ] New skill `persistence-postgres-liquibase`
-  - [ ] Raise JaCoCo threshold to real coverage
-  - [ ] Close milestone, tag `v0.1.0`
+- [x] **Phase 4 — Extract conventions from real code**
+  - [x] Fill skills' "Reference examples" with paths to real code
+  - [x] Propose new rules (skill vs ArchUnit)
+  - [x] New skill `persistence-postgres-liquibase`
+  - [x] Raise JaCoCo threshold to real coverage
+  - [x] Close milestone, tag `v0.1.0`
 
 - [ ] **Phase 5 — Full ledger (UC2)**: double-entry transactions, domain
       invariants, optimistic locking, concurrent-postings Testcontainers test.

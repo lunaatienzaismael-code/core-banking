@@ -44,3 +44,7 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-13 · T-008 · done · PR #21 merged
 2026-10-13 · T-009 · started · build/T-009-jacoco-thresholds (issue #18)
 2026-10-13 · T-009 · reviewed · round 1 approve (0 blockers, 0 majors, 0 minors)
+2026-10-13 · T-009 · in_review · PR #22
+2026-10-13 · T-009 · done · PR #22 merged
+2026-10-13 · phase 4 · done · T-006..T-009 merged (PRs #19–#22)
+2026-10-13 · phase 4 · approved by user · close milestone #4, tag v0.1.0
