@@ -34,6 +34,10 @@ constrained account, and leave counters equal to the postings.
 
 - Make N large enough to contend (e.g. 50) while keeping the IT under a few
   seconds.
+- The constrained customer account is created with
+  `LedgerFixture.account(currency, type, NOT_ALLOWED)` (added in T-014, B4)
+  and funded before the run, so its counters reflect the opening funds
+  (fixture transfer from T-012, or `POST /transactions`).
 
 ## Definition of done
 

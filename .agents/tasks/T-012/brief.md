@@ -31,7 +31,9 @@ Accounts carry `debits_posted` / `credits_posted` counters (ADR 0009) and
 - In: changeset, `adapter.out.persistence`, `application.port.out`,
   `GetAccountBalanceService`, `LedgerFixture`, `AccountBalanceIT`,
   `persistence-postgres-liquibase` skill (Liquibase rule 5 and examples now
-  describe counters instead of "no stored balances").
+  describe counters instead of "no stored balances"), and the evaluator's
+  "Ledger invariants" check in `.claude/agents/evaluator.md`, which still says
+  "balance is derived from postings".
 - Out: writing counters from a use case (T-013); overdraft guard and its
   `CHECK` (T-014).
 
