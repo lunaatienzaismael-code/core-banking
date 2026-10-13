@@ -49,6 +49,13 @@ ArchUnit rule, it is one.
     value, each boundary), each one gets its own test case, not a sample. Every
     money edge (zero, overflow, `Long.MIN_VALUE` negation, currency mismatch)
     is tested at the layer that does the arithmetic, not only in `Money`.
+12. **Prove a criterion at the boundary that owns it.** An HTTP criterion is
+    proven over HTTP (status, `application/problem+json`, body), and when it
+    promises persistence the test reads back what was stored; a lower-layer
+    test does not count as proof. A contract criterion is proven against the
+    contract (the generated interface or the OpenAPI file), never against a
+    hand-built model object. Every web adapter has a test that an unexpected
+    exception becomes a 500 Problem Details without internals.
 
 ## Running
 
