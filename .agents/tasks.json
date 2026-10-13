@@ -77,12 +77,12 @@
       "phase": 4,
       "use_case": null,
       "type": "chore",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 15,
       "branch": "chore/T-006-skills-reference-examples",
-      "pr": null,
+      "pr": 19,
       "review_rounds": 1
     },
     {
@@ -91,12 +91,13 @@
       "phase": 4,
       "use_case": null,
       "type": "test",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 16,
-      "branch": null,
-      "pr": null
+      "branch": "test/T-007-archunit-conventions",
+      "pr": null,
+      "review_rounds": 1
     },
     {
       "id": "T-008",

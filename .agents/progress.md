@@ -32,3 +32,7 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-12 · phase 4 · planned · conventions → T-006..T-009
 2026-10-13 · T-006 · started · chore/T-006-skills-reference-examples (issue #15)
 2026-10-13 · T-006 · reviewed · round 1 approve (0 blockers, 0 majors, 0 minors)
+2026-10-13 · T-006 · in_review · PR #19
+2026-10-13 · T-006 · done · PR #19 merged
+2026-10-13 · T-007 · started · test/T-007-archunit-conventions (issue #16)
+2026-10-13 · T-007 · reviewed · round 1 approve (0 blockers, 0 majors, 0 minors)
