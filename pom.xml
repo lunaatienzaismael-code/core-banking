@@ -33,7 +33,8 @@
         <openapi-generator.version>7.26.0</openapi-generator.version>
 
         <!-- Ratcheted up to real coverage at the end of each feature phase (ADR 0003). -->
-        <jacoco.minimum.line>0.30</jacoco.minimum.line>
+        <jacoco.minimum.line>0.90</jacoco.minimum.line>
+        <jacoco.minimum.branch>0.75</jacoco.minimum.branch>
         <!-- Overwritten by jacoco:prepare-agent; empty default keeps @{argLine} valid when JaCoCo is skipped. -->
         <argLine/>
     </properties>
@@ -216,6 +217,11 @@
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
                                             <minimum>${jacoco.minimum.line}</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${jacoco.minimum.branch}</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
