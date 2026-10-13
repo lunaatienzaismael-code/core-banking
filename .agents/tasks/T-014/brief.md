@@ -25,11 +25,15 @@ is persisted.
 - **B3** — Named boundary tests: leaving exactly zero is accepted; one minor
   unit short is rejected; an `ALLOWED` account may go negative; debit-normal
   and credit-normal constrained accounts both covered.
+- **B4** — `LedgerFixture` can create `NOT_ALLOWED` accounts: an overload
+  `account(currency, type, overdraftPolicy)`; the existing
+  `account(currency, type)` keeps creating `ALLOWED` accounts so UC1 tests are
+  untouched (closes the T-004 review nit, `test-data-gap`).
 
 ## Scope
 
 - In: persistence adapter SQL, changeset, `InsufficientFundsException`, web
-  handler, ITs, OpenAPI `422` example.
+  handler, ITs, OpenAPI `422` example, `LedgerFixture` (B4).
 - Out: concurrency (T-015).
 
 ## Design notes
