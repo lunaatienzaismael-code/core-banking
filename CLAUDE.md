@@ -48,7 +48,8 @@ Integration tests need Docker running (`rdctl start` locally).
 
 read `brief.md` → branch `<type>/<id>-<slug>` → implement with skills →
 `test-runner` → fix → `evaluator` → (fix → review again, max 3 rounds) →
-propose commits → **user OK** → push + PR `Closes #N` → user merges → `done`.
+propose commits → **user OK** → push + PR `Closes #N` → evaluator verdict as
+PR comment → user merges → `done`.
 
 - Skills: `java-hexagonal` (placement, layering, money), `java-testing`
   (what/how to test), `task-planning` (splitting and briefs).
