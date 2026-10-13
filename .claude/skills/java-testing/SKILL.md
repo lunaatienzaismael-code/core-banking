@@ -45,6 +45,10 @@ ArchUnit rule, it is one.
 9. **Fictitious data only** (IBANs, names).
 10. A new behaviour without a test that fails when the behaviour is removed is
     not done.
+11. **Cover every enumerated case.** When a criterion names cases (each invalid
+    value, each boundary), each one gets its own test case, not a sample. Every
+    money edge (zero, overflow, `Long.MIN_VALUE` negation, currency mismatch)
+    is tested at the layer that does the arithmetic, not only in `Money`.
 
 ## Running
 
