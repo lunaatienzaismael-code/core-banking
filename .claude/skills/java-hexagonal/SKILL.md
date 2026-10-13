@@ -57,7 +57,10 @@ this skill covers what ArchUnit cannot see.
 - [ ] No framework import in `domain`; no JPA/web/Jackson in `application`.
 - [ ] Mappers exist in both directions where data crosses a boundary.
 - [ ] Domain exceptions mapped to Problem Details in the web adapter.
-- [ ] `HexagonalArchitectureTest` green.
+- [ ] `HexagonalArchitectureTest` green. Besides dependencies it checks: no
+      floating point in `domain`/`application`, web DTOs only in the web
+      adapter, `@Transactional` only in `application.service`, domain
+      exceptions extend `DomainException`, JPA mappings only in persistence.
 
 ## Reference examples
 
