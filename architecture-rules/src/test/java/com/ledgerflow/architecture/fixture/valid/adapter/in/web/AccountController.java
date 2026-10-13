@@ -1,5 +1,6 @@
 package com.ledgerflow.architecture.fixture.valid.adapter.in.web;
 
+import com.ledgerflow.architecture.fixture.valid.adapter.in.web.model.OpenedAccountDto;
 import com.ledgerflow.architecture.fixture.valid.application.port.in.OpenAccountUseCase;
 
 public class AccountController {
@@ -9,7 +10,7 @@ public class AccountController {
         this.openAccount = openAccount;
     }
 
-    public long open(String currency) {
-        return openAccount.open(currency).amountMinor();
+    public OpenedAccountDto open(String currency) {
+        return new OpenedAccountDto(openAccount.open(currency).amountMinor());
     }
 }
