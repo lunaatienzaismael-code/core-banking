@@ -175,12 +175,12 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "in_progress",
+      "status": "in_review",
       "depends_on": ["T-011", "T-012"],
       "acceptance_criteria": ["AC2.1", "AC2.2", "AC2.4"],
       "issue": 27,
       "branch": "feat/T-013-record-transaction",
-      "pr": null,
+      "pr": 37,
       "review_rounds": 1
     },
     {
@@ -189,12 +189,13 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-013"],
       "acceptance_criteria": ["AC2.3"],
       "issue": 28,
-      "branch": null,
-      "pr": null
+      "branch": "feat/T-014-reject-overdrafts",
+      "pr": null,
+      "review_rounds": 1
     },
     {
       "id": "T-015",
