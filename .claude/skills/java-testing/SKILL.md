@@ -56,6 +56,11 @@ ArchUnit rule, it is one.
     contract (the generated interface or the OpenAPI file), never against a
     hand-built model object. Every web adapter has a test that an unexpected
     exception becomes a 500 Problem Details without internals.
+13. **Assert the whole claim, not a proxy for it.** A rejection test pins the
+    exception type *and* the cause in its message (an `ArithmeticException`
+    alone could come from any overflow). A "nothing persisted" test checks
+    every table the criterion names (rows in `transactions` *and* `postings`
+    *and* the counters), comparing counts taken before the request.
 
 ## Running
 

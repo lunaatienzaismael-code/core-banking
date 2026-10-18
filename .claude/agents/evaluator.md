@@ -48,6 +48,9 @@ Bash is for read-only commands only (`git diff`, `git log`, `git status`, `git s
   file:line or the commit) or is explicitly marked as a decision or future
   work. A rule presented as established practice that nothing in the code
   applies yet is an `unbacked-doc-claim`.
+- **Contract completeness**: every URI the API hands out (`Location`, links)
+  resolves to an operation in the OpenAPI contract, or the gap is tracked as a
+  planned task; documented status codes match what the handlers return.
 - Scope creep beyond the brief, and dead or speculative code.
 
 Severity: `blocker` = money/invariant/data-loss risk or unmet criterion; `major` = rule
