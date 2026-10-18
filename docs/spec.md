@@ -31,8 +31,9 @@ consistency, serious tests, and a clean Git history of small, readable PRs.
 - **No-overdraft is a property of an account**, not a global ledger invariant:
   the domain models whether an account may go negative. Customer accounts are
   constrained; suspense/internal accounts may differ.
-- **Balance is derived from postings** (source of truth = postings). Any
-  materialised balance is an optimisation decided in Phase 5.
+- **Postings are the source of truth for balances.** Each account also keeps
+  materialised debit/credit counters, updated in the same database
+  transaction as its postings and always equal to their sums (ADR 0009).
 - **Sign convention.** Every posting line is stored as a signed amount:
   debit = positive, credit = negative. A balanced transaction therefore sums to
   zero, and the whole ledger sums to zero per currency.
@@ -70,13 +71,13 @@ automated test. Amounts are integer **minor units** with an ISO-4217 currency
   - When the account is created
   - Then it has a unique id, the given currency, a zero balance, and an empty
     movement list.
-- **AC1.2 Balance is derived**
+- **AC1.2 Balance matches postings**
   - Given an account with recorded postings
   - When its balance is queried
   - Then the balance equals Σ(debits) − Σ(credits) of that account in its
     currency for a debit-normal account, or Σ(credits) − Σ(debits) for a
-    credit-normal account, computed from postings (no independently mutable
-    balance field).
+    credit-normal account. Any stored counters change only together with
+    postings, so the reported balance always matches the postings.
 - **AC1.3 Query movements**
   - Given an account with postings
   - When its movements are queried
@@ -110,8 +111,8 @@ automated test. Amounts are integer **minor units** with an ISO-4217 currency
 - **AC2.5 Safe concurrency**
   - Given N concurrent transactions touching the same account(s)
   - When they are processed
-  - Then no update is lost (optimistic locking / retry) and the final balance
-    equals the exact sum of all accepted transactions.
+  - Then no update is lost (atomic conditional updates, ADR 0009) and the
+    final balance equals the exact sum of all accepted transactions.
 
 ### UC3 — Initiate a transfer with Idempotency-Key and a payment state machine
 *Priority 3 · Phase 6*
