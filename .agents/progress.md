@@ -62,3 +62,7 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-18 · T-010 · done · PR #32 merged
 2026-10-18 · methodology · user grants autonomous mode (commit, PR, merge myself) until Phase 10; afterwards the user merges
 2026-10-18 · T-011 · started · branch feat/T-011-transaction-domain-model
+2026-10-18 · T-011 · in_review · PR #34
+2026-10-18 · T-011 · done · PR #34 merged
+2026-10-18 · T-012 · started · branch feat/T-012-materialise-balance
+2026-10-18 · methodology · user reverts merge rights: I implement and open PRs non-stop, the user merges every PR
