@@ -92,4 +92,11 @@ class MoneyTest {
         assertThat(Money.zero(EUR).isZero()).isTrue();
         assertThat(Money.of(1, "EUR").isZero()).isFalse();
     }
+
+    @Test
+    void zeroIsNotPositive() {
+        assertThat(Money.zero(EUR).isPositive()).isFalse();
+        assertThat(Money.of(1, "EUR").isPositive()).isTrue();
+        assertThat(Money.of(-1, "EUR").isPositive()).isFalse();
+    }
 }
