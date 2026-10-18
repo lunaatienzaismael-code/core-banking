@@ -93,8 +93,9 @@ PR comment → user merges → `done`.
 
 - Money = `long` minor units + ISO-4217 code. Never `double`/`float`.
 - Postings are signed (debit `+`, credit `−`); a transaction sums to zero per
-  currency. Balance is derived from postings and reported from the account's
-  normal balance side.
+  currency. Postings are the source of truth; the balance is read from
+  per-account counters that always equal their sums (ADR 0009) and reported
+  from the account's normal balance side.
 - Domain is framework-free; use cases are the transaction boundary; errors
   leave the API as Problem Details (RFC 9457).
 

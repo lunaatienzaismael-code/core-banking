@@ -34,7 +34,8 @@ Bash is for read-only commands only (`git diff`, `git log`, `git status`, `git s
 - **Money** (ADR 0004): `long` minor units + ISO-4217 only; no `double`/`float`/`BigDecimal`
   in state; no arithmetic across currencies; overflow on sums considered.
 - **Ledger invariants**: postings of a transaction sum to zero per currency; balance is
-  derived from postings; sign convention and normal balance side as in the spec.
+  read from per-account counters that equal the sums of postings (ADR 0009), changed only
+  together with them; sign convention and normal balance side as in the spec.
 - **Concurrency and idempotency**: lost updates, missing `@Version`, retries outside the
   use case boundary, duplicate effects on retry/redelivery, check-then-act races.
 - **Architecture** (ADR 0002 + `java-hexagonal`): layer placement, explicit mappers,
