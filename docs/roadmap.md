@@ -43,8 +43,8 @@ starts.
   - [x] Close milestone, tag `v0.1.0`
 
 - [ ] **Phase 5 — Full ledger (UC2)**: double-entry transactions, domain
-      invariants, optimistic locking, concurrent-postings Testcontainers test.
-      ADR: balance derived vs materialised. Tag `v0.2.0`.
+      invariants, atomic conditional balance updates, concurrent-postings
+      Testcontainers test. ADR 0009: materialised balance. Tag `v0.2.0`.
 
 - [ ] **Phase 6 — payment-service (UC3)**: second module reusing ArchUnit rules,
       `Idempotency-Key` persistence, payment state machine. Consider
