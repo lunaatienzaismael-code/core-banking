@@ -203,11 +203,11 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "test",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-014"],
       "acceptance_criteria": ["AC2.5"],
       "issue": 29,
-      "branch": null,
+      "branch": "test/T-015-concurrent-transactions",
       "pr": null
     },
     {
