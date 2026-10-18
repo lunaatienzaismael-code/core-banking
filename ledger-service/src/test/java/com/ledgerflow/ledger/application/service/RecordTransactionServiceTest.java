@@ -20,6 +20,7 @@ import com.ledgerflow.ledger.domain.AccountId;
 import com.ledgerflow.ledger.domain.AccountNotFoundException;
 import com.ledgerflow.ledger.domain.AccountType;
 import com.ledgerflow.ledger.domain.CurrencyMismatchException;
+import com.ledgerflow.ledger.domain.InsufficientFundsException;
 import com.ledgerflow.ledger.domain.Money;
 import com.ledgerflow.ledger.domain.OverdraftPolicy;
 import com.ledgerflow.ledger.domain.Side;
@@ -32,6 +33,7 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -44,6 +46,11 @@ class RecordTransactionServiceTest {
     private final BalanceRepository balances = mock(BalanceRepository.class);
     private final RecordTransactionService service =
             new RecordTransactionService(accounts, transactions, balances, Clock.fixed(NOW, ZoneOffset.UTC));
+
+    @BeforeEach
+    void guardAcceptsEveryAmountUnlessATestSaysOtherwise() {
+        when(balances.apply(any(), any())).thenReturn(true);
+    }
 
     @Test
     void savesTheTransactionWithSignedLinesAtTheCurrentTime() {
@@ -104,6 +111,18 @@ class RecordTransactionServiceTest {
                 .containsExactly(
                         tuple(cash.id(), Money.of(2_500, "EUR"), Side.DEBIT),
                         tuple(customer.id(), Money.of(2_500, "EUR"), Side.CREDIT));
+    }
+
+    @Test
+    void amountRefusedByTheOverdraftGuardIsInsufficientFunds() {
+        var customer = stored("EUR", AccountType.LIABILITY);
+        var cash = stored("EUR", AccountType.ASSET);
+        when(balances.apply(customer.id(), Money.of(2_500, "EUR"))).thenReturn(false);
+
+        assertThatThrownBy(() -> service.record(command(line(customer, 2_500, "EUR"), line(cash, -2_500, "EUR"))))
+                .isInstanceOf(InsufficientFundsException.class)
+                .hasMessageContaining("Account " + customer.id() + " has insufficient funds")
+                .hasMessageContaining("2500 EUR");
     }
 
     @Test

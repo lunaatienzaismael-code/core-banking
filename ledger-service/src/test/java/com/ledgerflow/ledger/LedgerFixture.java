@@ -17,14 +17,20 @@ public final class LedgerFixture {
         this.jdbc = jdbc;
     }
 
-    /** Inserts an account and returns its id. */
+    /** Inserts an account that may go negative ({@code ALLOWED}) and returns its id. */
     public UUID account(String currency, String type) {
+        return account(currency, type, "ALLOWED");
+    }
+
+    /** Inserts an account with the given overdraft policy ({@code ALLOWED} or {@code NOT_ALLOWED}) and returns its id. */
+    public UUID account(String currency, String type, String overdraftPolicy) {
         var id = UUID.randomUUID();
         jdbc.update(
-                "insert into accounts (id, currency, type, overdraft_policy, version) values (?, ?, ?, 'ALLOWED', 0)",
+                "insert into accounts (id, currency, type, overdraft_policy, version) values (?, ?, ?, ?, 0)",
                 id,
                 currency,
-                type);
+                type,
+                overdraftPolicy);
         return id;
     }
 

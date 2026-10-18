@@ -12,7 +12,14 @@ public interface BalanceRepository {
 
     /**
      * Adds a signed posting amount to the account's counters with one atomic SQL update (ADR 0009): a positive amount
-     * to its debits posted, a negative one to its credits posted. Must run in the transaction that saves the postings.
+     * to its debits posted, a negative one to its credits posted. For a {@code NOT_ALLOWED} account the same statement
+     * refuses an amount that would take its normal-side balance below zero. Must run in the transaction that saves the
+     * postings.
+     *
+     * <p>Precondition: the account exists and was loaded in the same transaction; a missing account also yields
+     * {@code false}, which the caller would report as a refusal.
+     *
+     * @return {@code false} when the overdraft guard refused the amount; nothing was changed
      */
-    void apply(AccountId account, Money signedAmount);
+    boolean apply(AccountId account, Money signedAmount);
 }
