@@ -1,0 +1,24 @@
+{
+  "task_id": "T-011",
+  "round": 1,
+  "base": "6e618c97a14907ad28d783d5f046702e4c3add97",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Transaction record validates in its canonical constructor: at least two lines, one account per line, one currency, sum zero, overflow via Money.plus addExact. Every brief criterion has a named test; mutation run reports 43/43 killed. No findings of note.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "TransactionTest#rejectsTransactionWithoutLines, #rejectsTransactionWithASingleLine, #rejectsTransactionWhoseLinesSumAboveZero/BelowZero, #rejectsLinesInMoreThanOneCurrency, #rejectsTwoLinesOnTheSameAccount; all DomainException subtypes with cause in message. Canonical constructor serves as the factory."},
+    {"id": "B2", "status": "met", "evidence": "TransactionTest#overflowWhileSummingLinesFailsInsteadOfWrappingAround (Long.MAX_VALUE + 1 throws ArithmeticException via Money.plus Math.addExact, Money.java:38)."},
+    {"id": "B3", "status": "met", "evidence": "TransactionTest#linesCannotBeModifiedThroughTheTransaction, #laterChangesToTheCallersListDoNotAffectTheTransaction, #exposesTheSignedAmountEachAccountMustAbsorbInLineOrder."},
+    {"id": "B4", "status": "met", "evidence": "TransactionTest: one test per rejection, plus #acceptsABalancedTwoLineTransaction and #acceptsABalancedMultiLineTransaction; mutation gate 43/43 killed per orchestrator."}
+  ],
+  "findings": [
+    {
+      "severity": "nit",
+      "category": "testing",
+      "defect_type": "weak-assertion",
+      "file": "ledger-service/src/test/java/com/ledgerflow/ledger/domain/TransactionTest.java",
+      "line": 114,
+      "description": "The overflow test asserts only ArithmeticException with no message or cause check, so any other arithmetic failure would satisfy it. Acceptable because the input is deterministic."
+    }
+  ]
+}
