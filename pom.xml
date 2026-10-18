@@ -35,6 +35,7 @@
         <!-- Ratcheted up to real coverage at the end of each feature phase (ADR 0003). -->
         <jacoco.minimum.line>0.90</jacoco.minimum.line>
         <jacoco.minimum.branch>0.75</jacoco.minimum.branch>
+        <pitest.mutation.threshold>90</pitest.mutation.threshold>
         <!-- Overwritten by jacoco:prepare-agent; empty default keeps @{argLine} valid when JaCoCo is skipped. -->
         <argLine/>
     </properties>
@@ -112,7 +113,12 @@
                     <artifactId>pitest-maven</artifactId>
                     <version>${pitest.version}</version>
                     <configuration>
-                        <!-- On demand only (ADR 0003): ./mvnw -pl <module> -am test-compile org.pitest:pitest-maven:mutationCoverage -->
+                        <!-- PR gate through the `mutation` profile (ADR 0003); ratcheted like the JaCoCo thresholds. -->
+                        <mutationThreshold>${pitest.mutation.threshold}</mutationThreshold>
+                        <!-- Debug-only text; asserting it would pin formatting, not behaviour. -->
+                        <excludedMethods>
+                            <param>toString</param>
+                        </excludedMethods>
                         <targetClasses>
                             <param>com.ledgerflow.*.domain.*</param>
                             <param>com.ledgerflow.*.application.*</param>
@@ -232,4 +238,28 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- Mutation testing gate on domain + application: ./mvnw -B verify -Pmutation -->
+            <id>mutation</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <executions>
+                            <execution>
+                                <id>mutation-coverage</id>
+                                <goals>
+                                    <goal>mutationCoverage</goal>
+                                </goals>
+                                <phase>verify</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
