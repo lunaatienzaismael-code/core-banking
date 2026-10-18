@@ -133,12 +133,13 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "docs",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 24,
-      "branch": null,
-      "pr": null
+      "branch": "docs/T-010-adr-materialised-balance",
+      "pr": null,
+      "review_rounds": 1
     },
     {
       "id": "T-011",
