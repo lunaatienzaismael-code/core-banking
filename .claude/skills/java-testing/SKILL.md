@@ -61,7 +61,10 @@ ArchUnit rule, it is one.
 
 Through the `test-runner` subagent (it wraps `scripts/test-summary.sh`). Locally:
 `./mvnw -B verify`; one module: `./mvnw -B verify -pl ledger-service -am`.
-Mutation testing on demand: see README.
+Mutation testing (PR gate, ≥ 90 % on `domain` and `application`):
+`./mvnw -B verify -Pmutation -DskipITs -Djacoco.skip=true`. A surviving mutant
+means a missing assertion or boundary case; kill it with a test, never with an
+exclusion.
 
 ## Reference examples
 
