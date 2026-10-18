@@ -147,12 +147,12 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-016"],
       "acceptance_criteria": [],
       "issue": 25,
       "branch": "feat/T-011-transaction-domain-model",
-      "pr": null,
+      "pr": 34,
       "review_rounds": 1
     },
     {
@@ -161,12 +161,13 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-010"],
       "acceptance_criteria": [],
       "issue": 26,
-      "branch": null,
-      "pr": null
+      "branch": "feat/T-012-materialise-balance",
+      "pr": null,
+      "review_rounds": 1
     },
     {
       "id": "T-013",
