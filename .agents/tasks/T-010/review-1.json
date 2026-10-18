@@ -1,0 +1,9 @@
+{"task_id":"T-010","round":1,"base":"183ee9233895cba761494fd8264288da9d79c248","head":"WORKTREE","verdict":"approve",
+"summary":"ADR 0009 covers all required options, decision, SQL guard, CHECK, invariant test and consequences. ADR 0004 note, README index, spec AC2.5/assumption updated. The AC1.2 and roadmap edits are justified: the old wording would contradict the counters or the decision.",
+"acceptance_criteria":[
+{"id":"B1","status":"met","evidence":"docs/adr/0009-materialised-balance.md Context and Options sections list 3 balance options and 4 concurrency options with pros/cons, plus Decision and Consequences."},
+{"id":"B2","status":"met","evidence":"ADR 0009 Decision: bigint non-negative counters, atomic UPDATE with WHERE guard, CHECK, counters = sum postings test and UC6 reconciliation, @Version for attributes only."},
+{"id":"B3","status":"met","evidence":"docs/adr/0004 dated superseded-in-part note, original text kept; docs/adr/README.md index row 0009 and deferred item removed."},
+{"id":"B4","status":"met","evidence":"docs/spec.md assumption reworded; AC2.5 now cites atomic conditional updates with outcome unchanged."}],
+"findings":[
+{"severity":"nit","category":"docs","defect_type":"other","file":"docs/adr/0009-materialised-balance.md","line":null,"description":"Decision says a NOT_ALLOWED CHECK enforces normal-side balance, and the ADR states bigint overflow needs no handling; both are fine, but the CHECK needs the type/policy columns on accounts, which T-012 must confirm exist.","suggestion":"Verify in T-012 changeset."}]}

@@ -54,4 +54,5 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-13 · methodology · review findings gain defect_type; 13 historic findings classified; alerts: indirect-test, unmapped-error, unbacked-doc-claim
 2026-10-13 · methodology · growth rule applied: indirect-test, unmapped-error, unbacked-doc-claim → java-testing rule 12, ArchUnit fallback rule, evaluator doc-claims check
 2026-10-13 · methodology · briefs: T-014 B4 NOT_ALLOWED fixture accounts, T-015 uses them, T-012 updates the evaluator's derived-balance check
+2026-10-18 · T-010 · started · branch docs/T-010-adr-materialised-balance
 2026-10-18 · T-016 · started · branch build/T-016-pit-mutation-gate
