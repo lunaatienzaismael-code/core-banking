@@ -8,7 +8,6 @@ import com.ledgerflow.ledger.domain.Movement;
 import com.ledgerflow.ledger.domain.PostingId;
 import com.ledgerflow.ledger.domain.PostingLine;
 import com.ledgerflow.ledger.domain.TransactionId;
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
@@ -18,13 +17,11 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /**
- * Reads postings with plain SQL: a balance and a history are queries over rows, not entities. The schema guarantees every
- * posting is in its account's currency (composite foreign key), so the sum is in that currency.
+ * Reads postings with plain SQL: a history is a query over rows, not entities. The schema guarantees every posting is in
+ * its account's currency (composite foreign key).
  */
 @Component
 class PostingPersistenceAdapter implements PostingRepository {
-
-    private static final String SIGNED_NET_SQL = "select coalesce(sum(amount), 0) from postings where account_id = ?";
 
     private static final String MOVEMENTS_SQL = """
             select p.id, p.transaction_id, p.account_id, p.amount, p.currency, t.occurred_at
@@ -37,16 +34,6 @@ class PostingPersistenceAdapter implements PostingRepository {
 
     PostingPersistenceAdapter(JdbcClient jdbc) {
         this.jdbc = jdbc;
-    }
-
-    @Override
-    public Money signedNetOf(Account account) {
-        // PostgreSQL widens sum(bigint) to numeric; longValueExact fails loudly instead of wrapping on overflow.
-        var net = jdbc.sql(SIGNED_NET_SQL)
-                .param(account.id().value())
-                .query(BigDecimal.class)
-                .single();
-        return new Money(net.longValueExact(), account.currency());
     }
 
     @Override

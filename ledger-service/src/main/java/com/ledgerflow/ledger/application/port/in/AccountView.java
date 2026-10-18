@@ -7,7 +7,7 @@ import com.ledgerflow.ledger.domain.OverdraftPolicy;
 import com.ledgerflow.ledger.domain.Side;
 import java.util.Currency;
 
-/** An account as seen by use case callers, with its balance derived from postings. */
+/** An account as seen by use case callers, with its balance from its postings. */
 public record AccountView(
         AccountId id,
         Currency currency,

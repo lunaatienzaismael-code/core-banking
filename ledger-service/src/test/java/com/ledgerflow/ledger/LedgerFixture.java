@@ -6,7 +6,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Writes ledger rows straight into the schema. Postings have no write path until UC2 (Phase 5), so tests that need
- * them insert balanced transactions here. All data is fictitious.
+ * them insert balanced transactions here, together with the account counters they move (ADR 0009). All data is
+ * fictitious.
  */
 public final class LedgerFixture {
 
@@ -38,6 +39,8 @@ public final class LedgerFixture {
         jdbc.update("insert into transactions (id, occurred_at) values (?, ?)", transaction, occurredAt);
         posting(transaction, debited, amount, currency);
         posting(transaction, credited, -amount, currency);
+        jdbc.update("update accounts set debits_posted = debits_posted + ? where id = ?", amount, debited);
+        jdbc.update("update accounts set credits_posted = credits_posted + ? where id = ?", amount, credited);
         return transaction;
     }
 

@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.ledgerflow.ledger.application.port.out.AccountRepository;
-import com.ledgerflow.ledger.application.port.out.PostingRepository;
+import com.ledgerflow.ledger.application.port.out.BalanceRepository;
 import com.ledgerflow.ledger.domain.Account;
 import com.ledgerflow.ledger.domain.AccountId;
 import com.ledgerflow.ledger.domain.AccountNotFoundException;
@@ -24,13 +24,13 @@ class GetAccountBalanceServiceTest {
     private static final Currency EUR = Currency.getInstance("EUR");
 
     private final AccountRepository accounts = mock(AccountRepository.class);
-    private final PostingRepository postings = mock(PostingRepository.class);
-    private final GetAccountBalanceService service = new GetAccountBalanceService(accounts, postings);
+    private final BalanceRepository balances = mock(BalanceRepository.class);
+    private final GetAccountBalanceService service = new GetAccountBalanceService(accounts, balances);
 
     @Test
     void debitNormalAccountReportsTheSignedNetAsIs() {
         var account = stored(AccountType.ASSET);
-        when(postings.signedNetOf(account)).thenReturn(Money.of(7_000, "EUR"));
+        when(balances.signedNetOf(account)).thenReturn(Money.of(7_000, "EUR"));
 
         var view = service.balanceOf(account.id());
 
@@ -42,7 +42,7 @@ class GetAccountBalanceServiceTest {
     @Test
     void creditNormalAccountReportsTheNegatedSignedNet() {
         var account = stored(AccountType.LIABILITY);
-        when(postings.signedNetOf(account)).thenReturn(Money.of(-7_500, "EUR"));
+        when(balances.signedNetOf(account)).thenReturn(Money.of(-7_500, "EUR"));
 
         var view = service.balanceOf(account.id());
 
@@ -51,14 +51,14 @@ class GetAccountBalanceServiceTest {
     }
 
     @Test
-    void unknownAccountIsReportedAsNotFoundWithoutReadingPostings() {
+    void unknownAccountIsReportedAsNotFoundWithoutReadingTheBalance() {
         var id = AccountId.random();
         when(accounts.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.balanceOf(id))
                 .isInstanceOf(AccountNotFoundException.class)
                 .hasMessageContaining(id.toString());
-        verifyNoInteractions(postings);
+        verifyNoInteractions(balances);
     }
 
     private Account stored(AccountType type) {

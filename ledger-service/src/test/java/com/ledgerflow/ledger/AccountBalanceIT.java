@@ -2,6 +2,7 @@ package com.ledgerflow.ledger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -117,13 +118,27 @@ class AccountBalanceIT {
     }
 
     @Test
-    @DisplayName("B1 no balance column exists anywhere in the schema")
-    void noBalanceColumnExists() {
-        assertThat(jdbc.queryForObject(
-                        "select count(*) from information_schema.columns where table_schema = 'public'"
-                                + " and column_name ilike '%balance%'",
-                        Long.class))
-                .isZero();
+    @DisplayName("ADR 0009 each account's counters equal the sums of its debit and credit postings")
+    void countersEqualTheSumsOfEachAccountsPostings() {
+        var cash = ledger.account("EUR", "ASSET");
+        var customer = ledger.account("EUR", "LIABILITY");
+        var other = ledger.account("EUR", "LIABILITY");
+        ledger.transfer(cash, customer, 10_000, "EUR");
+        ledger.transfer(customer, other, 3_000, "EUR");
+        ledger.transfer(other, cash, 500, "EUR");
+
+        for (var account : List.of(cash, customer, other)) {
+            var counters = jdbc.queryForMap("select debits_posted, credits_posted from accounts where id = ?", account);
+            var sums = jdbc.queryForMap(
+                    "select coalesce(sum(amount) filter (where amount > 0), 0) as debits,"
+                            + " coalesce(-sum(amount) filter (where amount < 0), 0) as credits"
+                            + " from postings where account_id = ?",
+                    account);
+            assertThat(((Number) counters.get("debits_posted")).longValue())
+                    .isEqualTo(((Number) sums.get("debits")).longValue());
+            assertThat(((Number) counters.get("credits_posted")).longValue())
+                    .isEqualTo(((Number) sums.get("credits")).longValue());
+        }
     }
 
     private void expectBalance(UUID account, String side, long amount, String currency) {

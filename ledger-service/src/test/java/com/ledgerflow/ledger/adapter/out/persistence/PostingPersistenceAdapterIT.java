@@ -45,34 +45,6 @@ class PostingPersistenceAdapterIT {
     }
 
     @Test
-    void signedNetIsDebitsMinusCreditsOfTheAccountInItsCurrency() {
-        var account = ledger.account("EUR", "ASSET");
-        var other = ledger.account("EUR", "LIABILITY");
-        ledger.transfer(account, other, 10_000, "EUR");
-        ledger.transfer(other, account, 3_000, "EUR");
-
-        assertThat(postings.signedNetOf(load(account))).isEqualTo(Money.of(7_000, "EUR"));
-        assertThat(postings.signedNetOf(load(other))).isEqualTo(Money.of(-7_000, "EUR"));
-    }
-
-    @Test
-    void accountWithoutPostingsHasAZeroNet() {
-        var account = ledger.account("SEK", "LIABILITY");
-
-        assertThat(postings.signedNetOf(load(account))).isEqualTo(Money.of(0, "SEK"));
-    }
-
-    @Test
-    void netOutsideTheLongRangeFailsLoudlyInsteadOfWrapping() {
-        var account = ledger.account("EUR", "ASSET");
-        var other = ledger.account("EUR", "LIABILITY");
-        ledger.transfer(account, other, Long.MAX_VALUE, "EUR");
-        ledger.transfer(account, other, 1, "EUR");
-
-        assertThatThrownBy(() -> postings.signedNetOf(load(account))).isInstanceOf(ArithmeticException.class);
-    }
-
-    @Test
     void movementsAreOrderedByTransactionTimeRegardlessOfInsertOrder() {
         var account = ledger.account("EUR", "LIABILITY");
         var cash = ledger.account("EUR", "ASSET");
