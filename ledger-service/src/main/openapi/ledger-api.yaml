@@ -3,7 +3,8 @@ info:
   title: LedgerFlow Ledger API
   version: 0.1.0
   description: |
-    Double-entry ledger: accounts, balances from postings, and movements.
+    Double-entry ledger: accounts, balanced transactions, balances from
+    postings, and movements.
     Amounts are integer minor units with an ISO-4217 currency code (ADR 0004).
     Errors use Problem Details (RFC 9457). All example data is fictitious.
 servers:
@@ -12,6 +13,8 @@ servers:
 tags:
   - name: Accounts
     description: Ledger accounts and their balances.
+  - name: Transactions
+    description: Double-entry transactions between accounts.
 paths:
   /accounts:
     post:
@@ -86,6 +89,41 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+  /transactions:
+    post:
+      tags: [Transactions]
+      operationId: recordTransaction
+      summary: Record a double-entry transaction
+      description: |
+        Records a transaction whose debit lines equal its credit lines, all in
+        one currency and each in its account's currency. The transaction, its
+        postings and the accounts' balances are written atomically, or nothing
+        is (UC2, ADR 0009).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordTransactionRequest'
+      responses:
+        '201':
+          description: Transaction recorded.
+          headers:
+            Location:
+              description: URI of the new transaction.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
 components:
   parameters:
     AccountId:
@@ -219,6 +257,87 @@ components:
             amount: {amount: 10000, currency: EUR}
             direction: CREDIT
             occurredAt: '2026-01-15T09:30:00Z'
+    PositiveMoney:
+      description: A strictly positive amount; the direction of a line says debit or credit.
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 2500
+        currency:
+          $ref: '#/components/schemas/CurrencyCode'
+    TransactionLineRequest:
+      type: object
+      required: [accountId, amount, direction]
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        amount:
+          $ref: '#/components/schemas/PositiveMoney'
+        direction:
+          $ref: '#/components/schemas/Side'
+    RecordTransactionRequest:
+      type: object
+      required: [lines]
+      properties:
+        lines:
+          type: array
+          minItems: 2
+          items:
+            $ref: '#/components/schemas/TransactionLineRequest'
+      example:
+        lines:
+          - accountId: 3f1c2b7e-0000-4000-8000-000000000002
+            amount: {amount: 2500, currency: EUR}
+            direction: DEBIT
+          - accountId: 3f1c2b7e-0000-4000-8000-000000000001
+            amount: {amount: 2500, currency: EUR}
+            direction: CREDIT
+    TransactionLine:
+      description: One posting line of a transaction.
+      type: object
+      required: [postingId, accountId, amount, direction]
+      properties:
+        postingId:
+          type: string
+          format: uuid
+        accountId:
+          type: string
+          format: uuid
+        amount:
+          $ref: '#/components/schemas/Money'
+        direction:
+          $ref: '#/components/schemas/Side'
+    Transaction:
+      type: object
+      required: [id, occurredAt, lines]
+      properties:
+        id:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionLine'
+      example:
+        id: 5a7c1f22-0000-4000-8000-000000000201
+        occurredAt: '2026-01-15T09:30:00Z'
+        lines:
+          - postingId: 9b2d4e10-0000-4000-8000-000000000101
+            accountId: 3f1c2b7e-0000-4000-8000-000000000002
+            amount: {amount: 2500, currency: EUR}
+            direction: DEBIT
+          - postingId: 9b2d4e10-0000-4000-8000-000000000102
+            accountId: 3f1c2b7e-0000-4000-8000-000000000001
+            amount: {amount: 2500, currency: EUR}
+            direction: CREDIT
     Problem:
       description: Problem Details for HTTP APIs (RFC 9457).
       type: object
@@ -263,3 +382,18 @@ components:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
+    UnprocessableContent:
+      description: |
+        Well-formed but breaks a ledger rule: unbalanced lines, mixed
+        currencies, a line in a currency other than its account's, or two
+        lines on one account.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Unbalanced transaction
+            status: 422
+            detail: 'Transaction 5a7c1f22-0000-4000-8000-000000000201 is unbalanced: its lines sum to 100 EUR instead of zero'
+            instance: /transactions
