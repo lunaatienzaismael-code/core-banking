@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0003-add-account-posting-counters
+      author: ledgerflow
+      comment: >-
+        Materialised balance (ADR 0009). Running totals of each account's debit and credit
+        postings, in minor units; postings stay the source of truth and these always equal
+        their sums. Existing postings are backfilled.
+      changes:
+        - addColumn:
+            tableName: accounts
+            columns:
+              - column:
+                  name: debits_posted
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: credits_posted
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: >-
+              UPDATE accounts a
+                 SET debits_posted = coalesce((SELECT sum(p.amount) FROM postings p
+                                                WHERE p.account_id = a.id AND p.amount > 0), 0),
+                     credits_posted = coalesce((SELECT -sum(p.amount) FROM postings p
+                                                 WHERE p.account_id = a.id AND p.amount < 0), 0)
+        - sql:
+            sql: >-
+              ALTER TABLE accounts
+                ADD CONSTRAINT ck_accounts_debits_posted_non_negative CHECK (debits_posted >= 0),
+                ADD CONSTRAINT ck_accounts_credits_posted_non_negative CHECK (credits_posted >= 0)
