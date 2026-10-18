@@ -4,6 +4,15 @@
 - Date: 2026-10-12
 - Deciders: Project owner
 
+> **2026-10-18 — Superseded in part by [ADR 0009](0009-materialised-balance.md).**
+> The balance is now materialised as per-account `debits_posted` /
+> `credits_posted` counters updated by atomic conditional SQL, and `@Version`
+> applies only to account attribute changes, not to balance writes. The
+> "Concurrency on postings" option analysis and the optimistic-locking and
+> derived-balance bullets of the Decision below are kept as originally
+> written; ADR 0009 replaces them. Money representation and database per
+> service are unchanged.
+
 ## Context
 
 Two decisions with legal and correctness weight in a ledger: how money is
