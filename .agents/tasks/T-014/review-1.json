@@ -1,0 +1,35 @@
+{
+  "task_id": "T-014",
+  "round": 1,
+  "base": "e3b882a1eee326f1ad7cb65a0aa971089d826ca3",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Guarded counter UPDATE, 0004 CHECK, InsufficientFundsException to 422 and OpenAPI example are in place. Boundaries (exact zero, one short, both normal sides, ALLOWED, raising side) are proven at adapter and HTTP level, including a deterministic rollback after an applied line. Only nits remain.",
+  "acceptance_criteria": [
+    {"id": "AC2.3", "status": "met", "evidence": "RejectOverdraftIT#withdrawalOneMinorUnitShortIsRejected (422 Problem Details, before/after snapshot), refusedLineRollsBackTheWholeTransaction"},
+    {"id": "B1", "status": "met", "evidence": "BalancePersistenceAdapter APPLY_SQL guard in WHERE; RecordTransactionService throws on false inside @Transactional; RecordTransactionServiceTest#amountRefusedByTheOverdraftGuardIsInsufficientFunds; ProblemDetailsHandler.insufficientFunds"},
+    {"id": "B2", "status": "met", "evidence": "0004-add-no-overdraft-check.yaml; BalancePersistenceAdapterIT#notAllowedAccountCannotBeOverdrawnEvenByAnUnguardedWrite asserts ck_accounts_no_overdraft for both sides"},
+    {"id": "B3", "status": "met", "evidence": "BalancePersistenceAdapterIT creditNormal/debitNormal exact-zero and one-short, allowedAccountMayGoBelowZeroOnItsNormalSide; RejectOverdraftIT debitNormalConstrainedAccountIsHeldToZero, allowedAccountMayGoBelowZero"},
+    {"id": "B4", "status": "met", "evidence": "LedgerFixture.account(currency, type, overdraftPolicy); two-arg overload delegates with ALLOWED"}
+  ],
+  "findings": [
+    {
+      "severity": "nit",
+      "category": "testing",
+      "defect_type": "untested-enumerated-case",
+      "file": "ledger-service/src/test/java/com/ledgerflow/ledger/adapter/out/persistence/BalancePersistenceAdapterIT.java",
+      "line": null,
+      "description": "The guard branches by type list (ASSET/EXPENSE vs LIABILITY/EQUITY/INCOME) but only ASSET and LIABILITY are exercised; EQUITY, INCOME, EXPENSE branches are not covered. The CHECK repeats the same lists.",
+      "suggestion": "Parameterise the exact-zero/one-short tests over all five AccountType values."
+    },
+    {
+      "severity": "nit",
+      "category": "persistence",
+      "defect_type": "other",
+      "file": "ledger-service/src/main/java/com/ledgerflow/ledger/adapter/out/persistence/BalancePersistenceAdapter.java",
+      "line": 50,
+      "description": "apply returning false conflates a missing account with a refusal; the old missing-account test was removed. Safe today because the use case loads accounts in the same transaction, but the port contract does not state that precondition.",
+      "suggestion": "Add the precondition to the BalanceRepository javadoc."
+    }
+  ]
+}
