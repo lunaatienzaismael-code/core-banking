@@ -133,12 +133,12 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "docs",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 24,
       "branch": "docs/T-010-adr-materialised-balance",
-      "pr": null,
+      "pr": 32,
       "review_rounds": 1
     },
     {
@@ -147,12 +147,13 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-016"],
       "acceptance_criteria": [],
       "issue": 25,
-      "branch": null,
-      "pr": null
+      "branch": "feat/T-011-transaction-domain-model",
+      "pr": null,
+      "review_rounds": 1
     },
     {
       "id": "T-012",
@@ -212,12 +213,12 @@
       "phase": 5,
       "use_case": null,
       "type": "build",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 30,
       "branch": "build/T-016-pit-mutation-gate",
-      "pr": null,
+      "pr": 33,
       "review_rounds": 1
     }
   ]

@@ -56,3 +56,9 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-13 · methodology · briefs: T-014 B4 NOT_ALLOWED fixture accounts, T-015 uses them, T-012 updates the evaluator's derived-balance check
 2026-10-18 · T-010 · started · branch docs/T-010-adr-materialised-balance
 2026-10-18 · T-016 · started · branch build/T-016-pit-mutation-gate
+2026-10-18 · T-010 · in_review · PR #32
+2026-10-18 · T-016 · in_review · PR #33
+2026-10-18 · T-016 · done · PR #33 merged
+2026-10-18 · T-010 · done · PR #32 merged
+2026-10-18 · methodology · user grants autonomous mode (commit, PR, merge myself) until Phase 10; afterwards the user merges
+2026-10-18 · T-011 · started · branch feat/T-011-transaction-domain-model
