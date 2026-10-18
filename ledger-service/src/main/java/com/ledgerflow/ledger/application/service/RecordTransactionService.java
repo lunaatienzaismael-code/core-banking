@@ -9,6 +9,7 @@ import com.ledgerflow.ledger.application.port.out.TransactionRepository;
 import com.ledgerflow.ledger.domain.AccountId;
 import com.ledgerflow.ledger.domain.AccountNotFoundException;
 import com.ledgerflow.ledger.domain.CurrencyMismatchException;
+import com.ledgerflow.ledger.domain.InsufficientFundsException;
 import com.ledgerflow.ledger.domain.Money;
 import com.ledgerflow.ledger.domain.PostingId;
 import com.ledgerflow.ledger.domain.PostingLine;
@@ -56,9 +57,12 @@ class RecordTransactionService implements RecordTransactionUseCase {
             requireAccountInCurrencyOf(line);
         }
         transactions.save(transaction);
-        transaction.amountsByAccount().entrySet().stream()
-                .sorted(ACCOUNT_ORDER)
-                .forEach(entry -> balances.apply(entry.getKey(), entry.getValue()));
+        // Throwing rolls back the postings and any counters already applied: all of it or nothing (AC2.3).
+        transaction.amountsByAccount().entrySet().stream().sorted(ACCOUNT_ORDER).forEach(entry -> {
+            if (!balances.apply(entry.getKey(), entry.getValue())) {
+                throw new InsufficientFundsException(entry.getKey(), entry.getValue());
+            }
+        });
         return TransactionView.of(transaction);
     }
 

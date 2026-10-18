@@ -15,12 +15,21 @@ import org.springframework.stereotype.Component;
 class BalancePersistenceAdapter implements BalanceRepository {
 
     private static final String COUNTERS_SQL = "select debits_posted, credits_posted from accounts where id = ?";
-    // One statement adds to the counter in place: no value is read into Java and written back (ADR 0009).
+    /**
+     * One statement adds to the counters in place and checks the overdraft rule on the result (ADR 0009): no value is
+     * read into Java and written back. A writer that waited on the row lock re-evaluates the WHERE against the newly
+     * committed row, so the guard always sees the latest counters. ck_accounts_no_overdraft repeats the rule.
+     */
     private static final String APPLY_SQL = """
             update accounts
-               set debits_posted = debits_posted + ?,
-                   credits_posted = credits_posted + ?
-             where id = ?""";
+               set debits_posted = debits_posted + :debit,
+                   credits_posted = credits_posted + :credit
+             where id = :id
+               and (overdraft_policy = 'ALLOWED'
+                    or (type in ('ASSET', 'EXPENSE')
+                        and debits_posted + :debit - (credits_posted + :credit) >= 0)
+                    or (type in ('LIABILITY', 'EQUITY', 'INCOME')
+                        and credits_posted + :credit - (debits_posted + :debit) >= 0))""";
 
     private final JdbcClient jdbc;
 
@@ -38,12 +47,15 @@ class BalancePersistenceAdapter implements BalanceRepository {
     }
 
     @Override
-    public void apply(AccountId account, Money signedAmount) {
+    public boolean apply(AccountId account, Money signedAmount) {
         var debit = signedAmount.isPositive() ? signedAmount.amount() : 0L;
         var credit = signedAmount.isPositive() ? 0L : Math.negateExact(signedAmount.amount());
-        var updated = jdbc.sql(APPLY_SQL).params(debit, credit, account.value()).update();
-        if (updated != 1) {
-            throw new IllegalStateException("Account " + account + " vanished while applying a posting");
-        }
+        // The use case loaded the account in this transaction, so zero rows means the guard refused the amount.
+        return jdbc.sql(APPLY_SQL)
+                        .param("debit", debit)
+                        .param("credit", credit)
+                        .param("id", account.value())
+                        .update()
+                == 1;
     }
 }

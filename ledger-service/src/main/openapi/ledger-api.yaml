@@ -96,9 +96,10 @@ paths:
       summary: Record a double-entry transaction
       description: |
         Records a transaction whose debit lines equal its credit lines, all in
-        one currency and each in its account's currency. The transaction, its
-        postings and the accounts' balances are written atomically, or nothing
-        is (UC2, ADR 0009).
+        one currency and each in its account's currency. A NOT_ALLOWED account
+        may not go below zero on its normal side. The transaction, its postings
+        and the accounts' balances are written atomically, or nothing is (UC2,
+        ADR 0009).
       requestBody:
         required: true
         content:
@@ -416,15 +417,26 @@ components:
     UnprocessableContent:
       description: |
         Well-formed but breaks a ledger rule: unbalanced lines, mixed
-        currencies, a line in a currency other than its account's, or two
-        lines on one account.
+        currencies, a line in a currency other than its account's, two lines
+        on one account, or insufficient funds on a NOT_ALLOWED account.
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
-          example:
-            type: about:blank
-            title: Unbalanced transaction
-            status: 422
-            detail: 'Transaction 5a7c1f22-0000-4000-8000-000000000201 is unbalanced: its lines sum to 100 EUR instead of zero'
-            instance: /transactions
+          examples:
+            unbalanced:
+              summary: Lines do not sum to zero
+              value:
+                type: about:blank
+                title: Unbalanced transaction
+                status: 422
+                detail: 'Transaction 5a7c1f22-0000-4000-8000-000000000201 is unbalanced: its lines sum to 100 EUR instead of zero'
+                instance: /transactions
+            insufficientFunds:
+              summary: A NOT_ALLOWED account would go below zero
+              value:
+                type: about:blank
+                title: Insufficient funds
+                status: 422
+                detail: Account 3f1c2b7e-0000-4000-8000-000000000001 has insufficient funds for a posting of -2500 EUR
+                instance: /transactions
