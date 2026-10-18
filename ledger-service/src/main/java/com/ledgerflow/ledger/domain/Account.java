@@ -5,8 +5,9 @@ import java.util.Currency;
 import java.util.Objects;
 
 /**
- * A ledger account in a single currency. It holds no balance: the balance is always derived from its postings
- * (ADR 0004) and reported from the account's normal balance side (spec "Normal balance").
+ * A ledger account in a single currency. It holds no balance: the balance comes from the signed net of its postings
+ * (kept as counters in storage, ADR 0009) and is reported from the account's normal balance side (spec "Normal
+ * balance").
  */
 public record Account(AccountId id, Currency currency, AccountType type, OverdraftPolicy overdraftPolicy) {
 
@@ -37,7 +38,7 @@ public record Account(AccountId id, Currency currency, AccountType type, Overdra
         return normalSide() == Side.DEBIT ? signedNet : signedNet.negate();
     }
 
-    /** Reference implementation of the derived balance: sums this account's posting lines in memory. */
+    /** Reference implementation of the balance: sums this account's posting lines in memory. */
     public Money balanceOf(Collection<PostingLine> lines) {
         var net = Money.zero(currency);
         for (var line : lines) {

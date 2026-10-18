@@ -3,7 +3,7 @@ info:
   title: LedgerFlow Ledger API
   version: 0.1.0
   description: |
-    Double-entry ledger: accounts, balances derived from postings, and movements.
+    Double-entry ledger: accounts, balances from postings, and movements.
     Amounts are integer minor units with an ISO-4217 currency code (ADR 0004).
     Errors use Problem Details (RFC 9457). All example data is fictitious.
 servers:
@@ -11,7 +11,7 @@ servers:
     description: Local development
 tags:
   - name: Accounts
-    description: Ledger accounts and their derived balances.
+    description: Ledger accounts and their balances.
 paths:
   /accounts:
     post:
@@ -48,9 +48,10 @@ paths:
       operationId: getAccountBalance
       summary: Get an account's balance
       description: |
-        Balance derived from the account's postings (ADR 0004), reported from
-        its normal balance side: Σ debits − Σ credits for a debit-normal
-        account, Σ credits − Σ debits for a credit-normal one.
+        Balance from the account's posting counters, which always equal the
+        sums of its postings (ADR 0009), reported from its normal balance
+        side: Σ debits − Σ credits for a debit-normal account, Σ credits −
+        Σ debits for a credit-normal one.
       parameters:
         - $ref: '#/components/parameters/AccountId'
       responses:

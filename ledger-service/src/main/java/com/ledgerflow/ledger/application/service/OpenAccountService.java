@@ -23,7 +23,7 @@ class OpenAccountService implements OpenAccountUseCase {
     public AccountView open(OpenAccountCommand command) {
         var account = Account.open(command.currency(), command.type(), command.overdraftPolicy());
         accounts.save(account);
-        // A new account has no postings, so its derived balance is the normal-side view of a zero net.
+        // A new account has no postings, so its balance is the normal-side view of a zero net.
         var balance = account.balanceFromNet(Money.zero(account.currency()));
         return new AccountView(
                 account.id(),

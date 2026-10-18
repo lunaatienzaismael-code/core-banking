@@ -5,7 +5,7 @@ import com.ledgerflow.ledger.domain.Money;
 import com.ledgerflow.ledger.domain.Side;
 import java.util.Objects;
 
-/** An account's balance derived from its postings, reported from its normal balance side. */
+/** An account's balance from its postings, reported from its normal balance side. */
 public record AccountBalanceView(AccountId accountId, Side normalBalanceSide, Money balance) {
 
     public AccountBalanceView {
