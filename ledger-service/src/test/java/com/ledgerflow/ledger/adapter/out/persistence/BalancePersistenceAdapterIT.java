@@ -16,6 +16,8 @@ import java.util.Currency;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -78,12 +80,84 @@ class BalancePersistenceAdapterIT {
     }
 
     @Test
-    void applyingToAMissingAccountFailsInsteadOfSilentlyDoingNothing() {
-        var missing = AccountId.random();
+    void creditNormalNotAllowedAccountMayBeDebitedDownToExactlyZero() {
+        var customer = funded("LIABILITY", 1_000);
 
-        assertThatThrownBy(() -> balances.apply(missing, Money.of(1, "EUR")))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining(missing.toString());
+        assertThat(balances.apply(new AccountId(customer), Money.of(1_000, "EUR")))
+                .isTrue();
+
+        assertThat(counters(customer)).containsExactly(1_000L, 1_000L);
+    }
+
+    @Test
+    void creditNormalNotAllowedAccountRefusesADebitOneMinorUnitShort() {
+        var customer = funded("LIABILITY", 1_000);
+
+        assertThat(balances.apply(new AccountId(customer), Money.of(1_001, "EUR")))
+                .isFalse();
+
+        assertThat(counters(customer)).containsExactly(0L, 1_000L);
+    }
+
+    @Test
+    void debitNormalNotAllowedAccountMayBeCreditedDownToExactlyZero() {
+        var nostro = funded("ASSET", 500);
+
+        assertThat(balances.apply(new AccountId(nostro), Money.of(-500, "EUR"))).isTrue();
+
+        assertThat(counters(nostro)).containsExactly(500L, 500L);
+    }
+
+    @Test
+    void debitNormalNotAllowedAccountRefusesACreditOneMinorUnitShort() {
+        var nostro = funded("ASSET", 500);
+
+        assertThat(balances.apply(new AccountId(nostro), Money.of(-501, "EUR"))).isFalse();
+
+        assertThat(counters(nostro)).containsExactly(500L, 0L);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ASSET", "EXPENSE", "LIABILITY", "EQUITY", "INCOME"})
+    void everyNotAllowedAccountTypeIsHeldToExactlyZeroOnItsNormalSide(String type) {
+        var account = funded(type, 700);
+        var id = new AccountId(account);
+        var reducing = debitNormal(type) ? -1 : 1;
+
+        assertThat(balances.apply(id, Money.of(701L * reducing, "EUR"))).isFalse();
+        assertThat(balances.apply(id, Money.of(700L * reducing, "EUR"))).isTrue();
+
+        assertThat(counters(account)).containsExactly(700L, 700L);
+    }
+
+    @Test
+    void amountThatRaisesTheNormalSideBalanceIsNeverRefused() {
+        var customer = ledger.account("EUR", "LIABILITY", "NOT_ALLOWED");
+
+        assertThat(balances.apply(new AccountId(customer), Money.of(-1, "EUR"))).isTrue();
+
+        assertThat(counters(customer)).containsExactly(0L, 1L);
+    }
+
+    @Test
+    void allowedAccountMayGoBelowZeroOnItsNormalSide() {
+        var suspense = ledger.account("EUR", "LIABILITY", "ALLOWED");
+
+        assertThat(balances.apply(new AccountId(suspense), Money.of(5_000, "EUR")))
+                .isTrue();
+
+        assertThat(counters(suspense)).containsExactly(5_000L, 0L);
+    }
+
+    @Test
+    void notAllowedAccountCannotBeOverdrawnEvenByAnUnguardedWrite() {
+        var customer = ledger.account("EUR", "LIABILITY", "NOT_ALLOWED");
+        var nostro = ledger.account("EUR", "ASSET", "NOT_ALLOWED");
+
+        assertThatThrownBy(() -> jdbc.update("update accounts set debits_posted = 1 where id = ?", customer))
+                .hasMessageContaining("ck_accounts_no_overdraft");
+        assertThatThrownBy(() -> jdbc.update("update accounts set credits_posted = 1 where id = ?", nostro))
+                .hasMessageContaining("ck_accounts_no_overdraft");
     }
 
     @Test
@@ -119,6 +193,22 @@ class BalancePersistenceAdapterIT {
                 .hasMessageContaining("ck_accounts_debits_posted_non_negative");
         assertThatThrownBy(() -> jdbc.update("update accounts set credits_posted = -1 where id = ?", account))
                 .hasMessageContaining("ck_accounts_credits_posted_non_negative");
+    }
+
+    /** A {@code NOT_ALLOWED} account whose normal-side balance is {@code amount}, funded from an {@code ALLOWED} one. */
+    private UUID funded(String type, long amount) {
+        var account = ledger.account("EUR", type, "NOT_ALLOWED");
+        var counterpart = ledger.account("EUR", debitNormal(type) ? "LIABILITY" : "ASSET");
+        if (debitNormal(type)) {
+            ledger.transfer(account, counterpart, amount, "EUR");
+        } else {
+            ledger.transfer(counterpart, account, amount, "EUR");
+        }
+        return account;
+    }
+
+    private static boolean debitNormal(String type) {
+        return type.equals("ASSET") || type.equals("EXPENSE");
     }
 
     private Long[] counters(UUID account) {

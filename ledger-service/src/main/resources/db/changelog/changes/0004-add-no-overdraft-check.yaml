@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0004-add-no-overdraft-check
+      author: ledgerflow
+      comment: >-
+        Defence in depth for the overdraft rule (ADR 0009): a NOT_ALLOWED account's normal-side
+        balance, computed from its posting counters, never goes below zero. The guarded counter
+        UPDATE rejects such writes first; this constraint catches any path that bypasses it.
+      changes:
+        - sql:
+            sql: >-
+              ALTER TABLE accounts
+                ADD CONSTRAINT ck_accounts_no_overdraft CHECK (
+                  overdraft_policy = 'ALLOWED'
+                  OR (type IN ('ASSET', 'EXPENSE') AND debits_posted >= credits_posted)
+                  OR (type IN ('LIABILITY', 'EQUITY', 'INCOME') AND credits_posted >= debits_posted))

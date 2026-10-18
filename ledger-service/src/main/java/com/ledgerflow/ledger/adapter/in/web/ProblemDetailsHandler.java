@@ -3,6 +3,7 @@ package com.ledgerflow.ledger.adapter.in.web;
 import com.ledgerflow.ledger.domain.AccountNotFoundException;
 import com.ledgerflow.ledger.domain.CurrencyMismatchException;
 import com.ledgerflow.ledger.domain.DomainException;
+import com.ledgerflow.ledger.domain.InsufficientFundsException;
 import com.ledgerflow.ledger.domain.InvalidCurrencyException;
 import com.ledgerflow.ledger.domain.InvalidTransactionException;
 import com.ledgerflow.ledger.domain.UnbalancedTransactionException;
@@ -46,6 +47,11 @@ class ProblemDetailsHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(CurrencyMismatchException.class)
     ProblemDetail currencyMismatch(CurrencyMismatchException exception) {
         return unprocessable("Currency mismatch", exception);
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    ProblemDetail insufficientFunds(InsufficientFundsException exception) {
+        return unprocessable("Insufficient funds", exception);
     }
 
     @ExceptionHandler(InvalidTransactionException.class)
