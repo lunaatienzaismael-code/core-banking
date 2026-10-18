@@ -211,12 +211,13 @@
       "phase": 5,
       "use_case": null,
       "type": "build",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 30,
-      "branch": null,
-      "pr": null
+      "branch": "build/T-016-pit-mutation-gate",
+      "pr": null,
+      "review_rounds": 1
     }
   ]
 }

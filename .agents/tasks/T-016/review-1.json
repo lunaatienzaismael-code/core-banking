@@ -1,0 +1,10 @@
+{"task_id":"T-016","round":1,"base":"183ee9233895cba761494fd8264288da9d79c248","head":"WORKTREE","verdict":"approve",
+"summary":"Mutation profile, CI job, MoneyTest boundary test, ADR note, README and skill updates match the brief. Baseline 37/37 and negative check (78% fails) are backed by local logs. No blocker or major findings.",
+"acceptance_criteria":[
+{"id":"B1","status":"met","evidence":"pom.xml: pitest.mutation.threshold=90, excludedMethods toString, profile mutation binds mutationCoverage to verify; default build untouched."},
+{"id":"B2","status":"met","evidence":".github/workflows/ci.yml job 'Mutation testing' on pull_request, -Pmutation -DskipITs, uploads **/target/pit-reports/."},
+{"id":"B3","status":"met","evidence":"MoneyTest#zeroIsNotPositive covers -1/0/1 on isPositive; 37/37 killed per pit-203215.log."},
+{"id":"B4","status":"met","evidence":"Logs pit-203215.log (37/37) and pit-negative.log (score 78 below 90, BUILD FAILURE); recorded in ADR 0003 note."},
+{"id":"B5","status":"met","evidence":"ADR 0003 dated note 2026-10-18 plus superseded marker; README.md:27; java-testing SKILL Running section."}],
+"findings":[
+{"severity":"nit","category":"docs","defect_type":"other","file":"docs/adr/0003-testing-strategy.md","line":59,"description":"The ADR decision text is only annotated as superseded; acceptable for an append-only ADR note, but the 'about 20 seconds' cost claim rests on gitignored logs.","suggestion":"Optional: keep as is."}]}
