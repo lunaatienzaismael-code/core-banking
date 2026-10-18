@@ -161,12 +161,12 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-010"],
       "acceptance_criteria": [],
       "issue": 26,
       "branch": "feat/T-012-materialise-balance",
-      "pr": null,
+      "pr": 35,
       "review_rounds": 1
     },
     {
@@ -175,12 +175,13 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-011", "T-012"],
       "acceptance_criteria": ["AC2.1", "AC2.2", "AC2.4"],
       "issue": 27,
-      "branch": null,
-      "pr": null
+      "branch": "feat/T-013-record-transaction",
+      "pr": null,
+      "review_rounds": 1
     },
     {
       "id": "T-014",
@@ -221,6 +222,19 @@
       "branch": "build/T-016-pit-mutation-gate",
       "pr": 33,
       "review_rounds": 1
+    },
+    {
+      "id": "T-017",
+      "title": "Get a transaction by id",
+      "phase": 5,
+      "use_case": "UC2",
+      "type": "feat",
+      "status": "todo",
+      "depends_on": ["T-013"],
+      "acceptance_criteria": [],
+      "issue": 36,
+      "branch": null,
+      "pr": null
     }
   ]
 }

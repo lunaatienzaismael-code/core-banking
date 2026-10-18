@@ -1,0 +1,37 @@
+{
+  "task_id": "T-013",
+  "round": 1,
+  "base": "dbea59621170537f7db5e4b177278349d7de8bf9",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "POST /transactions is implemented as briefed: domain validation first, account/currency checks before writes, postings then atomic counter UPDATEs in ascending account order, all inside one @Transactional use case. Rejections and a mid-transaction rollback are proven at HTTP level. Only minor test-strength gaps remain.",
+  "acceptance_criteria": [
+    {"id": "AC2.1", "status": "met", "evidence": "RecordTransactionIT#unbalancedTransactionIsRejected (422, nothing persisted); RecordTransactionServiceTest#unbalancedLinesAreRejectedBeforeAnyPortIsUsed"},
+    {"id": "AC2.2", "status": "met", "evidence": "RecordTransactionIT#postingsOfAnAcceptedTransactionSumToZero"},
+    {"id": "AC2.4", "status": "met", "evidence": "RecordTransactionIT#mixedCurrenciesAreRejected"},
+    {"id": "B1", "status": "met", "evidence": "ledger-api.yaml /transactions; ITs balancedTransactionIsRecorded (201+Location), lineCurrencyOtherThanTheAccountsIsRejected, unknownAccountIsRejected (404), malformedRequestsAreRejected (400)"},
+    {"id": "B2", "status": "met", "evidence": "RecordTransactionService.record @Transactional; BalancePersistenceAdapter.apply atomic UPDATE; RecordTransactionServiceTest#appliesEachLineToItsAccountInAscendingAccountIdOrderAfterSavingThePostings; BalancePersistenceAdapterIT apply tests"},
+    {"id": "B3", "status": "met", "evidence": "RecordTransactionIT#failureWhileApplyingCountersRollsBackEverything plus expectNothingPersisted after each rejection"}
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "testing",
+      "defect_type": "weak-assertion",
+      "file": "ledger-service/src/test/java/com/ledgerflow/ledger/RecordTransactionIT.java",
+      "line": 265,
+      "description": "expectNothingPersisted checks postings and counters only; B3 says no row in transactions/postings. A rejection path that inserted a transactions row without postings would pass. Only the rollback test compares the transactions count.",
+      "suggestion": "Also assert the global transactions row count is unchanged in expectNothingPersisted (capture before the request).",
+      "rule": "B3"
+    },
+    {
+      "severity": "nit",
+      "category": "api",
+      "defect_type": "contract-gap",
+      "file": "ledger-service/src/main/openapi/ledger-api.yaml",
+      "line": null,
+      "description": "Location points to /transactions/{id}, but no GET endpoint exists yet, so the URI is dangling until a later task.",
+      "suggestion": "Note it in the 201 header description or track the GET in the roadmap."
+    }
+  ]
+}
