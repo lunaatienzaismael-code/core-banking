@@ -31,8 +31,9 @@ this skill covers what ArchUnit cannot see.
    Never `double`/`float`; no `BigDecimal` in state. Operations across
    currencies throw. Use `Math.addExact`/`subtractExact` so overflow fails loudly.
 3. **Ledger sign convention** (spec): posting amount is signed, debit `+`,
-   credit `−`; a transaction's lines sum to zero per currency. Balance is
-   derived from postings and reported from the account's normal balance side.
+   credit `−`; a transaction's lines sum to zero per currency. Postings are the
+   source of truth; the balance is read from per-account counters that equal
+   their sums (ADR 0009) and reported from the account's normal balance side.
 4. **Use cases are the transaction boundary.** `@Transactional` lives on the
    application service; optimistic-lock retries live there too, never in
    adapters or the domain.
