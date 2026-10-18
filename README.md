@@ -24,7 +24,7 @@ docker compose -f infra/docker-compose.yml up -d  # local PostgreSQL
 HTTP contract (OpenAPI-first, [ADR 0008](docs/adr/0008-openapi-tooling.md)): `ledger-service/src/main/openapi/ledger-api.yaml`;
 Spring interfaces and DTOs are generated from it at build time.
 Compact test report (JSON): `scripts/test-summary.sh`.
-Mutation testing (on demand): `./mvnw -pl ledger-service -am test-compile org.pitest:pitest-maven:mutationCoverage`.
+Mutation testing (PIT, PR gate, [ADR 0003](docs/adr/0003-testing-strategy.md)): `./mvnw -B verify -Pmutation -DskipITs -Djacoco.skip=true`; report in `<module>/target/pit-reports/`.
 
 ## Layout
 
