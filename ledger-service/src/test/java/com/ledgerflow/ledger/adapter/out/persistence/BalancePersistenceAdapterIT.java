@@ -67,6 +67,26 @@ class BalancePersistenceAdapterIT {
     }
 
     @Test
+    void applyAddsADebitToDebitsPostedAndACreditToCreditsPosted() {
+        var account = ledger.account("EUR", "ASSET");
+
+        balances.apply(new AccountId(account), Money.of(1_000, "EUR"));
+        balances.apply(new AccountId(account), Money.of(-300, "EUR"));
+        balances.apply(new AccountId(account), Money.of(50, "EUR"));
+
+        assertThat(counters(account)).containsExactly(1_050L, 300L);
+    }
+
+    @Test
+    void applyingToAMissingAccountFailsInsteadOfSilentlyDoingNothing() {
+        var missing = AccountId.random();
+
+        assertThatThrownBy(() -> balances.apply(missing, Money.of(1, "EUR")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining(missing.toString());
+    }
+
+    @Test
     void counterOverflowFailsLoudlyInsteadOfWrapping() {
         var account = ledger.account("EUR", "ASSET");
         var other = ledger.account("EUR", "LIABILITY");

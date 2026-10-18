@@ -1,7 +1,11 @@
 package com.ledgerflow.ledger.adapter.in.web;
 
 import com.ledgerflow.ledger.domain.AccountNotFoundException;
+import com.ledgerflow.ledger.domain.CurrencyMismatchException;
+import com.ledgerflow.ledger.domain.DomainException;
 import com.ledgerflow.ledger.domain.InvalidCurrencyException;
+import com.ledgerflow.ledger.domain.InvalidTransactionException;
+import com.ledgerflow.ledger.domain.UnbalancedTransactionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -34,10 +38,32 @@ class ProblemDetailsHandler extends ResponseEntityExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(UnbalancedTransactionException.class)
+    ProblemDetail unbalancedTransaction(UnbalancedTransactionException exception) {
+        return unprocessable("Unbalanced transaction", exception);
+    }
+
+    @ExceptionHandler(CurrencyMismatchException.class)
+    ProblemDetail currencyMismatch(CurrencyMismatchException exception) {
+        return unprocessable("Currency mismatch", exception);
+    }
+
+    @ExceptionHandler(InvalidTransactionException.class)
+    ProblemDetail invalidTransaction(InvalidTransactionException exception) {
+        return unprocessable("Invalid transaction", exception);
+    }
+
     /** Last resort: log the cause, answer 500 without exposing internals (messages, types, stack traces). */
     @ExceptionHandler(Exception.class)
     ProblemDetail unexpected(Exception exception) {
         log.error("Unhandled exception", exception);
         return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+    }
+
+    /** Well-formed request that breaks a ledger rule (ADR 0009 HTTP mapping): 422, never 400. */
+    private static ProblemDetail unprocessable(String title, DomainException exception) {
+        var problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, exception.getMessage());
+        problem.setTitle(title);
+        return problem;
     }
 }
