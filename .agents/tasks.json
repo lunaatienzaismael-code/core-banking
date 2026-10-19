@@ -229,12 +229,13 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "in_progress",
+      "status": "in_review",
       "depends_on": ["T-013"],
       "acceptance_criteria": [],
       "issue": 36,
       "branch": "feat/T-017-get-transaction",
-      "pr": null
+      "pr": 40,
+      "review_rounds": 1
     }
   ]
 }

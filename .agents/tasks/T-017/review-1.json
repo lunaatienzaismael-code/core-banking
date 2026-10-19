@@ -1,0 +1,8 @@
+{"task_id":"T-017","round":1,"base":"d5ce54e8abbdf23b26c2f353a7a8bf34cedad34b","head":"300fc582fe04adff1d81aa150a1bf3bb651d79f3","verdict":"approve",
+"summary":"GET /transactions/{id} is in the contract, implemented through a read-only use case and a JdbcClient read side, mapped to 404/400 Problem Details. Order-by-posting-id is documented on the schema and the use case. Microsecond truncation is unit-tested. Build 161/161, mutation 55/55.",
+"acceptance_criteria":[
+{"id":"B1","status":"met","evidence":"ledger-api.yaml: GET /transactions/{transactionId} with 200 Transaction, 400 BadRequest, 404 NotFound; lines order documented"},
+{"id":"B2","status":"met","evidence":"GetTransactionService (readOnly), TransactionPersistenceAdapter.findById with order by p.id; GetTransactionServiceTest; TransactionPersistenceAdapterIT"},
+{"id":"B3","status":"met","evidence":"GetTransactionIT#locationOfARecordedTransactionReturnsIt, unknownTransactionIsProblemDetails404, malformedTransactionIdIsProblemDetails400"}],
+"findings":[
+{"severity":"nit","category":"testing","defect_type":"test-data-gap","file":"ledger-service/src/test/java/com/ledgerflow/ledger/GetTransactionIT.java","line":null,"description":"The line-order assertion sorts posting ids as lowercase text, relying on PostgreSQL uuid byte order matching text order; true but implicit, and it only gets exercised when random ids differ from request order.","suggestion":"Optional: note it in the adapter IT or keep as is."}]}
