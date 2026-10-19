@@ -9,6 +9,7 @@
     "weak-assertion": "skill java-testing rule 13 (T-013, 2026-10-18)",
     "contract-gap": "evaluator check 'Contract completeness' (T-013, 2026-10-18)",
     "test-data-gap": "skill java-testing rule 14 (T-017, 2026-10-19)",
+    "scope-creep": "no rule: the two findings share no cause (T-012 a docs line wrap, T-015 a kept extra test that the evaluator judged relevant); revisit on a third finding (T-015, 2026-10-19)",
     "other": "catch-all, no rule by design: findings are reclassified once two of them share a cause (2026-10-18; T-010 and T-016 nits were unrelated)"
   }
 }
