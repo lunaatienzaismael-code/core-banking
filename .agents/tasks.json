@@ -229,11 +229,11 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-013"],
       "acceptance_criteria": [],
       "issue": 36,
-      "branch": null,
+      "branch": "feat/T-017-get-transaction",
       "pr": null
     }
   ]

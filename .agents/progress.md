@@ -70,3 +70,4 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-18 · T-013 · started · branch feat/T-013-record-transaction (stacked on T-012 until PR #35 merges)
 2026-10-18 · phase 5 · planned · T-017 GET /transactions/{id} (#36), from the T-013 review contract-gap; growth rules: weak-assertion → java-testing rule 13, contract-gap → evaluator check 'Contract completeness'
 2026-10-18 · T-012 · done · PR #35 merged
+2026-10-19 · T-017 · started · branch feat/T-017-get-transaction (from main, independent of T-014/T-015)
