@@ -15,6 +15,7 @@ import com.ledgerflow.ledger.domain.PostingLine;
 import com.ledgerflow.ledger.domain.Transaction;
 import com.ledgerflow.ledger.domain.TransactionId;
 import java.time.Clock;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -47,8 +48,10 @@ class RecordTransactionService implements RecordTransactionUseCase {
         var lines = command.lines().stream()
                 .map(line -> new PostingLine(PostingId.random(), id, line.accountId(), line.amount()))
                 .toList();
+        // Microseconds, the precision PostgreSQL stores, so the returned time equals the one read back later.
+        var occurredAt = clock.instant().truncatedTo(ChronoUnit.MICROS);
         // The domain rejects unbalanced, mixed-currency and duplicate-account lines before anything is read or written.
-        var transaction = new Transaction(id, clock.instant(), lines);
+        var transaction = new Transaction(id, occurredAt, lines);
         for (var line : transaction.lines()) {
             requireAccountInCurrencyOf(line);
         }

@@ -61,6 +61,23 @@ class RecordTransactionServiceTest {
     }
 
     @Test
+    void recordsTheTimeAtTheMicrosecondPrecisionTheDatabaseStores() {
+        var cash = stored("EUR", AccountType.ASSET);
+        var customer = stored("EUR", AccountType.LIABILITY);
+        var nanos = Instant.parse("2026-10-18T09:30:00.123456789Z");
+        var service =
+                new RecordTransactionService(accounts, transactions, balances, Clock.fixed(nanos, ZoneOffset.UTC));
+
+        var view = service.record(command(line(cash, 2_500, "EUR"), line(customer, -2_500, "EUR")));
+
+        var micros = Instant.parse("2026-10-18T09:30:00.123456Z");
+        var saved = ArgumentCaptor.forClass(Transaction.class);
+        verify(transactions).save(saved.capture());
+        assertThat(saved.getValue().occurredAt()).isEqualTo(micros);
+        assertThat(view.occurredAt()).isEqualTo(micros);
+    }
+
+    @Test
     void appliesEachLineToItsAccountInAscendingAccountIdOrderAfterSavingThePostings() {
         var low = stored(new UUID(0, 1), "EUR", AccountType.LIABILITY);
         var high = stored(new UUID(0, 2), "EUR", AccountType.ASSET);
