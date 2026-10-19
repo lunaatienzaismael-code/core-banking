@@ -175,7 +175,7 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "in_review",
+      "status": "done",
       "depends_on": ["T-011", "T-012"],
       "acceptance_criteria": ["AC2.1", "AC2.2", "AC2.4"],
       "issue": 27,
@@ -189,12 +189,12 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "feat",
-      "status": "in_progress",
+      "status": "in_review",
       "depends_on": ["T-013"],
       "acceptance_criteria": ["AC2.3"],
       "issue": 28,
       "branch": "feat/T-014-reject-overdrafts",
-      "pr": null,
+      "pr": 38,
       "review_rounds": 1
     },
     {

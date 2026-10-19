@@ -72,3 +72,5 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-18 · T-012 · done · PR #35 merged
 2026-10-18 · T-013 · in_review · PR #37
 2026-10-18 · T-014 · started · branch feat/T-014-reject-overdrafts (stacked on T-013 until PR #37 merges)
+2026-10-19 · T-013 · done · PR #37 merged
+2026-10-19 · T-014 · in_review · PR #38
