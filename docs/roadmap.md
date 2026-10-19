@@ -42,9 +42,12 @@ starts.
   - [x] Raise JaCoCo threshold to real coverage
   - [x] Close milestone, tag `v0.1.0`
 
-- [ ] **Phase 5 — Full ledger (UC2)**: double-entry transactions, domain
+- [x] **Phase 5 — Full ledger (UC2)**: double-entry transactions, domain
       invariants, atomic conditional balance updates, concurrent-postings
       Testcontainers test. ADR 0009: materialised balance. Tag `v0.2.0`.
+  - [x] ADR 0009, PIT mutation gate, `Transaction` aggregate, posting counters
+  - [x] `POST /transactions`, overdraft guard, concurrency proof, `GET /transactions/{id}`
+  - [x] Close milestone, tag `v0.2.0`
 
 - [ ] **Phase 6 — payment-service (UC3)**: second module reusing ArchUnit rules,
       `Idempotency-Key` persistence, payment state machine. Consider
