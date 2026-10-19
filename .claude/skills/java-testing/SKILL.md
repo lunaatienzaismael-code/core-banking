@@ -61,6 +61,11 @@ ArchUnit rule, it is one.
     alone could come from any overflow). A "nothing persisted" test checks
     every table the criterion names (rows in `transactions` *and* `postings`
     *and* the counters), comparing counts taken before the request.
+14. **Build data that forces the case, every run.** If the case needs an
+    account policy, a time or an order, the fixture must be able to create
+    it, and random values (ids, times) are arranged so the test fails
+    whenever the behaviour is wrong, not only on some runs: e.g. generate
+    posting ids, sort them, insert them in reverse.
 
 ## Running
 

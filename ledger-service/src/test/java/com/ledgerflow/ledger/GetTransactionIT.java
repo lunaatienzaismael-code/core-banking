@@ -77,6 +77,8 @@ class GetTransactionIT {
 
         assertThat(transaction.get("id")).isEqualTo(recorded.get("id"));
         assertThat(transaction.get("occurredAt")).isEqualTo(recorded.get("occurredAt"));
+        // POST assigns random posting ids, so this order check bites only when they differ from the request order;
+        // TransactionPersistenceAdapterIT proves the posting-id order on every run (java-testing rule 14).
         assertThat(lines(transaction)).containsExactlyElementsOf(byPostingId(lines(recorded)));
     }
 
