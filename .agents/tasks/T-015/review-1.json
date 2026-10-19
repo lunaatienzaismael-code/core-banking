@@ -1,0 +1,35 @@
+{
+  "task_id": "T-015",
+  "round": 1,
+  "base": "780cbf6c39f28d7c2a2b1f9bdc7b77b12a8065b5",
+  "head": "2aedd9bce5e7c9e6b2419a72ef916caaa7d946de",
+  "verdict": "approve",
+  "summary": "Test-only change: a real-thread, real-HTTP, real-PostgreSQL IT with a start gate. It proves exactly K accepted and N-K rejected, exact counters, counters equal to postings and a zero sum per currency. One minor weak assertion: rejections are checked only by HTTP 422.",
+  "acceptance_criteria": [
+    {"id": "AC2.5", "status": "met", "evidence": "ConcurrentTransactionsIT#concurrentWithdrawalsAcceptExactlyTheFundedOnes and #concurrentOpposingTransfersNeitherDeadlockNorLoseUpdates (50 threads, exact counters)"},
+    {"id": "B1", "status": "met", "evidence": "ConcurrentTransactionsIT#concurrentWithdrawalsAcceptExactlyTheFundedOnes: 20 accepted (201), 30 rejected (422), customer counters 2000/2000, settlement 0/2000"},
+    {"id": "B2", "status": "met", "evidence": "assertCountersEqualPostings and assertPostingsSumToZeroPerCurrency in both tests"},
+    {"id": "B3", "status": "met", "evidence": "Outcome is deterministic by construction (fixed K, statuses counted). Author reports 5/5 local runs and 172/172 in the full build (maven-20261019-122551.log)."}
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "testing",
+      "defect_type": "weak-assertion",
+      "file": "ledger-service/src/test/java/com/ledgerflow/ledger/ConcurrentTransactionsIT.java",
+      "line": 62,
+      "description": "B1 requires the N-K rejections to be 'insufficient funds', but only the HTTP status 422 is counted. Another 422 cause (e.g. a validation error) would pass unnoticed.",
+      "suggestion": "Capture the response body and assert the Problem Details type or code for insufficient funds on every rejected response.",
+      "rule": "brief B1"
+    },
+    {
+      "severity": "nit",
+      "category": "testing",
+      "defect_type": "scope-creep",
+      "file": "ledger-service/src/test/java/com/ledgerflow/ledger/ConcurrentTransactionsIT.java",
+      "line": 70,
+      "description": "The opposing-transfers test is not in the brief. It is cheap and relevant to AC2.5, and a deadlock would surface as a failed request. The comment about sorting by account id is unverified here.",
+      "suggestion": "Keep it, but reference the production lock-ordering code in the comment or drop that claim."
+    }
+  ]
+}
