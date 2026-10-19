@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * UC2 AC2.5 safe concurrency: real threads released together by a start gate, real HTTP, real PostgreSQL. The outcome
@@ -34,6 +35,8 @@ class ConcurrentTransactionsIT {
 
     private static final int THREADS = 50;
     private static final long AMOUNT = 100;
+    private static final String CREATED = "201";
+    private static final String INSUFFICIENT_FUNDS = "422 Insufficient funds";
 
     @LocalServerPort
     private int port;
@@ -43,6 +46,7 @@ class ConcurrentTransactionsIT {
 
     private LedgerFixture ledger;
     private final HttpClient http = HttpClient.newHttpClient();
+    private final JsonMapper json = JsonMapper.builder().build();
 
     @BeforeEach
     void setUp() {
@@ -58,11 +62,9 @@ class ConcurrentTransactionsIT {
         var settlement = ledger.account("EUR", "LIABILITY", "ALLOWED");
         ledger.transfer(cash, customer, funded * AMOUNT, "EUR");
 
-        var statuses = concurrently(THREADS, i -> transfer(customer, settlement));
+        var outcomes = concurrently(THREADS, i -> transfer(customer, settlement));
 
-        assertThat(statuses).containsOnlyKeys(201, 422);
-        assertThat(statuses.get(201)).isEqualTo(funded);
-        assertThat(statuses.get(422)).isEqualTo(THREADS - funded);
+        assertThat(outcomes).containsOnly(Map.entry(CREATED, funded), Map.entry(INSUFFICIENT_FUNDS, THREADS - funded));
         assertThat(counters(customer)).containsExactly(funded * AMOUNT, funded * AMOUNT);
         assertThat(counters(settlement)).containsExactly(0L, funded * AMOUNT);
         assertCountersEqualPostings(cash, customer, settlement);
@@ -75,10 +77,11 @@ class ConcurrentTransactionsIT {
         var alice = ledger.account("EUR", "LIABILITY", "ALLOWED");
         var bob = ledger.account("EUR", "LIABILITY", "ALLOWED");
 
-        // Even threads move alice → bob, odd ones bob → alice: opposite lock orders unless writers sort by account id.
-        var statuses = concurrently(THREADS, i -> i % 2 == 0 ? transfer(alice, bob) : transfer(bob, alice));
+        // Even threads move alice → bob, odd ones bob → alice: opposite lock orders unless every writer updates the
+        // counters in one account order (RecordTransactionService.ACCOUNT_ORDER, ADR 0009).
+        var outcomes = concurrently(THREADS, i -> i % 2 == 0 ? transfer(alice, bob) : transfer(bob, alice));
 
-        assertThat(statuses).containsExactly(Map.entry(201, THREADS));
+        assertThat(outcomes).containsExactly(Map.entry(CREATED, THREADS));
         var each = THREADS / 2 * AMOUNT;
         assertThat(counters(alice)).containsExactly(each, each);
         assertThat(counters(bob)).containsExactly(each, each);
@@ -86,29 +89,38 @@ class ConcurrentTransactionsIT {
         assertPostingsSumToZeroPerCurrency();
     }
 
-    /** Runs {@code count} requests on as many threads, all released at once; returns how many got each HTTP status. */
-    private Map<Integer, Integer> concurrently(int count, Function<Integer, HttpRequest> request) throws Exception {
+    /**
+     * Runs {@code count} requests on as many threads, all released at once; returns how many got each outcome: the HTTP
+     * status, followed by the Problem Details title for a 422.
+     */
+    private Map<String, Integer> concurrently(int count, Function<Integer, HttpRequest> request) throws Exception {
         var ready = new CountDownLatch(count);
         var start = new CountDownLatch(1);
         try (var executor = Executors.newFixedThreadPool(count)) {
-            var results = new ArrayList<Future<Integer>>();
+            var results = new ArrayList<Future<String>>();
             for (int i = 0; i < count; i++) {
                 var call = request.apply(i);
                 results.add(executor.submit(() -> {
                     ready.countDown();
                     start.await();
-                    return http.send(call, HttpResponse.BodyHandlers.discarding())
-                            .statusCode();
+                    return outcomeOf(http.send(call, HttpResponse.BodyHandlers.ofString()));
                 }));
             }
             ready.await();
             start.countDown();
-            var statuses = new ArrayList<Integer>();
+            var outcomes = new ArrayList<String>();
             for (var result : results) {
-                statuses.add(result.get());
+                outcomes.add(result.get());
             }
-            return statuses.stream().collect(Collectors.toMap(status -> status, status -> 1, Integer::sum));
+            return outcomes.stream().collect(Collectors.toMap(outcome -> outcome, outcome -> 1, Integer::sum));
         }
+    }
+
+    private String outcomeOf(HttpResponse<String> response) {
+        var status = String.valueOf(response.statusCode());
+        return response.statusCode() == 422
+                ? status + " " + json.readTree(response.body()).path("title").asString()
+                : status;
     }
 
     /** Debits {@code from} and credits {@code to} by {@link #AMOUNT}. */
