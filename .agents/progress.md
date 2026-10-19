@@ -78,3 +78,7 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-19 · T-014 · in_review · PR #38
 2026-10-18 · T-015 · started · branch test/T-015-concurrent-transactions (stacked on T-014)
 2026-10-19 · T-015 · in_review · PR #39 (stacked on #38); growth: scope-creep in T-012 and T-015, no rule (unrelated causes)
+2026-10-19 · T-017 · done · PR #40 merged
+2026-10-19 · T-015 · done · PR #39 merged into the T-014 branch, reached main with PR #38
+2026-10-19 · T-014 · done · PR #38 merged
+2026-10-19 · phase 5 · done · T-010..T-017 merged (PRs #32–#35, #37–#40); close milestone #5, tag v0.2.0 after this PR
