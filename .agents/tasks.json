@@ -203,12 +203,13 @@
       "phase": 5,
       "use_case": "UC2",
       "type": "test",
-      "status": "in_progress",
+      "status": "in_review",
       "depends_on": ["T-014"],
       "acceptance_criteria": ["AC2.5"],
       "issue": 29,
       "branch": "test/T-015-concurrent-transactions",
-      "pr": null
+      "pr": 39,
+      "review_rounds": 1
     },
     {
       "id": "T-016",
