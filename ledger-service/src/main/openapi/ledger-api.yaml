@@ -124,6 +124,26 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/UnprocessableContent'
+  /transactions/{transactionId}:
+    get:
+      tags: [Transactions]
+      operationId: getTransaction
+      summary: Get a transaction
+      description: |
+        The recorded transaction with its posting lines, ordered by posting id.
+      parameters:
+        - $ref: '#/components/parameters/TransactionId'
+      responses:
+        '200':
+          description: The transaction.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   parameters:
     AccountId:
@@ -131,6 +151,14 @@ components:
       in: path
       required: true
       description: Account identifier.
+      schema:
+        type: string
+        format: uuid
+    TransactionId:
+      name: transactionId
+      in: path
+      required: true
+      description: Transaction identifier.
       schema:
         type: string
         format: uuid
@@ -323,6 +351,9 @@ components:
           type: string
           format: date-time
         lines:
+          description: |
+            One line per posting. Recording returns them in request order;
+            reading returns them ordered by posting id.
           type: array
           items:
             $ref: '#/components/schemas/TransactionLine'

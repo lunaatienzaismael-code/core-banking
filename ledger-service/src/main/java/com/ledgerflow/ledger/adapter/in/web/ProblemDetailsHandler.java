@@ -5,6 +5,7 @@ import com.ledgerflow.ledger.domain.CurrencyMismatchException;
 import com.ledgerflow.ledger.domain.DomainException;
 import com.ledgerflow.ledger.domain.InvalidCurrencyException;
 import com.ledgerflow.ledger.domain.InvalidTransactionException;
+import com.ledgerflow.ledger.domain.TransactionNotFoundException;
 import com.ledgerflow.ledger.domain.UnbalancedTransactionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,13 @@ class ProblemDetailsHandler extends ResponseEntityExceptionHandler {
     ProblemDetail accountNotFound(AccountNotFoundException exception) {
         var problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
         problem.setTitle("Account not found");
+        return problem;
+    }
+
+    @ExceptionHandler(TransactionNotFoundException.class)
+    ProblemDetail transactionNotFound(TransactionNotFoundException exception) {
+        var problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+        problem.setTitle("Transaction not found");
         return problem;
     }
 

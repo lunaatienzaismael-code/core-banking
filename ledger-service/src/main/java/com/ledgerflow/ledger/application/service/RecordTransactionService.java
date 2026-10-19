@@ -59,7 +59,7 @@ class RecordTransactionService implements RecordTransactionUseCase {
         transaction.amountsByAccount().entrySet().stream()
                 .sorted(ACCOUNT_ORDER)
                 .forEach(entry -> balances.apply(entry.getKey(), entry.getValue()));
-        return toView(transaction);
+        return TransactionView.of(transaction);
     }
 
     private void requireAccountInCurrencyOf(PostingLine line) {
@@ -69,12 +69,5 @@ class RecordTransactionService implements RecordTransactionUseCase {
         if (!account.currency().equals(currency)) {
             throw new CurrencyMismatchException(account.currency(), currency);
         }
-    }
-
-    private static TransactionView toView(Transaction transaction) {
-        var lines = transaction.lines().stream()
-                .map(line -> new TransactionView.Line(line.id(), line.accountId(), line.magnitude(), line.side()))
-                .toList();
-        return new TransactionView(transaction.id(), transaction.occurredAt(), lines);
     }
 }
