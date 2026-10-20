@@ -96,3 +96,5 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-20 · T-020 · done · reached main with #47; issue #44 closed by hand
 2026-10-20 · T-021 · in_review · PR #50
 2026-10-20 · T-022 · started · branch feat/T-022-idempotency-key (stacked on T-021)
+2026-10-20 · T-021 · done · PR #50 merged
+2026-10-20 · T-022 · in_review · PR #51; follow-up: ledger ConstraintViolationException → 400 (same latent gap)
