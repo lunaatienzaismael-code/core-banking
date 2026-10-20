@@ -1,0 +1,25 @@
+{
+  "task_id": "T-021",
+  "round": 1,
+  "base": "79cb91cc3a836adee955a3d3bcc35adcf2088bb2",
+  "head": "3cac5cd250664cdefe09c8323aa3bfaab88ada7d",
+  "verdict": "approve",
+  "summary": "Initiate and read payment is complete: contract, changeset with named constraints and version, JPA adapter with explicit mappers, use cases as transaction boundary, Problem Details for 400/404/422/500. Tests cover each criterion at the right layer. No blockers or majors.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "payment-api.yaml; PaymentControllerTest (201+Location, 400, 422, 404, malformed id)"},
+    {"id": "B2", "status": "met", "evidence": "0001-create-payments.yaml (ck_payments_* constraints, version); PaymentPersistenceAdapterIT#schemaRejectsRowsTheDomainWouldRefuse"},
+    {"id": "B3", "status": "met", "evidence": "InitiatePaymentIT#initiatedPaymentIsStoredAndReadableAtItsLocation, #rejectedInitiationLeavesNoPayment"},
+    {"id": "B4", "status": "met", "evidence": "No Idempotency-Key in payment-api.yaml or controller"}
+  ],
+  "findings": [
+    {
+      "severity": "nit",
+      "category": "persistence",
+      "defect_type": "other",
+      "file": "payment-service/src/main/java/com/ledgerflow/payment/adapter/out/persistence/PaymentPersistenceMapper.java",
+      "line": 29,
+      "description": "The entity version is not carried into the domain, so a later status-update save (T-023+) must load the entity or map the version to keep optimistic locking effective. Not needed for this task.",
+      "suggestion": "Handle when the first status transition is persisted."
+    }
+  ]
+}
