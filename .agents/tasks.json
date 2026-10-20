@@ -259,11 +259,11 @@
       "phase": 6,
       "use_case": "UC3",
       "type": "build",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-018"],
       "acceptance_criteria": [],
       "issue": 43,
-      "branch": null,
+      "branch": "build/T-019-payment-service-skeleton",
       "pr": null
     },
     {
