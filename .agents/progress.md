@@ -82,3 +82,5 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-19 · T-015 · done · PR #39 merged into the T-014 branch, reached main with PR #38
 2026-10-19 · T-014 · done · PR #38 merged
 2026-10-19 · phase 5 · done · T-010..T-017 merged (PRs #32–#35, #37–#40); close milestone #5, tag v0.2.0 after this PR
+2026-10-20 · phase 6 · planned · UC3 → T-018..T-022 (issues #42–#46, milestone #6); user approved the proposal incl. 422 for a reused key with a different body
+2026-10-20 · T-018 · started · branch docs/T-018-payment-adrs (stacked on chore/close-phase-5 until PR #41 merges)
