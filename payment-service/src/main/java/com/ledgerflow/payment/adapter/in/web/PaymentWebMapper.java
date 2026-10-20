@@ -7,6 +7,7 @@ import com.ledgerflow.payment.adapter.in.web.model.PositiveMoneyDto;
 import com.ledgerflow.payment.application.port.in.InitiatePaymentCommand;
 import com.ledgerflow.payment.application.port.in.PaymentView;
 import com.ledgerflow.payment.domain.AccountId;
+import com.ledgerflow.payment.domain.IdempotencyKey;
 import com.ledgerflow.payment.domain.Money;
 import com.ledgerflow.payment.domain.PaymentStatus;
 import java.time.ZoneOffset;
@@ -19,8 +20,9 @@ final class PaymentWebMapper {
 
     private PaymentWebMapper() {}
 
-    static InitiatePaymentCommand toCommand(InitiatePaymentRequestDto request) {
+    static InitiatePaymentCommand toCommand(String idempotencyKey, InitiatePaymentRequestDto request) {
         return new InitiatePaymentCommand(
+                new IdempotencyKey(idempotencyKey),
                 new AccountId(request.getDebtorAccountId()),
                 new AccountId(request.getCreditorAccountId()),
                 Money.of(request.getAmount().getAmount(), request.getAmount().getCurrency()));

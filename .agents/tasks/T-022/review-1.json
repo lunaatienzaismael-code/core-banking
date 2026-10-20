@@ -1,0 +1,10 @@
+{"task_id":"T-022","round":1,"base":"5427d52fa97ffc7d043be9d715e41865f8bdc7af","head":"812169e2e63dea0b1aa32ebeb39f38474ba2c778","verdict":"approve",
+"summary":"Idempotent initiation via insert ... on conflict do nothing then read-back and hash compare, as ADR 0010 decides. All criteria proven by named tests incl. 20-thread IT; backfill, 400 handler and insertIfAbsent port change are sound. No blocker or major findings.",
+"acceptance_criteria":[
+{"id":"AC3.1","status":"met","evidence":"IdempotentInitiationIT#retryWithTheSameKeyCreatesOnePaymentAndAnIdenticalResponse; service returns stored payment"},
+{"id":"AC3.2","status":"met","evidence":"IdempotentInitiationIT#reusedKeyWithADifferentRequestIsRejected; PaymentControllerTest#reusedIdempotencyKeyIs422ProblemDetails"},
+{"id":"B1","status":"met","evidence":"PaymentControllerTest#missingIdempotencyKeyIs400ProblemDetailsAndNoUseCaseCall, #idempotencyKeyOutsideOneTo255CharactersIs400ProblemDetails, #idempotencyKeyOf255CharactersIsAccepted"},
+{"id":"B2","status":"met","evidence":"0002 changeset (uq_payments_idempotency_key, request_hash); IdempotentInitiationIT#retryWithReorderedFieldsIsTheSameRequest; RequestFingerprintTest; PaymentIdempotencyBackfillIT"},
+{"id":"B3","status":"met","evidence":"IdempotentInitiationIT#concurrentRequestsWithTheSameKeyCreateOnePayment; 5 repeated passes logged"}],
+"findings":[
+{"severity":"nit","category":"api","defect_type":"other","file":"payment-service/src/main/java/com/ledgerflow/payment/adapter/in/web/ProblemDetailsHandler.java","line":55,"description":"ConstraintViolationException to 400 handler is a justified fix for this module; the ledger-service has the same latent gap (no constrained params today). Track it so it is not forgotten.","suggestion":"Note it in the roadmap or a follow-up task."}]}

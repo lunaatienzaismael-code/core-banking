@@ -287,7 +287,7 @@
       "phase": 6,
       "use_case": "UC3",
       "type": "feat",
-      "status": "in_review",
+      "status": "done",
       "depends_on": ["T-020"],
       "acceptance_criteria": [],
       "issue": 45,
@@ -301,12 +301,13 @@
       "phase": 6,
       "use_case": "UC3",
       "type": "feat",
-      "status": "todo",
+      "status": "in_review",
       "depends_on": ["T-021"],
       "acceptance_criteria": ["AC3.1", "AC3.2"],
       "issue": 46,
-      "branch": null,
-      "pr": null
+      "branch": "feat/T-022-idempotency-key",
+      "pr": 51,
+      "review_rounds": 1
     }
   ]
 }

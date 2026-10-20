@@ -11,6 +11,8 @@ import com.ledgerflow.payment.application.port.in.InitiatePaymentCommand;
 import com.ledgerflow.payment.application.port.in.InitiatePaymentUseCase;
 import com.ledgerflow.payment.application.port.in.PaymentView;
 import com.ledgerflow.payment.domain.AccountId;
+import com.ledgerflow.payment.domain.IdempotencyKey;
+import com.ledgerflow.payment.domain.IdempotencyKeyReusedException;
 import com.ledgerflow.payment.domain.InvalidPaymentException;
 import com.ledgerflow.payment.domain.Money;
 import com.ledgerflow.payment.domain.PaymentId;
@@ -36,6 +38,7 @@ class PaymentControllerTest {
     private static final UUID ID = UUID.fromString("7c4e9a10-0000-4000-8000-000000000001");
     private static final UUID DEBTOR = UUID.fromString("3f1c2b7e-0000-4000-8000-000000000001");
     private static final UUID CREDITOR = UUID.fromString("3f1c2b7e-0000-4000-8000-000000000002");
+    private static final String KEY = "0b6f4f8e-2c1a-4d3e-9f50-6a7b8c9d0e1f";
     private static final Instant JAN_15 = Instant.parse("2026-01-15T09:30:00Z");
 
     @Autowired
@@ -61,7 +64,10 @@ class PaymentControllerTest {
                  "amount": {"amount": 2500, "currency": "EUR"}, "initiatedAt": "2026-01-15T09:30:00Z"}""");
         verify(initiatePayment)
                 .initiate(new InitiatePaymentCommand(
-                        new AccountId(DEBTOR), new AccountId(CREDITOR), Money.of(2_500, "EUR")));
+                        new IdempotencyKey(KEY),
+                        new AccountId(DEBTOR),
+                        new AccountId(CREDITOR),
+                        Money.of(2_500, "EUR")));
     }
 
     @ParameterizedTest
@@ -115,6 +121,68 @@ class PaymentControllerTest {
                 .bodyJson()
                 .extractingPath("$.detail")
                 .isEqualTo("Debtor and creditor are the same account " + DEBTOR);
+    }
+
+    @Test
+    void missingIdempotencyKeyIs400ProblemDetailsAndNoUseCaseCall() {
+        var result = mvc.post()
+                .uri("/payments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body(DEBTOR, CREDITOR, 2_500, "EUR"))
+                .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(result).bodyJson().extractingPath("$.detail").asString().contains("Idempotency-Key");
+        verifyNoInteractions(initiatePayment);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 256})
+    void idempotencyKeyOutsideOneTo255CharactersIs400ProblemDetails(int length) {
+        var result = mvc.post()
+                .uri("/payments")
+                .header("Idempotency-Key", "k".repeat(length))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body(DEBTOR, CREDITOR, 2_500, "EUR"))
+                .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Invalid request");
+        assertThat(result)
+                .bodyJson()
+                .extractingPath("$.detail")
+                .isEqualTo("idempotencyKey: size must be between 1 and 255");
+        verifyNoInteractions(initiatePayment);
+    }
+
+    @Test
+    void idempotencyKeyOf255CharactersIsAccepted() {
+        when(initiatePayment.initiate(any())).thenReturn(view(PaymentStatus.INITIATED, Optional.empty()));
+
+        var result = mvc.post()
+                .uri("/payments")
+                .header("Idempotency-Key", "k".repeat(255))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body(DEBTOR, CREDITOR, 2_500, "EUR"))
+                .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.CREATED);
+    }
+
+    @Test
+    void reusedIdempotencyKeyIs422ProblemDetails() {
+        when(initiatePayment.initiate(any())).thenThrow(new IdempotencyKeyReusedException(new IdempotencyKey(KEY)));
+
+        var result = post(body(DEBTOR, CREDITOR, 2_500, "EUR"));
+
+        assertThat(result)
+                .hasStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+                .hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Idempotency key reused");
+        assertThat(result)
+                .bodyJson()
+                .extractingPath("$.detail")
+                .isEqualTo("Idempotency-Key '" + KEY + "' was already used for a different request");
     }
 
     @Test
@@ -175,6 +243,7 @@ class PaymentControllerTest {
     private MvcTestResult post(String body) {
         return mvc.post()
                 .uri("/payments")
+                .header("Idempotency-Key", KEY)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
                 .exchange();
