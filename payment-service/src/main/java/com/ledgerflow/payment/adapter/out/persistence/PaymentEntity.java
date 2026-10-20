@@ -39,6 +39,14 @@ class PaymentEntity {
     @Column(name = "initiated_at", nullable = false)
     private OffsetDateTime initiatedAt;
 
+    /** Written once by the idempotent insert (ADR 0010); JPA only reads it. */
+    @Column(name = "idempotency_key", nullable = false, insertable = false, updatable = false)
+    private String idempotencyKey;
+
+    @Column(name = "request_hash", nullable = false, length = 64, insertable = false, updatable = false)
+    @JdbcTypeCode(SqlTypes.CHAR)
+    private String requestHash;
+
     /** Optimistic locking for status changes (ADR 0011). Null until first persisted, which marks the entity as new. */
     @Version
     private Long version;
@@ -94,6 +102,10 @@ class PaymentEntity {
 
     OffsetDateTime getInitiatedAt() {
         return initiatedAt;
+    }
+
+    String getRequestHash() {
+        return requestHash;
     }
 
     Long getVersion() {

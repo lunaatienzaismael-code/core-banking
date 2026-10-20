@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0002-add-payment-idempotency-key
+      author: ledgerflow
+      comment: >-
+        Idempotent initiation (ADR 0010). Payments created before this change set
+        get a key no client was given ('legacy-' + id) and an all-zero hash that no
+        SHA-256 fingerprint of a request equals, so reusing such a key is a 422,
+        never a false replay.
+      changes:
+        - addColumn:
+            tableName: payments
+            columns:
+              - column:
+                  name: idempotency_key
+                  type: varchar(255)
+              - column:
+                  name: request_hash
+                  type: char(64)
+        - sql:
+            sql: >-
+              UPDATE payments
+                 SET idempotency_key = 'legacy-' || id,
+                     request_hash = repeat('0', 64)
+        - addNotNullConstraint:
+            tableName: payments
+            columnName: idempotency_key
+        - addNotNullConstraint:
+            tableName: payments
+            columnName: request_hash
+        - sql:
+            sql: >-
+              ALTER TABLE payments
+                ADD CONSTRAINT uq_payments_idempotency_key UNIQUE (idempotency_key),
+                ADD CONSTRAINT ck_payments_idempotency_key CHECK (length(idempotency_key) BETWEEN 1 AND 255),
+                ADD CONSTRAINT ck_payments_request_hash CHECK (request_hash ~ '^[0-9a-f]{64}$')
