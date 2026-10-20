@@ -1,0 +1,5 @@
+# Master changelog. Each change set lives in its own file under changes/ and is
+# included here in order; applied change sets are never edited (ADR 0004).
+# The payment database owns no tables yet: the first change set arrives with
+# the payments table (T-021).
+databaseChangeLog: []
