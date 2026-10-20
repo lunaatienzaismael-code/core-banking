@@ -1,14 +1,18 @@
 package com.ledgerflow.payment.domain;
 
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * A transfer between two ledger accounts and where it is in its lifecycle (UC3, ADR 0011). Its status changes only
  * through the business-event methods, each checked against {@link PaymentStatus#next()}.
  */
 public final class Payment {
+
+    private static final Set<PaymentStatus> NEEDS_REASON = EnumSet.of(PaymentStatus.REJECTED, PaymentStatus.FAILED);
 
     private final PaymentId id;
     private final AccountId debtor;
@@ -36,6 +40,27 @@ public final class Payment {
     /** A new payment in {@link PaymentStatus#INITIATED}: accepted, nothing reserved. */
     public static Payment initiate(AccountId debtor, AccountId creditor, Money amount, Instant initiatedAt) {
         return new Payment(PaymentId.random(), debtor, creditor, amount, initiatedAt);
+    }
+
+    /**
+     * A stored payment, as persisted. The same rules hold as for a new one, and the reason must be present exactly when
+     * the status is {@link PaymentStatus#REJECTED} or {@link PaymentStatus#FAILED}.
+     */
+    public static Payment restore(
+            PaymentId id,
+            AccountId debtor,
+            AccountId creditor,
+            Money amount,
+            Instant initiatedAt,
+            PaymentStatus status,
+            String reason) {
+        var payment = new Payment(id, debtor, creditor, amount, initiatedAt);
+        payment.status = Objects.requireNonNull(status, "status");
+        if ((reason != null) != NEEDS_REASON.contains(status)) {
+            throw new IllegalArgumentException("Payment " + id + " in " + status + " cannot have reason " + reason);
+        }
+        payment.reason = reason;
+        return payment;
     }
 
     /** The risk check passed (UC5). */

@@ -1,0 +1,61 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0001-create-payments
+      author: ledgerflow
+      comment: Payments and their lifecycle status (UC3, ADR 0011).
+      changes:
+        - createTable:
+            tableName: payments
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_payments
+              - column:
+                  name: debtor_account_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: creditor_account_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: currency
+                  type: char(3)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reason
+                  type: varchar(500)
+              - column:
+                  name: initiated_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: >-
+              ALTER TABLE payments
+                ADD CONSTRAINT ck_payments_amount_positive CHECK (amount > 0),
+                ADD CONSTRAINT ck_payments_currency CHECK (currency ~ '^[A-Z]{3}$'),
+                ADD CONSTRAINT ck_payments_distinct_accounts CHECK (debtor_account_id <> creditor_account_id),
+                ADD CONSTRAINT ck_payments_status CHECK (status IN ('INITIATED', 'RISK_APPROVED', 'FUNDS_RESERVED', 'COMPLETED', 'REJECTED', 'FAILED')),
+                ADD CONSTRAINT ck_payments_reason CHECK ((reason IS NOT NULL) = (status IN ('REJECTED', 'FAILED')))

@@ -10,9 +10,144 @@ info:
 servers:
   - url: http://localhost:8081
     description: Local development
-paths: {}
+tags:
+  - name: Payments
+    description: Transfers between ledger accounts and their lifecycle.
+paths:
+  /payments:
+    post:
+      tags: [Payments]
+      operationId: initiatePayment
+      summary: Initiate a payment
+      description: |
+        Creates a payment in `INITIATED`. Only the request's shape is checked
+        here; whether the accounts exist, share the currency and hold the funds
+        is decided later, asynchronously (ADR 0010).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitiatePaymentRequest'
+      responses:
+        '201':
+          description: Payment initiated.
+          headers:
+            Location:
+              description: URI of the new payment.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
+  /payments/{paymentId}:
+    get:
+      tags: [Payments]
+      operationId: getPayment
+      summary: Get a payment
+      description: The payment with its current status (ADR 0011).
+      parameters:
+        - $ref: '#/components/parameters/PaymentId'
+      responses:
+        '200':
+          description: The payment.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
+  parameters:
+    PaymentId:
+      name: paymentId
+      in: path
+      required: true
+      description: Payment identifier.
+      schema:
+        type: string
+        format: uuid
   schemas:
+    CurrencyCode:
+      description: ISO-4217 alphabetic currency code.
+      type: string
+      pattern: '^[A-Z]{3}$'
+      example: EUR
+    PositiveMoney:
+      description: A strictly positive amount in integer minor units (e.g. cents) of an ISO-4217 currency.
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 2500
+        currency:
+          $ref: '#/components/schemas/CurrencyCode'
+    PaymentStatus:
+      description: |
+        Where the payment is in its lifecycle (ADR 0011). COMPLETED, REJECTED
+        and FAILED are terminal; REJECTED means no funds were ever held,
+        FAILED that held funds were released.
+      type: string
+      enum: [INITIATED, RISK_APPROVED, FUNDS_RESERVED, COMPLETED, REJECTED, FAILED]
+    InitiatePaymentRequest:
+      type: object
+      required: [debtorAccountId, creditorAccountId, amount]
+      properties:
+        debtorAccountId:
+          description: Ledger account the money leaves.
+          type: string
+          format: uuid
+        creditorAccountId:
+          description: Ledger account the money reaches; must differ from the debtor.
+          type: string
+          format: uuid
+        amount:
+          $ref: '#/components/schemas/PositiveMoney'
+      example:
+        debtorAccountId: 3f1c2b7e-0000-4000-8000-000000000001
+        creditorAccountId: 3f1c2b7e-0000-4000-8000-000000000002
+        amount: {amount: 2500, currency: EUR}
+    Payment:
+      type: object
+      required: [id, status, debtorAccountId, creditorAccountId, amount, initiatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        debtorAccountId:
+          type: string
+          format: uuid
+        creditorAccountId:
+          type: string
+          format: uuid
+        amount:
+          $ref: '#/components/schemas/PositiveMoney'
+        initiatedAt:
+          type: string
+          format: date-time
+        reason:
+          description: Why the payment was rejected or failed; absent otherwise.
+          type: string
+      example:
+        id: 7c4e9a10-0000-4000-8000-000000000001
+        status: INITIATED
+        debtorAccountId: 3f1c2b7e-0000-4000-8000-000000000001
+        creditorAccountId: 3f1c2b7e-0000-4000-8000-000000000002
+        amount: {amount: 2500, currency: EUR}
+        initiatedAt: '2026-01-15T09:30:00Z'
     Problem:
       description: Problem Details for HTTP APIs (RFC 9457).
       type: object
@@ -44,3 +179,31 @@ components:
         status: 404
         detail: Payment 7c4e9a10-0000-4000-8000-000000000001 does not exist
         instance: /payments/7c4e9a10-0000-4000-8000-000000000001
+  responses:
+    BadRequest:
+      description: The request is malformed or fails validation.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: The requested resource does not exist.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    UnprocessableContent:
+      description: Well-formed but breaks a payment rule, such as the same account as debtor and creditor.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            sameAccount:
+              summary: Debtor and creditor are the same account
+              value:
+                type: about:blank
+                title: Invalid payment
+                status: 422
+                detail: Debtor and creditor are the same account 3f1c2b7e-0000-4000-8000-000000000001
+                instance: /payments

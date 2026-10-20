@@ -15,6 +15,9 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  jackson:
+    # Optional fields the contract marks as absent (e.g. a payment's reason) are left out, never sent as null.
+    default-property-inclusion: non_null
 
 # 8080 is the ledger's, so both services run side by side locally.
 server:
