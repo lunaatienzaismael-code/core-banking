@@ -211,6 +211,68 @@ class PaymentTest {
         assertThatThrownBy(() -> in(FUNDS_RESERVED).fail(null)).isInstanceOf(NullPointerException.class);
     }
 
+    @ParameterizedTest
+    @EnumSource(PaymentStatus.class)
+    void restoredPaymentKeepsItsStoredStatusAndReason(PaymentStatus status) {
+        var stored = in(status);
+
+        var restored = Payment.restore(
+                stored.id(),
+                DEBTOR,
+                CREDITOR,
+                Money.of(2_500, "EUR"),
+                JAN_15,
+                status,
+                stored.reason().orElse(null));
+
+        assertThat(restored.id()).isEqualTo(stored.id());
+        assertThat(restored.debtor()).isEqualTo(DEBTOR);
+        assertThat(restored.creditor()).isEqualTo(CREDITOR);
+        assertThat(restored.amount()).isEqualTo(Money.of(2_500, "EUR"));
+        assertThat(restored.initiatedAt()).isEqualTo(JAN_15);
+        assertThat(restored.status()).isEqualTo(status);
+        assertThat(restored.reason()).isEqualTo(stored.reason());
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+            value = PaymentStatus.class,
+            names = {"REJECTED", "FAILED"})
+    void restoredRejectionOrFailureNeedsAReason(PaymentStatus status) {
+        var id = PaymentId.random();
+
+        assertThatThrownBy(() -> restore(id, status, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Payment " + id + " in " + status + " cannot have reason null");
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+            value = PaymentStatus.class,
+            names = {"INITIATED", "RISK_APPROVED", "FUNDS_RESERVED", "COMPLETED"})
+    void restoredPaymentOutsideRejectionOrFailureHasNoReason(PaymentStatus status) {
+        var id = PaymentId.random();
+
+        assertThatThrownBy(() -> restore(id, status, "stray"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Payment " + id + " in " + status + " cannot have reason stray");
+    }
+
+    @Test
+    void restoredPaymentObeysTheSameRulesAsANewOne() {
+        assertThatThrownBy(() -> Payment.restore(
+                        PaymentId.random(), DEBTOR, DEBTOR, Money.of(100, "EUR"), JAN_15, INITIATED, null))
+                .isInstanceOf(InvalidPaymentException.class);
+        assertThatThrownBy(() -> Payment.restore(
+                        PaymentId.random(), DEBTOR, CREDITOR, Money.of(0, "EUR"), JAN_15, INITIATED, null))
+                .isInstanceOf(InvalidPaymentException.class);
+        assertThatThrownBy(() -> restore(PaymentId.random(), null, null)).isInstanceOf(NullPointerException.class);
+    }
+
+    private static Payment restore(PaymentId id, PaymentStatus status, String reason) {
+        return Payment.restore(id, DEBTOR, CREDITOR, Money.of(100, "EUR"), JAN_15, status, reason);
+    }
+
     static List<Arguments> illegalTransitions() {
         var pairs = new ArrayList<Arguments>();
         for (var from : PaymentStatus.values()) {
