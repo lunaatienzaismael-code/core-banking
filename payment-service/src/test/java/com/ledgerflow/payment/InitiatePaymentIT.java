@@ -46,6 +46,7 @@ class InitiatePaymentIT {
 
         var created = client.post()
                 .uri("/payments")
+                .header("Idempotency-Key", UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body(debtor, creditor, 2_500, "EUR"))
                 .exchange()
@@ -97,6 +98,7 @@ class InitiatePaymentIT {
 
         client.post()
                 .uri("/payments")
+                .header("Idempotency-Key", UUID.randomUUID().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .exchange()

@@ -23,6 +23,16 @@ paths:
         Creates a payment in `INITIATED`. Only the request's shape is checked
         here; whether the accounts exist, share the currency and hold the funds
         is decided later, asynchronously (ADR 0010).
+
+        Idempotent per `Idempotency-Key`: retrying with the same key and the
+        same request creates nothing new and returns `201` with the same
+        `Location` and the stored payment. The body is identical while the
+        payment is unchanged; once processing moves it on, a retry shows its
+        current status. The same key with a different request is a `422`.
+        A request rejected by validation stores no key, so retrying it is
+        evaluated again.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
@@ -67,6 +77,18 @@ paths:
           $ref: '#/components/responses/NotFound'
 components:
   parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: |
+        Client-chosen key that makes retries safe (ADR 0010); send a random
+        UUID per payment. 1–255 characters.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+      example: 0b6f4f8e-2c1a-4d3e-9f50-6a7b8c9d0e1f
     PaymentId:
       name: paymentId
       in: path
@@ -193,7 +215,9 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     UnprocessableContent:
-      description: Well-formed but breaks a payment rule, such as the same account as debtor and creditor.
+      description: |
+        Well-formed but breaks a payment rule: the same account as debtor and
+        creditor, or an `Idempotency-Key` already used for a different request.
       content:
         application/problem+json:
           schema:
@@ -206,4 +230,12 @@ components:
                 title: Invalid payment
                 status: 422
                 detail: Debtor and creditor are the same account 3f1c2b7e-0000-4000-8000-000000000001
+                instance: /payments
+            keyReused:
+              summary: Idempotency-Key reused with a different request
+              value:
+                type: about:blank
+                title: Idempotency key reused
+                status: 422
+                detail: Idempotency-Key '0b6f4f8e-2c1a-4d3e-9f50-6a7b8c9d0e1f' was already used for a different request
                 instance: /payments

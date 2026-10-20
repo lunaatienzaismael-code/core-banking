@@ -24,8 +24,8 @@ class PaymentController implements PaymentsApi {
     }
 
     @Override
-    public ResponseEntity<PaymentDto> initiatePayment(InitiatePaymentRequestDto request) {
-        var payment = initiatePayment.initiate(PaymentWebMapper.toCommand(request));
+    public ResponseEntity<PaymentDto> initiatePayment(String idempotencyKey, InitiatePaymentRequestDto request) {
+        var payment = initiatePayment.initiate(PaymentWebMapper.toCommand(idempotencyKey, request));
         var location = ServletUriComponentsBuilder.fromCurrentRequestUri()
                 .path("/{id}")
                 .buildAndExpand(payment.id().value())
