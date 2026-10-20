@@ -301,11 +301,11 @@
       "phase": 6,
       "use_case": "UC3",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-021"],
       "acceptance_criteria": ["AC3.1", "AC3.2"],
       "issue": 46,
-      "branch": null,
+      "branch": "feat/T-022-idempotency-key",
       "pr": null
     }
   ]
