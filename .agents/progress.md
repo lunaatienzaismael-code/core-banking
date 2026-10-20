@@ -91,3 +91,7 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-20 · T-020 · started · branch feat/T-020-payment-domain (stacked on T-019)
 2026-10-20 · T-020 · in_review · PR #49 (stacked on #48)
 2026-10-20 · T-021 · started · branch feat/T-021-initiate-payment (stacked on T-020)
+2026-10-20 · T-018 · done · PR #47 merged (carried #48 T-019 and #49 T-020, merged into their stacked bases)
+2026-10-20 · T-019 · done · reached main with #47; issue #43 closed by hand
+2026-10-20 · T-020 · done · reached main with #47; issue #44 closed by hand
+2026-10-20 · T-021 · in_review · PR #50
