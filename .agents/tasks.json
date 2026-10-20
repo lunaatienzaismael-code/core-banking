@@ -287,11 +287,11 @@
       "phase": 6,
       "use_case": "UC3",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-020"],
       "acceptance_criteria": [],
       "issue": 45,
-      "branch": null,
+      "branch": "feat/T-021-initiate-payment",
       "pr": null
     },
     {

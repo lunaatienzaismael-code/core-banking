@@ -90,3 +90,4 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-20 · T-019 · in_review · PR #48 (stacked on #47)
 2026-10-20 · T-020 · started · branch feat/T-020-payment-domain (stacked on T-019)
 2026-10-20 · T-020 · in_review · PR #49 (stacked on #48)
+2026-10-20 · T-021 · started · branch feat/T-021-initiate-payment (stacked on T-020)
