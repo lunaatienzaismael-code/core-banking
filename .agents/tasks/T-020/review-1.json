@@ -1,0 +1,25 @@
+{
+  "task_id": "T-020",
+  "round": 1,
+  "base": "33a47d301749935bf743eaee6b0eddcb036b084a",
+  "head": "0f52743a83e5e5441a922a1ce6032da797cf866b",
+  "verdict": "approve",
+  "summary": "Framework-free Payment aggregate; the transition table lives only in PaymentStatus.next() and matches ADR 0011. Tests cover each allowed move, all 24 illegal pairs (checked against an independent table), value-object validation and nulls. Money is long plus Currency. No blockers or majors.",
+  "acceptance_criteria": [
+    {"id": "AC3.3", "status": "met", "evidence": "PaymentTest#illegalTransitionIsRejected (24 pairs, asserts state unchanged), statusTableMatchesAdr0011, and one named test per allowed transition."},
+    {"id": "B1", "status": "met", "evidence": "PaymentTest#initiatedPaymentCarriesItsData; Payment.initiate; typed PaymentId/AccountId; Money(long, Currency)."},
+    {"id": "B2", "status": "met", "evidence": "PaymentTest named transition tests plus parameterised illegal pairs incl. all terminal-state moves and self-moves; IllegalPaymentTransitionException message names both states."},
+    {"id": "B3", "status": "met", "evidence": "PaymentTest#nonPositiveAmountIsRejected, #sameDebtorAndCreditorIsRejected, MoneyTest#rejectsCodesThatAreNotIso4217."}
+  ],
+  "findings": [
+    {
+      "severity": "nit",
+      "category": "money",
+      "defect_type": "other",
+      "file": "payment-service/src/main/java/com/ledgerflow/payment/domain/Money.java",
+      "line": 12,
+      "description": "Money accepts non-positive amounts and positivity is enforced only in Payment; fine for now, but a later reuse for non-payment values must not assume positivity.",
+      "suggestion": "Optional: note in Javadoc that positivity is the Payment's invariant."
+    }
+  ]
+}

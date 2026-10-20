@@ -273,12 +273,13 @@
       "phase": 6,
       "use_case": "UC3",
       "type": "feat",
-      "status": "in_progress",
+      "status": "in_review",
       "depends_on": ["T-019"],
       "acceptance_criteria": ["AC3.3"],
       "issue": 44,
       "branch": "feat/T-020-payment-domain",
-      "pr": null
+      "pr": 49,
+      "review_rounds": 1
     },
     {
       "id": "T-021",
