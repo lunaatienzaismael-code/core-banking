@@ -1,5 +1,6 @@
 # Local dependencies only (ADR 0007). Services run from the IDE or with
-# ./mvnw -pl ledger-service spring-boot:run
+# ./mvnw -pl ledger-service spring-boot:run    (port 8080, ledger-db)
+# ./mvnw -pl payment-service spring-boot:run   (port 8081, payment-db)
 #
 #   docker compose -f infra/docker-compose.yml up -d
 name: ledgerflow
@@ -21,5 +22,23 @@ services:
       timeout: 3s
       retries: 10
 
+  # One database per service (ADR 0004); 5433 so it runs beside ledger-db.
+  payment-db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: payment
+      POSTGRES_USER: payment
+      POSTGRES_PASSWORD: payment
+    ports:
+      - "5433:5432"
+    volumes:
+      - payment-db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payment -d payment"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
 volumes:
   ledger-db-data:
+  payment-db-data:
