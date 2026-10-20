@@ -123,7 +123,8 @@ automated test. Amounts are integer **minor units** with an ISO-4217 currency
   - Then exactly one payment is created and both responses are identical.
 - **AC3.2 Key conflict**
   - Given a reused `Idempotency-Key` with a *different* request body
-  - Then the API rejects it with a Problem Details conflict response.
+  - Then the API rejects it with a `422` Problem Details response and nothing
+    changes (ADR 0010).
 - **AC3.3 State machine**
   - Given a payment
   - Then it only transitions along allowed states; illegal transitions are
