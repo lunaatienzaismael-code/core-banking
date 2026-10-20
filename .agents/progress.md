@@ -87,3 +87,4 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-20 · phase 5 · closed · milestone #5 closed, tag v0.2.0 on 6751fc4
 2026-10-20 · T-018 · in_review · PR #47
 2026-10-20 · T-019 · started · branch build/T-019-payment-service-skeleton (stacked on T-018 until PR #47 merges)
+2026-10-20 · T-019 · in_review · PR #48 (stacked on #47)
