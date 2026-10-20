@@ -273,11 +273,11 @@
       "phase": 6,
       "use_case": "UC3",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-019"],
       "acceptance_criteria": ["AC3.3"],
       "issue": 44,
-      "branch": null,
+      "branch": "feat/T-020-payment-domain",
       "pr": null
     },
     {
