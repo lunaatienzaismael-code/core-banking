@@ -15,6 +15,8 @@ decisions are not deleted; a new ADR supersedes them and says so.
 | [0007](0007-deployment.md) | Deployment and Local Environment | Accepted |
 | [0008](0008-openapi-tooling.md) | OpenAPI-First Tooling | Accepted |
 | [0009](0009-materialised-balance.md) | Materialised Balance with Atomic Conditional Updates | Accepted |
+| [0010](0010-idempotent-payment-initiation.md) | Idempotent Payment Initiation | Accepted |
+| [0011](0011-payment-state-machine.md) | Payment State Machine | Accepted |
 
 ## Deferred decisions (ADRs to be written later)
 
