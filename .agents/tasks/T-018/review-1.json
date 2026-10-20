@@ -1,0 +1,26 @@
+{
+  "task_id": "T-018",
+  "round": 1,
+  "base": "6658cb5",
+  "head": "8860e1d",
+  "verdict": "approve",
+  "summary": "Docs-only change. ADR 0010 and 0011 cover every brief item with options, trade-offs, decision and consequences; external claims cite sources the reviewer was told were verified; cross-references (ADR 0004, java-testing rules 8 and 11, AC6.2, GET /payments/{id} in T-021) resolve. One nit on a forward-looking contract statement.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "docs/adr/0010-idempotent-payment-initiation.md: header 1-255, key+request_hash on payments row in same transaction, ON CONFLICT DO NOTHING then read, replay 201, 422 on different body, 400 on missing, no expiry; options Stripe table, cache, 409 vs 422."},
+    {"id": "B2", "status": "met", "evidence": "docs/adr/0011-payment-state-machine.md: six states, transition table, illegal moves throw DomainException subtype, enum+table, @Version, drivers per phase; options Spring State Machine, state pattern, status column."},
+    {"id": "B3", "status": "met", "evidence": "docs/adr/0010 'payment-service boundary': payment-db, no synchronous ledger call, ledger account ids, own Money with revisit trigger."},
+    {"id": "B4", "status": "met", "evidence": "docs/spec.md AC3.2 now says 422 Problem Details; docs/adr/README.md rows for 0010 and 0011."}
+  ],
+  "findings": [
+    {
+      "severity": "nit",
+      "category": "docs",
+      "defect_type": "unbacked-doc-claim",
+      "file": "docs/adr/0010-idempotent-payment-initiation.md",
+      "line": null,
+      "description": "Consequences say 'the contract documents it' for replay bodies changing after status changes; no contract exists yet. It reads as present fact rather than an obligation.",
+      "suggestion": "Reword to 'the OpenAPI contract (T-021) must document it'.",
+      "rule": "Documentation claims"
+    }
+  ]
+}

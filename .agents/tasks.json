@@ -245,12 +245,13 @@
       "phase": 6,
       "use_case": "UC3",
       "type": "docs",
-      "status": "in_progress",
+      "status": "in_review",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 42,
       "branch": "docs/T-018-payment-adrs",
-      "pr": null
+      "pr": 47,
+      "review_rounds": 1
     },
     {
       "id": "T-019",
