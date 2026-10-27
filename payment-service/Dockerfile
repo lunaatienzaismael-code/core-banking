@@ -11,12 +11,15 @@ COPY .mvn .mvn
 COPY pom.xml ./
 COPY architecture-rules/pom.xml architecture-rules/
 COPY messaging-contracts/pom.xml messaging-contracts/
+COPY messaging-support/pom.xml messaging-support/
 COPY payment-service/pom.xml payment-service/
 # Every module the parent POM lists must have its POM, even when it is not built.
 COPY ledger-service/pom.xml ledger-service/
 RUN ./mvnw -B -q -pl payment-service -am dependency:go-offline
 
 COPY architecture-rules/src architecture-rules/src
+COPY messaging-contracts/src messaging-contracts/src
+COPY messaging-support/src messaging-support/src
 COPY payment-service/src payment-service/src
 RUN ./mvnw -B -q -pl payment-service -am package -DskipTests -Dspotless.check.skip=true -Djacoco.skip=true \
  && java -Djarmode=tools -jar payment-service/target/payment-service.jar extract --destination /workspace/extracted

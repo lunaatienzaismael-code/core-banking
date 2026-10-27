@@ -34,6 +34,7 @@ Mutation testing (PIT, PR gate, [ADR 0003](docs/adr/0003-testing-strategy.md)): 
 |------|---------|
 | `architecture-rules/` | Reusable ArchUnit rules for the hexagonal layout (ADR 0002) |
 | `messaging-contracts/` | Avro schemas of the Kafka messages, BACKWARD compatibility check, Kafka test fixture (ADR 0013) |
+| `messaging-support/` | Transactional outbox writer and relay shared by the services (ADR 0013) |
 | `ledger-service/` | Double-entry ledger service |
 | `payment-service/` | Payment initiation and lifecycle (UC3; ADRs 0010, 0011) |
 | `infra/` | Local dependencies (`docker compose`) |
