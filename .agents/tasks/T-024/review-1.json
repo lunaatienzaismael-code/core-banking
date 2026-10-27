@@ -1,0 +1,16 @@
+{
+  "task_id": "T-024",
+  "round": 1,
+  "base": "f77eeb55837a6273115e62af3c367f16a28cfce1",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Skill covers the listed conventions, every rule matches current code (application.yml in both services, ClockConfiguration, package-private beans, controller/mapper/handler, ConstraintViolation gap in ledger, ArchUnit-enforced 500 fallback). All referenced paths exist. CLAUDE.md and java-hexagonal updated as asked.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": ".claude/skills/spring-boot-conventions/SKILL.md has frontmatter and covers yml layout (no profiles, stated as such, file is application.yml), config/, generated *Api controllers, web mappers, handler mapping, 500 fallback, ConstraintViolationException, constructor injection, @Transactional at use case."},
+    {"id": "B2", "status": "met", "evidence": "All 9 paths under Reference examples exist; spot-checked rules against both application.yml files, PaymentWebMapper (final, private ctor), InitiatePaymentService (Clock, @Transactional), ClockConfiguration (proxyBeanMethods=false), payment ProblemDetailsHandler:55, HexagonalArchitecture.java:304 (500 fallback rule); ledger gap documented as known divergence."},
+    {"id": "B3", "status": "met", "evidence": "CLAUDE.md lists the skill under Skills and removes it from Growth; java-hexagonal SKILL.md links to it in one sentence without repeating content."}
+  ],
+  "findings": [
+    {"severity": "nit", "category": "docs", "defect_type": "other", "file": ".claude/skills/spring-boot-conventions/SKILL.md", "line": 66, "description": "Brief says application.yaml; skill correctly uses application.yml as in the code. Rule 12 (ledger 'should do the same') is a forward-looking recommendation, labelled as such, so acceptable."}
+  ]
+}
