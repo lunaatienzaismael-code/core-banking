@@ -315,12 +315,12 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "docs",
-      "status": "in_progress",
+      "status": "in_review",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 53,
       "branch": "docs/T-023-saga-messaging-adrs",
-      "pr": null,
+      "pr": 62,
       "review_rounds": 1
     },
     {
@@ -329,13 +329,13 @@
       "phase": 7,
       "use_case": null,
       "type": "chore",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 54,
-      "branch": null,
+      "branch": "chore/T-024-spring-boot-conventions",
       "pr": null,
-      "review_rounds": 0
+      "review_rounds": 1
     },
     {
       "id": "T-025",
