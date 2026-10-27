@@ -105,3 +105,5 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-27 · T-023 · started · branch docs/T-023-saga-messaging-adrs
 2026-10-27 · T-023 · in_review · PR #62
 2026-10-27 · T-024 · started · branch chore/T-024-spring-boot-conventions (stacked on T-023 until PR #62 merges)
+2026-10-27 · T-024 · in_review · PR #63 (stacked on #62)
+2026-10-27 · T-025 · started · branch build/T-025-kafka-avro-contracts (stacked on T-024)
