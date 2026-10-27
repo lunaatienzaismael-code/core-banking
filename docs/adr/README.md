@@ -17,8 +17,9 @@ decisions are not deleted; a new ADR supersedes them and says so.
 | [0009](0009-materialised-balance.md) | Materialised Balance with Atomic Conditional Updates | Accepted |
 | [0010](0010-idempotent-payment-initiation.md) | Idempotent Payment Initiation | Accepted |
 | [0011](0011-payment-state-machine.md) | Payment State Machine | Accepted |
+| [0012](0012-payment-saga-and-fund-reservation.md) | Payment Saga and Fund Reservation | Accepted |
+| [0013](0013-messaging-outbox-inbox-contracts.md) | Messaging — Outbox, Idempotent Consumers and Contracts | Accepted |
 
 ## Deferred decisions (ADRs to be written later)
 
-- **Event-driven design**: orchestration vs choreography, outbox vs dual-write,
-  topics and partition keys — Phase 7.
+None at the moment.

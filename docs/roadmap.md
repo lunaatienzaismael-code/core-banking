@@ -59,8 +59,9 @@ starts.
 - [ ] **Phase 7 — Events and saga (UC4)**: Kafka (KRaft) + Schema Registry in
       compose, Avro contracts with BACKWARD compatibility checked in CI,
       transactional outbox, idempotent consumers, orchestrated saga with
-      compensation, retries + DLT. ADRs: orchestration vs choreography, outbox vs
-      dual-write, topics/partition keys. New skill `kafka-events`. Tag `v0.4.0`.
+      compensation, retries + DLT. ADR 0012 (orchestrated saga, transit-account
+      reservation) and ADR 0013 (polling outbox, inbox, topics keyed by
+      `paymentId`, Avro, retries + DLT). New skill `kafka-events`. Tag `v0.4.0`.
 
 - [ ] **Phase 8 — Risk and notifications (UC5)**: `risk-service` with Redis,
       `notification-service` as a second consumer group. Tag `v0.5.0`.
