@@ -1,5 +1,6 @@
 package com.ledgerflow.messaging.testing;
 
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -42,6 +43,21 @@ public final class MessagingContainers {
 
     public static String bootstrapServers() {
         return KAFKA.getBootstrapServers();
+    }
+
+    /** Freezes the broker, as an outage would, until {@link #unpauseKafka()}; tests that call it must unpause. */
+    public static void pauseKafka() {
+        DockerClientFactory.instance()
+                .client()
+                .pauseContainerCmd(KAFKA.getContainerId())
+                .exec();
+    }
+
+    public static void unpauseKafka() {
+        DockerClientFactory.instance()
+                .client()
+                .unpauseContainerCmd(KAFKA.getContainerId())
+                .exec();
     }
 
     public static String schemaRegistryUrl() {

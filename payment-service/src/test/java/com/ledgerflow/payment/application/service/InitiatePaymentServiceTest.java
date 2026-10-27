@@ -7,10 +7,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.ledgerflow.payment.application.port.in.InitiatePaymentCommand;
 import com.ledgerflow.payment.application.port.in.PaymentView;
+import com.ledgerflow.payment.application.port.out.PaymentEventPublisher;
 import com.ledgerflow.payment.application.port.out.PaymentRepository;
 import com.ledgerflow.payment.application.port.out.PaymentRepository.KeyedPayment;
 import com.ledgerflow.payment.domain.AccountId;
@@ -25,6 +27,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -38,7 +41,8 @@ class InitiatePaymentServiceTest {
 
     private final PaymentRepository payments = mock(PaymentRepository.class);
     private final Clock clock = Clock.fixed(Instant.parse("2026-10-20T09:30:00.123456789Z"), ZoneOffset.UTC);
-    private final InitiatePaymentService service = new InitiatePaymentService(payments, clock);
+    private final PaymentEventPublisher events = mock(PaymentEventPublisher.class);
+    private final InitiatePaymentService service = new InitiatePaymentService(payments, events, clock);
 
     @Test
     void newKeyStoresAnInitiatedPaymentAtTheMicrosecondPrecisionTheDatabaseStores() {
@@ -57,6 +61,32 @@ class InitiatePaymentServiceTest {
         assertThat(view.creditor()).isEqualTo(CREDITOR);
         assertThat(view.amount()).isEqualTo(AMOUNT);
         assertThat(view.initiatedAt()).isEqualTo(micros);
+    }
+
+    @Test
+    @DisplayName("AC4.1 a new payment is announced, in the use case, with the payment that was stored")
+    void newPaymentIsAnnouncedOnce() {
+        when(payments.insertIfAbsent(any(), eq(KEY), eq(FINGERPRINT)))
+                .thenAnswer(call -> new KeyedPayment(call.getArgument(0), call.getArgument(2)));
+
+        service.initiate(new InitiatePaymentCommand(KEY, DEBTOR, CREDITOR, AMOUNT));
+
+        var inserted = ArgumentCaptor.forClass(Payment.class);
+        verify(payments).insertIfAbsent(inserted.capture(), eq(KEY), eq(FINGERPRINT));
+        verify(events).paymentInitiated(inserted.getValue());
+        verifyNoMoreInteractions(events);
+    }
+
+    @Test
+    @DisplayName("B2 an idempotent replay announces nothing")
+    void replayAnnouncesNothing() {
+        var stored = Payment.initiate(DEBTOR, CREDITOR, AMOUNT, Instant.parse("2026-10-20T09:00:00Z"));
+        when(payments.insertIfAbsent(any(), eq(KEY), eq(FINGERPRINT)))
+                .thenReturn(new KeyedPayment(stored, FINGERPRINT));
+
+        service.initiate(new InitiatePaymentCommand(KEY, DEBTOR, CREDITOR, AMOUNT));
+
+        verifyNoInteractions(events);
     }
 
     @Test
@@ -79,12 +109,13 @@ class InitiatePaymentServiceTest {
         assertThatThrownBy(() -> service.initiate(new InitiatePaymentCommand(KEY, DEBTOR, CREDITOR, AMOUNT)))
                 .isInstanceOf(IdempotencyKeyReusedException.class)
                 .hasMessage("Idempotency-Key '" + KEY + "' was already used for a different request");
+        verifyNoInteractions(events);
     }
 
     @Test
     void invalidPaymentIsRejectedBeforeAnyKeyIsStored() {
         assertThatThrownBy(() -> service.initiate(new InitiatePaymentCommand(KEY, DEBTOR, DEBTOR, AMOUNT)))
                 .isInstanceOf(InvalidPaymentException.class);
-        verifyNoInteractions(payments);
+        verifyNoInteractions(payments, events);
     }
 }
