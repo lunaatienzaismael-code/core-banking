@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "ReservationRefused",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Reply on ledger.replies to ReserveFunds: nothing was reserved. Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."},
+    {"name": "reason", "type": "RefusalReason"},
+    {"name": "detail", "type": "string", "doc": "Human-readable explanation."}
+  ]
+}

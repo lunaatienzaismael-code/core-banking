@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "ReserveFunds",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Command on ledger.commands: move the amount from the debtor to the payments-in-transit account (ADR 0012). Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."},
+    {"name": "debtorAccountId", "type": "string", "doc": "UUID of the ledger account debited."},
+    {"name": "amountMinorUnits", "type": "long", "doc": "Positive amount in minor units (ADR 0004)."},
+    {"name": "currency", "type": "string", "doc": "ISO-4217 code."}
+  ]
+}

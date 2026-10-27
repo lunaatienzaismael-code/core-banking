@@ -1,0 +1,10 @@
+{
+  "type": "record",
+  "name": "FundsReserved",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Reply on ledger.replies to ReserveFunds: the amount is in the payments-in-transit account. Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."},
+    {"name": "transactionId", "type": "string", "doc": "UUID of the ledger transaction that reserved the funds."}
+  ]
+}

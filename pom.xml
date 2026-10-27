@@ -18,6 +18,7 @@
 
     <modules>
         <module>architecture-rules</module>
+        <module>messaging-contracts</module>
         <module>ledger-service</module>
         <module>payment-service</module>
     </modules>
@@ -32,6 +33,10 @@
         <pitest.version>1.30.0</pitest.version>
         <pitest-junit5.version>1.2.3</pitest-junit5.version>
         <openapi-generator.version>7.26.0</openapi-generator.version>
+        <!-- Confluent 8.2.x is built on Apache Kafka 4.2, the kafka-clients line Spring Boot manages. -->
+        <confluent.version>8.2.4</confluent.version>
+        <!-- The Avro release Confluent 8.2.x is built against. -->
+        <avro.version>1.12.1</avro.version>
 
         <!-- Ratcheted up to real coverage at the end of each feature phase (ADR 0003). -->
         <jacoco.minimum.line>0.90</jacoco.minimum.line>
@@ -49,12 +54,48 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.ledgerflow</groupId>
+                <artifactId>messaging-contracts</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ledgerflow</groupId>
+                <artifactId>messaging-contracts</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
                 <groupId>com.tngtech.archunit</groupId>
                 <artifactId>archunit-junit5</artifactId>
                 <version>${archunit.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${avro.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.confluent</groupId>
+                <artifactId>kafka-avro-serializer</artifactId>
+                <version>${confluent.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <!-- Confluent's serializers and Schema Registry client are not on Maven Central. Maven cannot limit a
+             repository to some artifacts, so it is declared once here, releases only. -->
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+    </repositories>
 
     <build>
         <pluginManagement>
@@ -108,6 +149,11 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro-maven-plugin</artifactId>
+                    <version>${avro.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.pitest</groupId>

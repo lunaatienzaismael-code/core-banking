@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "PostTransfer",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Command on ledger.commands: move a reserved amount from the payments-in-transit account to the creditor (ADR 0012). Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."},
+    {"name": "creditorAccountId", "type": "string", "doc": "UUID of the ledger account credited."},
+    {"name": "amountMinorUnits", "type": "long", "doc": "Positive amount in minor units (ADR 0004)."},
+    {"name": "currency", "type": "string", "doc": "ISO-4217 code."}
+  ]
+}

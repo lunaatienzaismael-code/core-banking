@@ -1,0 +1,10 @@
+{
+  "type": "record",
+  "name": "TransferPosted",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Reply on ledger.replies to PostTransfer: the creditor was credited. Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."},
+    {"name": "transactionId", "type": "string", "doc": "UUID of the ledger transaction that posted the transfer."}
+  ]
+}

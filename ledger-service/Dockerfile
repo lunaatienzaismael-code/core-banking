@@ -10,6 +10,7 @@ COPY mvnw ./
 COPY .mvn .mvn
 COPY pom.xml ./
 COPY architecture-rules/pom.xml architecture-rules/
+COPY messaging-contracts/pom.xml messaging-contracts/
 COPY ledger-service/pom.xml ledger-service/
 # Every module the parent POM lists must have its POM, even when it is not built.
 COPY payment-service/pom.xml payment-service/

@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "PostingRefused",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Reply on ledger.replies to PostTransfer: nothing was posted; the funds are still reserved. Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."},
+    {"name": "reason", "type": "RefusalReason"},
+    {"name": "detail", "type": "string", "doc": "Human-readable explanation."}
+  ]
+}
