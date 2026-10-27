@@ -19,6 +19,7 @@
     <modules>
         <module>architecture-rules</module>
         <module>messaging-contracts</module>
+        <module>messaging-support</module>
         <module>ledger-service</module>
         <module>payment-service</module>
     </modules>
@@ -63,6 +64,11 @@
                 <artifactId>messaging-contracts</artifactId>
                 <version>${project.version}</version>
                 <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>com.ledgerflow</groupId>
+                <artifactId>messaging-support</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.tngtech.archunit</groupId>
