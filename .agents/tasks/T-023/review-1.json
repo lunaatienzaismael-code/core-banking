@@ -1,0 +1,18 @@
+{
+  "task_id": "T-023",
+  "round": 1,
+  "base": "557ab7d",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "ADRs 0012 and 0013 cover every brief item and are consistent with ADR 0011 (transitions, FAILED only after release, RELEASING re-evaluation) and ADR 0009. Index and roadmap updated. Only minor documentation issues: a wrong transaction count, a no-reference card-holds claim, and an unspecified first CI baseline for schema compatibility.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "0012: options for coordination (l.35-57) and reservation (l.59-82); transit LIABILITY account (l.88-97); saga table mapping replies to ADR 0011 transitions (l.117-127); compensation on PostingRefused and transit back to zero (l.95-97,126-127); RELEASING decided against with trigger (l.146-155)."},
+    {"id": "B2", "status": "met", "evidence": "0013: outbox options dual-write/polling/CDC (l.31-51); advisory-lock single publisher (l.92-98); inbox (l.111-121); topics, keys, commands vs replies (l.134-149); Avro, Registry, BACKWARD in CI (l.151-162); retries/DLT and non-retried errors (l.164-173); shared messaging-support module (l.123-132)."},
+    {"id": "B3", "status": "met", "evidence": "docs/adr/README.md index rows 0012/0013 and deferred entry removed; docs/roadmap.md Phase 7 line names ADR 0012 and 0013."}
+  ],
+  "findings": [
+    {"severity": "minor", "category": "docs", "defect_type": "other", "file": "docs/adr/0012-payment-saga-and-fund-reservation.md", "line": 72, "description": "Says 'three transactions per completed payment instead of one'. A completed payment is two ledger transactions (ReserveFunds, PostTransfer); the third exists only on the compensation path. ADR 0010 says 'moves the money twice'.", "suggestion": "Say two transactions per completed payment (reserve, post), with compensation replacing the post.", "rule": "Documentation claims"},
+    {"severity": "minor", "category": "docs", "defect_type": "unbacked-doc-claim", "file": "docs/adr/0012-payment-saga-and-fund-reservation.md", "line": 76, "description": "The holds option is described as 'the card model of authorisation then capture', and the brief asks for how banks do it, but neither ADR has a reference or section for the card model or for transit/suspense accounts in banking.", "suggestion": "Add a reference or a short 'how others do it' note, or drop the claim.", "rule": "brief design notes; Documentation claims"},
+    {"severity": "minor", "category": "docs", "defect_type": "unbacked-doc-claim", "file": "docs/adr/0013-messaging-outbox-inbox-contracts.md", "line": 160, "description": "CI compares each schema with its version at 'the last release tag', but the latest tag (v0.3.0) predates any schema, and the ADR does not say how a first or new schema is treated. The outbox ordering argument (l.99-103) cites the payment's optimistic lock, which does not exist for ledger reply rows.", "suggestion": "State that schemas absent at the baseline are accepted, and that ledger ordering relies on one in-order partition consumer.", "rule": "Documentation claims"}
+  ]
+}
