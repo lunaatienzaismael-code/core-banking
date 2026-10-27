@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "PaymentInitiated",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Event on payments.events: a payment was accepted in INITIATED (ADR 0012). Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."},
+    {"name": "debtorAccountId", "type": "string", "doc": "UUID of the ledger account debited."},
+    {"name": "creditorAccountId", "type": "string", "doc": "UUID of the ledger account credited."},
+    {"name": "amountMinorUnits", "type": "long", "doc": "Positive amount in minor units (ADR 0004)."},
+    {"name": "currency", "type": "string", "doc": "ISO-4217 code."},
+    {"name": "initiatedAt", "type": {"type": "long", "logicalType": "timestamp-millis"}}
+  ]
+}

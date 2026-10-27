@@ -1,0 +1,7 @@
+{
+  "type": "enum",
+  "name": "RefusalReason",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Why the ledger refused a command without changing anything (ADR 0012).",
+  "symbols": ["INSUFFICIENT_FUNDS", "UNKNOWN_ACCOUNT", "CURRENCY_MISMATCH"]
+}

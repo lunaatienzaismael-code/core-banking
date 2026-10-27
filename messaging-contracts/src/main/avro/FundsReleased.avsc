@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "FundsReleased",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Reply on ledger.replies to ReleaseFunds: the reserved amount is back on the debtor's account. Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."},
+    {"name": "transactionId", "type": "string", "doc": "UUID of the ledger transaction that released the funds."},
+    {"name": "reason", "type": "string", "doc": "The reason carried by ReleaseFunds."}
+  ]
+}
