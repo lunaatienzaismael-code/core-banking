@@ -53,7 +53,8 @@ PR comment → user merges → `done`.
 
 - Skills: `java-hexagonal` (placement, layering, money), `java-testing`
   (what/how to test), `persistence-postgres-liquibase` (changesets, JPA,
-  `JdbcClient`, persistence tests), `task-planning` (splitting and briefs).
+  `JdbcClient`, persistence tests), `spring-boot-conventions` (config, beans,
+  controllers, Problem Details), `task-planning` (splitting and briefs).
 - Subagents: `test-runner` (Haiku) runs the build, returns only JSON;
   `evaluator` (Sonnet) reviews diff vs brief with clean context, writes
   `review-N.json`, returns only the verdict.
@@ -110,7 +111,5 @@ Add agent infrastructure only when a trigger fires; propose it, do not just add 
 - `code-explorer` subagent (Haiku, read-only): when code exceeds ~4–5
   modules/use cases.
 - `kafka-events` skill: first use case that publishes/consumes events (Phase 7).
-- `spring-boot-conventions` skill: ≥ 2 inbound adapters and stable
-  config/error conventions.
 - Agentic GitHub Actions (evaluator on PRs, CI doctor): once the local flow has
   run several tasks smoothly.

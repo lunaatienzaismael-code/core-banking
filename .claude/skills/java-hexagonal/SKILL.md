@@ -7,7 +7,9 @@ description: Where each class goes and how layers talk in a LedgerFlow service (
 
 Source of truth: ADR 0002 (layout, dependency rules) and ADR 0004 (money). The
 dependency rules are enforced by `architecture-rules` (`HexagonalArchitecture`);
-this skill covers what ArchUnit cannot see.
+this skill covers what ArchUnit cannot see. How the Spring parts are written
+(configuration, beans, controllers, the Problem Details handler) is
+`spring-boot-conventions`.
 
 ## Placement (base package `com.ledgerflow.<service>`)
 
