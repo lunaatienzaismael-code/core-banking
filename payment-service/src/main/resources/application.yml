@@ -15,6 +15,16 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  kafka:
+    bootstrap-servers: ${PAYMENT_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      acks: all
+      properties:
+        schema.registry.url: ${PAYMENT_SCHEMA_REGISTRY_URL:http://localhost:8085}
+        # Several message types share a topic, so subjects are per topic and type (ADR 0013).
+        value.subject.name.strategy: io.confluent.kafka.serializers.subject.TopicRecordNameStrategy
   jackson:
     # Optional fields the contract marks as absent (e.g. a payment's reason) are left out, never sent as null.
     default-property-inclusion: non_null
@@ -22,6 +32,15 @@ spring:
 # 8080 is the ledger's, so both services run side by side locally.
 server:
   port: ${PAYMENT_PORT:8081}
+
+# Transactional outbox relay (ADR 0013).
+ledgerflow:
+  outbox:
+    relay-interval: 500ms
+    batch-size: 100
+    send-timeout: 10s
+    # Any constant unique among the services sharing a database server; "PAYM" in ASCII.
+    lock-key: 1346459981
 
 management:
   endpoints:

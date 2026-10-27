@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0003-create-outbox-messages
+      author: ledgerflow
+      comment: >-
+        Transactional outbox (ADR 0013). The DDL is the one messaging-support
+        ships, so every service creates the same table in its own database.
+      changes:
+        - sqlFile:
+            path: db/messaging/create-outbox-messages.sql
+            relativeToChangelogFile: false
