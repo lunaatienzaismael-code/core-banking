@@ -1,0 +1,35 @@
+{
+  "task_id": "T-025",
+  "round": 1,
+  "base": "chore/T-024-spring-boot-conventions (b4b86dd)",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Kafka KRaft and Schema Registry in compose, messaging-contracts module with 10 Avro schemas generated at build time, a git-tag-based BACKWARD check with named breaking-change fixtures, and a shared once-per-JVM Kafka+SR fixture proven by a round-trip IT. test-runner pass 319/319. Only minor gaps remain.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "infra/docker-compose.yml kafka (KRaft, apache/kafka:4.2.1) and schema-registry (cp 8.2.4) with healthchecks; versions recorded in ADR 0013 Infrastructure."},
+    {"id": "B2", "status": "met", "evidence": "messaging-contracts/src/main/avro/*.avsc, namespace com.ledgerflow.messaging, avro-maven-plugin goal schema at generate-sources; AvroRoundTripIT uses the generated PaymentInitiated."},
+    {"id": "B3", "status": "met", "evidence": "SchemaCompatibilityTest#everySchemaIsBackwardCompatibleWithTheLastRelease plus addingAFieldWithoutADefaultIsCaught, changingAFieldTypeIsCaught, removingAnEnumSymbolIsCaught; CI checkout uses fetch-depth: 0 for tags."},
+    {"id": "B4", "status": "met", "evidence": "MessagingContainers static once-per-JVM fixture, exported as test-jar in parent dependencyManagement; AvroRoundTripIT#avroMessageRoundTripsThroughKafkaAndSchemaRegistry. spring-kafka and testcontainers-kafka are Boot-managed, as noted in ADR 0013."},
+    {"id": "B5", "status": "met", "evidence": "README lists Kafka localhost:9092 and Schema Registry localhost:8085 and the new module; CI change is checkout depth only. Time budget not measured here."}
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "testing",
+      "defect_type": "untested-enumerated-case",
+      "file": "messaging-contracts/src/test/java/com/ledgerflow/messaging/SchemaCompatibilityTest.java",
+      "line": 24,
+      "description": "The release check iterates only over schema files present now. Deleting or renaming a released schema file, which breaks consumers, is not detected.",
+      "suggestion": "Also fail when a name parsed from the release tag is missing from the current set, or document that removal needs a major contract version."
+    },
+    {
+      "severity": "nit",
+      "category": "docs",
+      "defect_type": "contract-gap",
+      "file": "pom.xml",
+      "line": 69,
+      "description": "Brief asks for the Confluent repository scoped to its artifacts; Maven cannot do that, so it is global with snapshots disabled. Rationale is only in the review request, not in the POM.",
+      "suggestion": "Add a one-line POM comment stating that Maven cannot scope repositories per artifact."
+    }
+  ]
+}
