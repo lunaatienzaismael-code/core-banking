@@ -98,3 +98,5 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-20 · T-022 · started · branch feat/T-022-idempotency-key (stacked on T-021)
 2026-10-20 · T-021 · done · PR #50 merged
 2026-10-20 · T-022 · in_review · PR #51; follow-up: ledger ConstraintViolationException → 400 (same latent gap)
+2026-10-27 · T-022 · done · PR #51 merged
+2026-10-27 · phase 6 · done · T-018..T-022 merged (PRs #47–#51); close milestone #6, tag v0.3.0 after this PR

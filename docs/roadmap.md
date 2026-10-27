@@ -49,9 +49,12 @@ starts.
   - [x] `POST /transactions`, overdraft guard, concurrency proof, `GET /transactions/{id}`
   - [x] Close milestone, tag `v0.2.0`
 
-- [ ] **Phase 6 — payment-service (UC3)**: second module reusing ArchUnit rules,
+- [x] **Phase 6 — payment-service (UC3)**: second module reusing ArchUnit rules,
       `Idempotency-Key` persistence, payment state machine. Consider
       `spring-boot-conventions` skill. Tag `v0.3.0`.
+  - [x] ADR 0010 idempotent initiation, ADR 0011 payment state machine
+  - [x] `payment-service` skeleton, `Payment` aggregate, `POST/GET /payments`, `Idempotency-Key`
+  - [x] Close milestone, tag `v0.3.0`
 
 - [ ] **Phase 7 — Events and saga (UC4)**: Kafka (KRaft) + Schema Registry in
       compose, Avro contracts with BACKWARD compatibility checked in CI,
