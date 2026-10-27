@@ -329,12 +329,12 @@
       "phase": 7,
       "use_case": null,
       "type": "chore",
-      "status": "in_progress",
+      "status": "in_review",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 54,
       "branch": "chore/T-024-spring-boot-conventions",
-      "pr": null,
+      "pr": 63,
       "review_rounds": 1
     },
     {
@@ -343,13 +343,13 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "build",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-023"],
       "acceptance_criteria": [],
       "issue": 55,
-      "branch": null,
+      "branch": "build/T-025-kafka-avro-contracts",
       "pr": null,
-      "review_rounds": 0
+      "review_rounds": 1
     },
     {
       "id": "T-026",
