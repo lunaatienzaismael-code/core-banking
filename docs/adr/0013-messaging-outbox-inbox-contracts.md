@@ -179,8 +179,12 @@ service-specific options.
 ### Infrastructure
 
 - Kafka in KRaft mode (no ZooKeeper) and Confluent Schema Registry in
-  `infra/docker-compose.yml` and in Testcontainers; versions are pinned by
-  T-025 and added to ADR 0001's list.
+  `infra/docker-compose.yml` and in Testcontainers, with the same images:
+  `apache/kafka:4.2.1` (the Apache Kafka line whose `kafka-clients` Spring
+  Boot 4.1 manages) and `confluentinc/cp-schema-registry:8.2.4`; Confluent
+  serializers `8.2.4` and Avro `1.12.1` are pinned in the parent POM.
+  `spring-kafka` and the Testcontainers Kafka module are managed by Spring
+  Boot.
 
 ## Consequences
 

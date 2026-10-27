@@ -17,13 +17,14 @@ Requirements: JDK 21 and a running Docker daemon.
 
 ```bash
 ./mvnw -B verify                                  # format check, unit + ArchUnit, Testcontainers ITs, coverage
-docker compose -f infra/docker-compose.yml up -d  # local PostgreSQL per service
+docker compose -f infra/docker-compose.yml up -d  # PostgreSQL per service, Kafka, Schema Registry
 ./mvnw -pl ledger-service spring-boot:run         # http://localhost:8080/actuator/health
 ./mvnw -pl payment-service spring-boot:run        # http://localhost:8081/actuator/health
 ```
 
 HTTP contracts (OpenAPI-first, [ADR 0008](docs/adr/0008-openapi-tooling.md)): `ledger-service/src/main/openapi/ledger-api.yaml`, `payment-service/src/main/openapi/payment-api.yaml`;
 Spring interfaces and DTOs are generated from it at build time.
+Local Kafka: `localhost:9092`; Schema Registry: `http://localhost:8085`.
 Compact test report (JSON): `scripts/test-summary.sh`.
 Mutation testing (PIT, PR gate, [ADR 0003](docs/adr/0003-testing-strategy.md)): `./mvnw -B verify -Pmutation -DskipITs -Djacoco.skip=true`; report in `<module>/target/pit-reports/`.
 
@@ -32,6 +33,7 @@ Mutation testing (PIT, PR gate, [ADR 0003](docs/adr/0003-testing-strategy.md)): 
 | Path | Purpose |
 |------|---------|
 | `architecture-rules/` | Reusable ArchUnit rules for the hexagonal layout (ADR 0002) |
+| `messaging-contracts/` | Avro schemas of the Kafka messages, BACKWARD compatibility check, Kafka test fixture (ADR 0013) |
 | `ledger-service/` | Double-entry ledger service |
 | `payment-service/` | Payment initiation and lifecycle (UC3; ADRs 0010, 0011) |
 | `infra/` | Local dependencies (`docker compose`) |
