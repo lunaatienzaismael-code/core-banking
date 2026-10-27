@@ -1,0 +1,26 @@
+{
+  "task_id": "T-026",
+  "round": 1,
+  "base": "build/T-025-kafka-avro-contracts",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Outbox writer and advisory-locked relay in messaging-support, payment port/adapter, changeset 0003 and ITs satisfy all criteria. Tests prove rollback atomicity, Kafka outage recovery, replay without a second event, per-key order and lock exclusion. One minor note on relay transaction length.",
+  "acceptance_criteria": [
+    {"id": "AC4.1", "status": "met", "evidence": "PaymentOutboxIT#rolledBackInitiationLeavesNeitherPaymentNorEvent and #withKafkaDownThePaymentIsCreatedAndItsEventPublishedOnceKafkaIsBack; OutboxRelayIT#messageOfARolledBackTransactionIsNeverStored"},
+    {"id": "B1", "status": "met", "evidence": "OutboxWriter (requires active tx), OutboxRelay pg_try_advisory_xact_lock, rows marked via published_at; OutboxRelayIT"},
+    {"id": "B2", "status": "met", "evidence": "0003-create-outbox-messages.yaml; InitiatePaymentServiceTest#replayAnnouncesNothing; PaymentOutboxIT#idempotentReplayWritesNoSecondEvent; key = paymentId in PaymentEventOutboxAdapter"},
+    {"id": "B3", "status": "met", "evidence": "OutboxRelayIT#messagesOfOneKeyArriveInInsertionOrder and #whileAnotherInstanceHoldsTheLockNothingIsPublished"}
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "concurrency",
+      "defect_type": "concurrency-gap",
+      "file": "messaging-support/src/main/java/com/ledgerflow/messaging/outbox/OutboxRelay.java",
+      "line": 76,
+      "description": "The relay keeps one DB transaction (and advisory lock) open while awaiting each Kafka ack; with batch 100 and a 10s timeout a degraded broker could hold it for a long time, though the first failure stops the run.",
+      "suggestion": "Note the bound in the ADR or Javadoc, or keep batch size and send-timeout modest.",
+      "rule": "ADR 0013"
+    }
+  ]
+}
