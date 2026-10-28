@@ -17,12 +17,14 @@ spring:
       enabled: true
   kafka:
     bootstrap-servers: ${PAYMENT_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    # For every client: producers register schemas, consumers look them up.
+    properties:
+      schema.registry.url: ${PAYMENT_SCHEMA_REGISTRY_URL:http://localhost:8085}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
       acks: all
       properties:
-        schema.registry.url: ${PAYMENT_SCHEMA_REGISTRY_URL:http://localhost:8085}
         # Several message types share a topic, so subjects are per topic and type (ADR 0013).
         value.subject.name.strategy: io.confluent.kafka.serializers.subject.TopicRecordNameStrategy
   jackson:

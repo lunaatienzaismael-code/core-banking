@@ -26,8 +26,7 @@ public class TestcontainersConfiguration {
     DynamicPropertyRegistrar messagingProperties() {
         return registry -> {
             registry.add("spring.kafka.bootstrap-servers", MessagingContainers::bootstrapServers);
-            registry.add(
-                    "spring.kafka.producer.properties.schema.registry.url", MessagingContainers::schemaRegistryUrl);
+            registry.add("spring.kafka.properties.schema.registry.url", MessagingContainers::schemaRegistryUrl);
         };
     }
 }
