@@ -125,3 +125,6 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-28 · T-029 · done · PR #68 merged
 2026-10-28 · phase 7 · planned · T-032 e2e saga smoke (issue #69), from T-029's deferred indirect-test minor; user approved
 2026-10-28 · T-030 · started · branch feat/T-030-saga-compensation (from main)
+2026-10-28 · T-030 · in_review · PR #70; test infra: one Spring context per service (several contexts split the Kafka consumer group)
+2026-10-28 · T-030 · done · PR #70 merged
+2026-10-28 · T-031 · started · branch feat/T-031-retries-dlt (from main)

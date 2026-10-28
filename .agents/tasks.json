@@ -413,12 +413,12 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "feat",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-029"],
       "acceptance_criteria": ["AC4.3"],
       "issue": 60,
       "branch": "feat/T-030-saga-compensation",
-      "pr": null,
+      "pr": 70,
       "review_rounds": 1
     },
     {
@@ -427,13 +427,13 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-029"],
       "acceptance_criteria": ["AC4.4"],
       "issue": 61,
-      "branch": null,
+      "branch": "feat/T-031-retries-dlt",
       "pr": null,
-      "review_rounds": 0
+      "review_rounds": 1
     },
     {
       "id": "T-032",
