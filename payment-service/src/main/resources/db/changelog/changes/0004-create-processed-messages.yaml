@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0004-create-processed-messages
+      author: ledgerflow
+      comment: >-
+        Inbox of processed saga inputs, so a redelivered event or reply changes
+        nothing (ADR 0013). DDL shipped by messaging-support.
+      changes:
+        - sqlFile:
+            path: db/messaging/create-processed-messages.sql
+            relativeToChangelogFile: false

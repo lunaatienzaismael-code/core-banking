@@ -161,7 +161,12 @@ components:
           type: string
           format: date-time
         reason:
-          description: Why the payment was rejected or failed; absent otherwise.
+          description: >-
+            Why the payment was rejected or failed; absent otherwise. A payment
+            the ledger refused to reserve funds for is rejected with
+            `<code>: <detail>`, where the code is INSUFFICIENT_FUNDS,
+            UNKNOWN_ACCOUNT or CURRENCY_MISMATCH and the detail is human-readable
+            (ADR 0012).
           type: string
       example:
         id: 7c4e9a10-0000-4000-8000-000000000001

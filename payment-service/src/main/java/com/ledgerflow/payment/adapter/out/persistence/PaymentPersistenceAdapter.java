@@ -4,6 +4,7 @@ import com.ledgerflow.payment.application.port.out.PaymentRepository;
 import com.ledgerflow.payment.domain.IdempotencyKey;
 import com.ledgerflow.payment.domain.Payment;
 import com.ledgerflow.payment.domain.PaymentId;
+import com.ledgerflow.payment.domain.PaymentNotFoundException;
 import com.ledgerflow.payment.domain.RequestFingerprint;
 import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -56,5 +57,12 @@ class PaymentPersistenceAdapter implements PaymentRepository {
     @Override
     public Optional<Payment> findById(PaymentId id) {
         return jpa.findById(id.value()).map(PaymentPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public void update(Payment payment) {
+        // The entity read earlier in this transaction, with the version it had then; JPA checks it on flush.
+        var row = jpa.findById(payment.id().value()).orElseThrow(() -> new PaymentNotFoundException(payment.id()));
+        row.changeStatus(payment.status().name(), payment.reason().orElse(null));
     }
 }

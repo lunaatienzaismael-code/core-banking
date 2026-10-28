@@ -72,6 +72,12 @@ class PaymentEntity {
         this.initiatedAt = initiatedAt;
     }
 
+    /** A status change; {@code @Version} makes the update fail if another transaction changed the row meanwhile. */
+    void changeStatus(String status, String reason) {
+        this.status = status;
+        this.reason = reason;
+    }
+
     UUID getId() {
         return id;
     }
