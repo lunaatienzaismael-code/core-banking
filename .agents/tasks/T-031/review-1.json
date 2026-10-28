@@ -1,0 +1,17 @@
+{
+  "task_id": "T-031",
+  "round": 1,
+  "base": "8bc96e629040ab288603c6bb136c37591b012980",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Bounded retries and DLT handler built once in messaging-support and wired per service; ITs against real Kafka prove parking, key, partition, headers and that the partition moves on. Defaults documented in ADR 0013 and match application.yml (500+1000+2000 ms = 3.5 s). Only minor test-proof gaps.",
+  "acceptance_criteria": [
+    {"id": "AC4.4", "status": "met", "evidence": "ledger DeadLetterIT#undeserialisableCommandIsParkedAndThePartitionMovesOn and failingReleaseIsRetriedThenParked; payment DeadLetterIT#undeserialisableReplyIsParkedAndThePartitionMovesOn; DeadLettersTest#retryableFailureIsRetriedThenDeadLettered"},
+    {"id": "B1", "status": "met", "evidence": "DeadLettersTest#malformedMessageGoesStraightToTheDeadLetterTopic and declaredValidationErrorGoesStraightToTheDeadLetterTopic (recovered on first handleOne); ITs invalidCommandIsParked, replyForAnUnknownPaymentIsParked, replyWithoutMessageIdIsParked"},
+    {"id": "B2", "status": "met", "evidence": "ledgerflow.kafka.retry.* in both application.yml; defaults in ADR 0013 Retries section"}
+  ],
+  "findings": [
+    {"severity": "minor", "category": "testing", "defect_type": "indirect-test", "file": "ledger-service/src/test/java/com/ledgerflow/ledger/DeadLetterIT.java", "line": 80, "description": "The ITs show a validation-error record lands on the DLT but not that retries were skipped; that is proven only by the unit test with a stand-in exception, not with the real InvalidTransactionException/PaymentNotFoundException classification.", "suggestion": "Add a unit test in each service asserting its NOT_RETRYABLE list makes the handler recover on the first attempt, or count listener invocations in the IT."},
+    {"severity": "nit", "category": "testing", "defect_type": "untested-enumerated-case", "file": "messaging-support/src/test/java/com/ledgerflow/messaging/errors/DeadLettersTest.java", "line": null, "description": "The byte[] template routing for undeserialisable records is covered only by the ITs, not at unit level.", "suggestion": "Optional: unit test with a byte[] value asserting it goes through rawBytes."}
+  ]
+}
