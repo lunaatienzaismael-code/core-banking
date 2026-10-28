@@ -3,6 +3,7 @@ package com.ledgerflow.messaging.outbox;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.ledgerflow.messaging.MessagingDatabase;
 import com.ledgerflow.messaging.PaymentInitiated;
 import com.ledgerflow.messaging.testing.MessagingContainers;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
@@ -38,8 +39,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 class OutboxRelayIT {
 
-    private static final JdbcClient JDBC = OutboxDatabase.JDBC;
-    private static final TransactionTemplate TRANSACTIONS = OutboxDatabase.TRANSACTIONS;
+    private static final JdbcClient JDBC = MessagingDatabase.JDBC;
+    private static final TransactionTemplate TRANSACTIONS = MessagingDatabase.TRANSACTIONS;
     private static final DefaultKafkaProducerFactory<String, Object> PRODUCERS =
             new DefaultKafkaProducerFactory<>(producerConfig());
     private static final KafkaTemplate<String, Object> KAFKA = new KafkaTemplate<>(PRODUCERS);
@@ -95,7 +96,7 @@ class OutboxRelayIT {
         TRANSACTIONS.executeWithoutResult(status -> writer.write(topic, message.getPaymentId(), message));
         var relay = relay(KAFKA, 10);
 
-        try (Connection otherInstance = OutboxDatabase.DATA_SOURCE.getConnection()) {
+        try (Connection otherInstance = MessagingDatabase.DATA_SOURCE.getConnection()) {
             otherInstance.setAutoCommit(false);
             try (var statement = otherInstance.prepareStatement("select pg_advisory_xact_lock(?)")) {
                 statement.setLong(1, LOCK_KEY);
