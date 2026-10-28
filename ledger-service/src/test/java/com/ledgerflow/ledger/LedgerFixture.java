@@ -3,18 +3,23 @@ package com.ledgerflow.ledger;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Writes ledger rows straight into the schema. Postings have no write path until UC2 (Phase 5), so tests that need
  * them insert balanced transactions here, together with the account counters they move (ADR 0009). All data is
- * fictitious.
+ * fictitious. Each transfer is atomic: one the schema rejects leaves nothing behind, since all integration tests of the
+ * service share one database.
  */
 public final class LedgerFixture {
 
     private final JdbcTemplate jdbc;
+    private final TransactionTemplate transaction;
 
     public LedgerFixture(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
+        this.transaction = new TransactionTemplate(new DataSourceTransactionManager(jdbc.getDataSource()));
     }
 
     /** Inserts an account that may go negative ({@code ALLOWED}) and returns its id. */
@@ -41,13 +46,15 @@ public final class LedgerFixture {
 
     /** As {@link #transfer(UUID, UUID, long, String)}, with the transaction occurring at {@code occurredAt}. */
     public UUID transfer(UUID debited, UUID credited, long amount, String currency, OffsetDateTime occurredAt) {
-        var transaction = UUID.randomUUID();
-        jdbc.update("insert into transactions (id, occurred_at) values (?, ?)", transaction, occurredAt);
-        posting(transaction, debited, amount, currency);
-        posting(transaction, credited, -amount, currency);
-        jdbc.update("update accounts set debits_posted = debits_posted + ? where id = ?", amount, debited);
-        jdbc.update("update accounts set credits_posted = credits_posted + ? where id = ?", amount, credited);
-        return transaction;
+        return transaction.execute(status -> {
+            var id = UUID.randomUUID();
+            jdbc.update("insert into transactions (id, occurred_at) values (?, ?)", id, occurredAt);
+            posting(id, debited, amount, currency);
+            posting(id, credited, -amount, currency);
+            jdbc.update("update accounts set debits_posted = debits_posted + ? where id = ?", amount, debited);
+            jdbc.update("update accounts set credits_posted = credits_posted + ? where id = ?", amount, credited);
+            return id;
+        });
     }
 
     private void posting(UUID transaction, UUID account, long amount, String currency) {
