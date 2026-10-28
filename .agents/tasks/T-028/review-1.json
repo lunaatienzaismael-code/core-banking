@@ -1,0 +1,15 @@
+{
+  "task_id": "T-028",
+  "round": 1,
+  "base": "dd8c79c447f47b252d748d6160b2cccbb9f35de0",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Post and release reuse the T-027 consumer, inbox and UC2 write path via one move(); creditor-side refusals roll back whole and are recorded with the inbox mark; release is never refused. All four criteria are proven by named unit and Kafka+PostgreSQL IT tests, including transit-back-to-previous and redelivery with a marker message.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "PaymentTransfersIT#reserveThenPostCreditsTheCreditorAndEmptiesTransit, #postingToAnUnknownCreditorIsRefusedAndTheFundsStayReserved, #postingToACreditorInAnotherCurrencyIsRefused; PaymentTransferServiceTest unit cases"},
+    {"id": "B2", "status": "met", "evidence": "PaymentTransfersIT#reserveThenReleaseRestoresTheDebtorAndEmptiesTransit; PaymentTransferServiceTest#releaseIsNeverRefused"},
+    {"id": "B3", "status": "met", "evidence": "PaymentTransfersIT#redeliveredPostTransferHasNoSecondEffect, #redeliveredReleaseFundsHasNoSecondEffect; single listener and inbox path in LedgerCommandListener"},
+    {"id": "B4", "status": "met", "evidence": "transitBalance() equals transitBefore after post and after release in PaymentTransfersIT"}
+  ],
+  "findings": []
+}
