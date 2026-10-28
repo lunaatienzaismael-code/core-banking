@@ -168,13 +168,24 @@ service-specific options.
 ### Retries and dead-letter topics
 
 - **Blocking retries with backoff, then a dead-letter topic** named
-  `<topic>.DLT`, keeping the original key and adding failure headers. Retry
-  count and backoff are configuration (defaults chosen with T-031).
+  `<topic>.DLT`, on the record's partition, keeping the original key and adding
+  Spring Kafka's failure headers. The handler is built once in
+  `messaging-support` (`DeadLetters`) and each service declares its DLTs with
+  the partitions of their topics.
+- **Retry settings** (`ledgerflow.kafka.retry.*`, per service): 3 retries after
+  the first attempt, waiting 500 ms, then ×2 up to 5 s — about 3.5 s of
+  retries before a record is parked, during which its partition waits.
 - **Not retried:** deserialisation and validation failures (retrying cannot
   fix the bytes) go straight to the dead-letter topic. Spring Kafka already
-  treats deserialisation failures as not retryable [5]; validation failures
-  are added to that list.
-- **Retried:** optimistic-lock conflicts, database and broker errors.
+  treats deserialisation failures as not retryable [5]; consumers read through
+  Spring Kafka's `ErrorHandlingDeserializer`, so an unreadable payload reaches
+  the handler (and the DLT as its original bytes) instead of stopping the
+  consumer. Also not retried: `IllegalArgumentException` (a missing
+  `message-id`, an id that is not a UUID, an unsupported message type) and
+  each service's validation errors — the ledger's invalid amount or currency,
+  and in payment-service a reply for a payment it does not have.
+- **Retried:** optimistic-lock conflicts, database and broker errors, and a
+  ledger release that fails (ADR 0012: never a refusal).
 
 ### Infrastructure
 
