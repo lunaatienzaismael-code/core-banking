@@ -385,12 +385,12 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "feat",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-027"],
       "acceptance_criteria": [],
       "issue": 58,
       "branch": "feat/T-028-ledger-post-release",
-      "pr": null,
+      "pr": 67,
       "review_rounds": 1
     },
     {
@@ -399,13 +399,13 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-026", "T-028"],
       "acceptance_criteria": [],
       "issue": 59,
-      "branch": null,
+      "branch": "feat/T-029-payment-saga",
       "pr": null,
-      "review_rounds": 0
+      "review_rounds": 1
     },
     {
       "id": "T-030",

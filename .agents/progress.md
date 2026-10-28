@@ -118,3 +118,6 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-28 · T-027 · in_review · PR #66
 2026-10-28 · T-027 · done · PR #66 merged
 2026-10-28 · T-028 · started · branch feat/T-028-ledger-post-release (from main)
+2026-10-28 · T-028 · in_review · PR #67
+2026-10-28 · T-028 · done · PR #67 merged
+2026-10-28 · T-029 · started · branch feat/T-029-payment-saga (from main)
