@@ -13,16 +13,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.ledgerflow.ledger.application.port.in.PostTransferCommand;
+import com.ledgerflow.ledger.application.port.in.ReleaseFundsCommand;
 import com.ledgerflow.ledger.application.port.in.ReserveFundsCommand;
 import com.ledgerflow.ledger.application.port.out.AccountRepository;
 import com.ledgerflow.ledger.application.port.out.BalanceRepository;
 import com.ledgerflow.ledger.application.port.out.MessageInbox;
-import com.ledgerflow.ledger.application.port.out.ReservationReplies;
-import com.ledgerflow.ledger.application.port.out.ReservationReplies.Refusal;
 import com.ledgerflow.ledger.application.port.out.TransactionRepository;
+import com.ledgerflow.ledger.application.port.out.TransferReplies;
+import com.ledgerflow.ledger.application.port.out.TransferReplies.Refusal;
 import com.ledgerflow.ledger.domain.Account;
 import com.ledgerflow.ledger.domain.AccountId;
+import com.ledgerflow.ledger.domain.AccountNotFoundException;
 import com.ledgerflow.ledger.domain.AccountType;
+import com.ledgerflow.ledger.domain.InsufficientFundsException;
 import com.ledgerflow.ledger.domain.InvalidTransactionException;
 import com.ledgerflow.ledger.domain.Money;
 import com.ledgerflow.ledger.domain.OverdraftPolicy;
@@ -41,22 +45,24 @@ import org.springframework.dao.QueryTimeoutException;
 import org.springframework.transaction.support.TransactionOperations;
 
 /**
- * The reservation runs through the real {@link RecordTransactionService}; only outbound ports are mocked. Transactions
- * are not simulated here: atomicity of the attempt and of the refusal is proven by {@code ReserveFundsIT}.
+ * Reserve, post and release run through the real {@link RecordTransactionService}; only outbound ports are mocked.
+ * Transactions are not simulated here: atomicity of each attempt and of each refusal is proven by
+ * {@code PaymentTransfersIT}.
  */
-class ReserveFundsServiceTest {
+class PaymentTransferServiceTest {
 
     private static final Currency EUR = Currency.getInstance("EUR");
     private static final String PAYMENT = "5f0c7a52-6f58-4a43-9a8e-2b0b5c1d7e11";
     private static final Account DEBTOR = Account.open(EUR, AccountType.LIABILITY, OverdraftPolicy.NOT_ALLOWED);
+    private static final Account CREDITOR = Account.open(EUR, AccountType.LIABILITY, OverdraftPolicy.NOT_ALLOWED);
     private static final Account TRANSIT = Account.paymentsInTransit(EUR);
 
     private final AccountRepository accounts = mock(AccountRepository.class);
     private final TransactionRepository transactions = mock(TransactionRepository.class);
     private final BalanceRepository balances = mock(BalanceRepository.class);
     private final MessageInbox inbox = mock(MessageInbox.class);
-    private final ReservationReplies replies = mock(ReservationReplies.class);
-    private final ReserveFundsService service = new ReserveFundsService(
+    private final TransferReplies replies = mock(TransferReplies.class);
+    private final PaymentTransferService service = new PaymentTransferService(
             inbox,
             accounts,
             new RecordTransactionService(
@@ -69,71 +75,75 @@ class ReserveFundsServiceTest {
 
     @BeforeEach
     void storedAccountsAndAFirstDeliveryUnlessATestSaysOtherwise() {
-        when(accounts.findById(DEBTOR.id())).thenReturn(Optional.of(DEBTOR));
-        when(accounts.findById(TRANSIT.id())).thenReturn(Optional.of(TRANSIT));
+        for (var account : new Account[] {DEBTOR, CREDITOR, TRANSIT}) {
+            when(accounts.findById(account.id())).thenReturn(Optional.of(account));
+        }
         when(balances.apply(any(), any())).thenReturn(true);
         when(inbox.firstDelivery(any())).thenReturn(true);
     }
 
+    // ---- reserve ----
+
     @Test
     @DisplayName("ADR 0012 a reservation debits the debtor and credits the transit account, then replies FundsReserved")
     void reservationMovesTheAmountToTheTransitAccountAndReplies() {
-        service.reserve(command(2_500, "EUR"));
+        service.reserve(reserve(2_500, "EUR"));
 
-        var saved = ArgumentCaptor.forClass(Transaction.class);
-        verify(transactions).save(saved.capture());
-        assertThat(saved.getValue().lines())
+        var saved = savedTransaction();
+        assertThat(saved.lines())
                 .extracting(line -> line.accountId(), line -> line.amount())
                 .containsExactlyInAnyOrder(
                         tuple(DEBTOR.id(), Money.of(2_500, "EUR")), tuple(TRANSIT.id(), Money.of(-2_500, "EUR")));
         verify(accounts).saveIfAbsent(TRANSIT);
-        verify(replies).fundsReserved(PAYMENT, saved.getValue().id());
+        verify(replies).fundsReserved(PAYMENT, saved.id());
         verify(replies, never()).reservationRefused(anyString(), any(), anyString());
     }
 
     @Test
-    @DisplayName("AC4.2 a redelivered command records nothing and replies nothing")
-    void redeliveredCommandChangesNothing() {
+    @DisplayName("AC4.2 a redelivered ReserveFunds records nothing and replies nothing")
+    void redeliveredReservationChangesNothing() {
         when(inbox.firstDelivery(any())).thenReturn(false);
 
-        service.reserve(command(2_500, "EUR"));
+        service.reserve(reserve(2_500, "EUR"));
 
         verifyNoInteractions(transactions, balances, replies);
         verify(accounts, never()).saveIfAbsent(any());
     }
 
     @Test
-    @DisplayName("B3 insufficient funds is refused with INSUFFICIENT_FUNDS")
+    @DisplayName("B3 (T-027) insufficient funds is refused with INSUFFICIENT_FUNDS")
     void insufficientFundsIsRefused() {
         when(balances.apply(eq(DEBTOR.id()), any())).thenReturn(false);
 
-        service.reserve(command(2_500, "EUR"));
+        service.reserve(reserve(2_500, "EUR"));
 
         verify(replies)
                 .reservationRefused(
-                        eq(PAYMENT),
-                        eq(Refusal.INSUFFICIENT_FUNDS),
-                        eq("Account " + DEBTOR.id() + " has insufficient funds for a posting of "
-                                + Money.of(2_500, "EUR")));
+                        PAYMENT,
+                        Refusal.INSUFFICIENT_FUNDS,
+                        "Account " + DEBTOR.id() + " has insufficient funds for a posting of "
+                                + Money.of(2_500, "EUR"));
         verify(replies, never()).fundsReserved(anyString(), any());
     }
 
     @Test
-    @DisplayName("B3 an unknown debtor is refused with UNKNOWN_ACCOUNT")
+    @DisplayName("B3 (T-027) an unknown debtor is refused with UNKNOWN_ACCOUNT")
     void unknownDebtorIsRefused() {
         var unknown = AccountId.random();
         when(accounts.findById(unknown)).thenReturn(Optional.empty());
 
         service.reserve(new ReserveFundsCommand(UUID.randomUUID(), PAYMENT, unknown, Money.of(2_500, "EUR")));
 
-        verify(replies).reservationRefused(eq(PAYMENT), eq(Refusal.UNKNOWN_ACCOUNT), anyString());
+        verify(replies)
+                .reservationRefused(
+                        PAYMENT, Refusal.UNKNOWN_ACCOUNT, new AccountNotFoundException(unknown).getMessage());
         verify(transactions, never()).save(any());
     }
 
     @Test
-    @DisplayName("B3 an amount in another currency than the debtor's is refused with CURRENCY_MISMATCH")
+    @DisplayName("B3 (T-027) an amount in another currency than the debtor's is refused with CURRENCY_MISMATCH")
     void currencyMismatchIsRefused() {
-        service.reserve(command(2_500, "USD"));
+        service.reserve(reserve(2_500, "USD"));
 
         verify(replies).reservationRefused(eq(PAYMENT), eq(Refusal.CURRENCY_MISMATCH), anyString());
         verify(transactions, never()).save(any());
@@ -143,7 +153,7 @@ class ReserveFundsServiceTest {
     @DisplayName("AC4.2 a refusal is recorded in the inbox, so its redelivery replies nothing")
     void refusalIsRecordedSoItsRedeliveryRepliesNothing() {
         when(balances.apply(eq(DEBTOR.id()), any())).thenReturn(false);
-        var command = command(2_500, "EUR");
+        var command = reserve(2_500, "EUR");
         // The attempt and the refusal each see a first delivery (the attempt rolled back); the redelivery does not.
         when(inbox.firstDelivery(command.messageId())).thenReturn(true, true, false);
 
@@ -159,19 +169,142 @@ class ReserveFundsServiceTest {
     void technicalFailurePropagatesWithoutAReply() {
         when(balances.apply(any(), any())).thenThrow(new QueryTimeoutException("database busy"));
 
-        assertThatThrownBy(() -> service.reserve(command(2_500, "EUR"))).isInstanceOf(QueryTimeoutException.class);
+        assertThatThrownBy(() -> service.reserve(reserve(2_500, "EUR"))).isInstanceOf(QueryTimeoutException.class);
+        verifyNoInteractions(replies);
+    }
+
+    // ---- post ----
+
+    @Test
+    @DisplayName("B1 a posting debits the transit account and credits the creditor, then replies TransferPosted")
+    void postingMovesTheAmountToTheCreditorAndReplies() {
+        service.post(post(CREDITOR.id(), 2_500, "EUR"));
+
+        var saved = savedTransaction();
+        assertThat(saved.lines())
+                .extracting(line -> line.accountId(), line -> line.amount())
+                .containsExactlyInAnyOrder(
+                        tuple(TRANSIT.id(), Money.of(2_500, "EUR")), tuple(CREDITOR.id(), Money.of(-2_500, "EUR")));
+        verify(replies).transferPosted(PAYMENT, saved.id());
+        verify(replies, never()).postingRefused(anyString(), any(), anyString());
+    }
+
+    @Test
+    @DisplayName("B1 an unknown creditor is refused with UNKNOWN_ACCOUNT")
+    void unknownCreditorIsRefused() {
+        var unknown = AccountId.random();
+        when(accounts.findById(unknown)).thenReturn(Optional.empty());
+
+        service.post(post(unknown, 2_500, "EUR"));
+
+        verify(replies)
+                .postingRefused(PAYMENT, Refusal.UNKNOWN_ACCOUNT, new AccountNotFoundException(unknown).getMessage());
+        verify(replies, never()).transferPosted(anyString(), any());
+        verify(transactions, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("B1 a creditor in another currency is refused with CURRENCY_MISMATCH")
+    void creditorInAnotherCurrencyIsRefused() {
+        var usdCreditor = Account.open(Currency.getInstance("USD"), AccountType.LIABILITY, OverdraftPolicy.NOT_ALLOWED);
+        when(accounts.findById(usdCreditor.id())).thenReturn(Optional.of(usdCreditor));
+
+        service.post(post(usdCreditor.id(), 2_500, "EUR"));
+
+        verify(replies).postingRefused(eq(PAYMENT), eq(Refusal.CURRENCY_MISMATCH), anyString());
+        verify(transactions, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("B1 a transit account short of the amount is not a creditor refusal: it propagates")
+    void transitShortOfTheAmountPropagates() {
+        when(balances.apply(eq(TRANSIT.id()), any())).thenReturn(false);
+
+        assertThatThrownBy(() -> service.post(post(CREDITOR.id(), 2_500, "EUR")))
+                .isInstanceOf(InsufficientFundsException.class)
+                .hasMessageContaining(TRANSIT.id().toString());
         verifyNoInteractions(replies);
     }
 
     @Test
-    void anAmountToReserveMustBePositive() {
-        assertThatThrownBy(() -> command(0, "EUR"))
-                .isInstanceOf(InvalidTransactionException.class)
-                .hasMessage("Amount to reserve must be positive, got " + Money.of(0, "EUR"));
-        assertThatThrownBy(() -> command(-1, "EUR")).isInstanceOf(InvalidTransactionException.class);
+    @DisplayName("B3 a redelivered PostTransfer records nothing and replies nothing")
+    void redeliveredPostingChangesNothing() {
+        when(inbox.firstDelivery(any())).thenReturn(false);
+
+        service.post(post(CREDITOR.id(), 2_500, "EUR"));
+
+        verifyNoInteractions(transactions, balances, replies);
     }
 
-    private static ReserveFundsCommand command(long amount, String currency) {
+    // ---- release ----
+
+    @Test
+    @DisplayName(
+            "B2 a release debits the transit account and credits the debtor, then replies FundsReleased with the reason")
+    void releaseMovesTheAmountBackToTheDebtorAndReplies() {
+        service.release(release(2_500, "EUR"));
+
+        var saved = savedTransaction();
+        assertThat(saved.lines())
+                .extracting(line -> line.accountId(), line -> line.amount())
+                .containsExactlyInAnyOrder(
+                        tuple(TRANSIT.id(), Money.of(2_500, "EUR")), tuple(DEBTOR.id(), Money.of(-2_500, "EUR")));
+        verify(replies).fundsReleased(PAYMENT, saved.id(), "creditor account closed");
+    }
+
+    @Test
+    @DisplayName("B2 a release is never refused: a failure propagates so the message is retried")
+    void releaseIsNeverRefused() {
+        var unknown = AccountId.random();
+        when(accounts.findById(unknown)).thenReturn(Optional.empty());
+        var command =
+                new ReleaseFundsCommand(UUID.randomUUID(), PAYMENT, unknown, Money.of(2_500, "EUR"), "creditor closed");
+
+        assertThatThrownBy(() -> service.release(command)).isInstanceOf(AccountNotFoundException.class);
+        verifyNoInteractions(replies);
+    }
+
+    @Test
+    @DisplayName("B3 a redelivered ReleaseFunds records nothing and replies nothing")
+    void redeliveredReleaseChangesNothing() {
+        when(inbox.firstDelivery(any())).thenReturn(false);
+
+        service.release(release(2_500, "EUR"));
+
+        verifyNoInteractions(transactions, balances, replies);
+    }
+
+    // ---- commands ----
+
+    @Test
+    void amountsMustBePositive() {
+        assertThatThrownBy(() -> reserve(0, "EUR"))
+                .isInstanceOf(InvalidTransactionException.class)
+                .hasMessage("Amount to reserve must be positive, got " + Money.of(0, "EUR"));
+        assertThatThrownBy(() -> post(CREDITOR.id(), 0, "EUR"))
+                .isInstanceOf(InvalidTransactionException.class)
+                .hasMessage("Amount to post must be positive, got " + Money.of(0, "EUR"));
+        assertThatThrownBy(() -> release(-1, "EUR"))
+                .isInstanceOf(InvalidTransactionException.class)
+                .hasMessage("Amount to release must be positive, got " + Money.of(-1, "EUR"));
+    }
+
+    private Transaction savedTransaction() {
+        var saved = ArgumentCaptor.forClass(Transaction.class);
+        verify(transactions).save(saved.capture());
+        return saved.getValue();
+    }
+
+    private static ReserveFundsCommand reserve(long amount, String currency) {
         return new ReserveFundsCommand(UUID.randomUUID(), PAYMENT, DEBTOR.id(), Money.of(amount, currency));
+    }
+
+    private static PostTransferCommand post(AccountId creditor, long amount, String currency) {
+        return new PostTransferCommand(UUID.randomUUID(), PAYMENT, creditor, Money.of(amount, currency));
+    }
+
+    private static ReleaseFundsCommand release(long amount, String currency) {
+        return new ReleaseFundsCommand(
+                UUID.randomUUID(), PAYMENT, DEBTOR.id(), Money.of(amount, currency), "creditor account closed");
     }
 }
