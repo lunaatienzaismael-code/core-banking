@@ -1,0 +1,36 @@
+{
+  "task_id": "T-027",
+  "round": 1,
+  "base": "de34abb38367cdef6286be0ee666fe37a34f4828",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Reserve-funds consumer is sound: inbox, ledger transaction and reply share one transaction; refusals roll back the attempt and are recorded in a second transaction; redelivery tested end to end over counters. Only a stale ADR sentence remains.",
+  "acceptance_criteria": [
+    {"id": "AC4.2", "status": "met", "evidence": "ReserveFundsIT#redeliveredReserveFundsHasNoSecondEffect (counters, transactions, single inbox row, single reply); ReserveFundsServiceTest#redeliveredCommandChangesNothing, #refusalIsRecordedSoItsRedeliveryRepliesNothing; InboxIT"},
+    {"id": "B1", "status": "met", "evidence": "Lazy idempotent provisioning: AccountId.paymentsInTransit (UUID v3), AccountPersistenceAdapter.saveIfAbsent ON CONFLICT DO NOTHING, Account.paymentsInTransit LIABILITY; exercised by ReserveFundsIT. Decision still to be recorded in ADR 0012 (see finding)."},
+    {"id": "B2", "status": "met", "evidence": "messaging-support Inbox + create-processed-messages.sql, ledger changeset 0006; InboxIT rejects use outside a transaction; firstDelivery called inside the use-case transaction"},
+    {"id": "B3", "status": "met", "evidence": "ReserveFundsIT#insufficientFundsIsRefusedAndNothingMoves, #unknownDebtorIsRefusedAndNothingMoves, #currencyMismatchIsRefusedAndNothingMoves; unit counterparts in ReserveFundsServiceTest"},
+    {"id": "B4", "status": "met", "evidence": "changeset 0005-create-outbox-messages, OutboxConfiguration, ReservationRepliesOutboxAdapter writes FundsReserved/ReservationRefused via OutboxWriter in the same transaction"}
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "docs",
+      "defect_type": "unbacked-doc-claim",
+      "file": "docs/adr/0012-payment-saga-and-fund-reservation.md",
+      "line": 91,
+      "description": "ADR 0012 still says the provisioning mechanism 'is decided by the first task that needs it (T-027)'. T-027 decided it (lazy idempotent insert with a deterministic id per currency) but the ADR was not updated.",
+      "suggestion": "Replace the sentence with the decision: deterministic UUID v3 id per currency, inserted with ON CONFLICT DO NOTHING inside the reservation transaction.",
+      "rule": "Definition of done: docs/ADR updated if a decision changed"
+    },
+    {
+      "severity": "nit",
+      "category": "architecture",
+      "defect_type": "other",
+      "file": "ledger-service/src/main/java/com/ledgerflow/ledger/adapter/in/messaging/LedgerCommandMapper.java",
+      "line": 19,
+      "description": "A malformed message (non-UUID debtor id, non-positive or bad currency) throws from the mapper/command constructor and will be redelivered forever until T-031 adds DLT. Acceptable per scope, but not noted in code.",
+      "suggestion": "Add a short comment or tracking note pointing to T-031."
+    }
+  ]
+}
