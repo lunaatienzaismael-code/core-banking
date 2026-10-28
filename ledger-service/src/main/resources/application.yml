@@ -31,12 +31,20 @@ spring:
       group-id: ledger-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      # A payload that cannot be read reaches the error handler, which parks it on the DLT (ADR 0013).
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
+        spring.deserializer.value.delegate.class: io.confluent.kafka.serializers.KafkaAvroDeserializer
         specific.avro.reader: true
 
-# Transactional outbox relay (ADR 0013).
+# Transactional outbox relay and consumer retries (ADR 0013).
 ledgerflow:
+  kafka:
+    retry:
+      max-retries: 3
+      initial-interval: 500ms
+      multiplier: 2.0
+      max-interval: 5s
   outbox:
     relay-interval: 500ms
     batch-size: 100
