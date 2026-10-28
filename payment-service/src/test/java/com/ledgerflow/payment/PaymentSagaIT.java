@@ -3,9 +3,12 @@ package com.ledgerflow.payment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.ledgerflow.messaging.FundsReleased;
 import com.ledgerflow.messaging.FundsReserved;
 import com.ledgerflow.messaging.PostTransfer;
+import com.ledgerflow.messaging.PostingRefused;
 import com.ledgerflow.messaging.RefusalReason;
+import com.ledgerflow.messaging.ReleaseFunds;
 import com.ledgerflow.messaging.ReservationRefused;
 import com.ledgerflow.messaging.ReserveFunds;
 import com.ledgerflow.messaging.TransferPosted;
@@ -214,6 +217,67 @@ class PaymentSagaIT {
         assertThat(status(paymentId)).isEqualTo("REJECTED");
         assertThat(commandsSentFor(paymentId)).isOne();
         assertThat(processed(losingInput)).isFalse();
+    }
+
+    @Test
+    @DisplayName(
+            "AC4.3 posting refused after the reservation: the funds are released and the payment ends FAILED with the reason")
+    void refusedPostingIsCompensated() throws Exception {
+        var debtor = UUID.randomUUID();
+        var paymentId = initiate(debtor, UUID.randomUUID(), 2_500);
+        nextCommandFor(paymentId, ReserveFunds.class);
+        reply(paymentId, UUID.randomUUID(), fundsReserved(paymentId));
+        nextCommandFor(paymentId, PostTransfer.class);
+
+        reply(paymentId, UUID.randomUUID(), postingRefused(paymentId));
+
+        var release = nextCommandFor(paymentId, ReleaseFunds.class);
+        assertThat(release.getDebtorAccountId()).isEqualTo(debtor.toString());
+        assertThat(release.getAmountMinorUnits()).isEqualTo(2_500L);
+        assertThat(release.getCurrency()).isEqualTo("EUR");
+        assertThat(release.getReason()).isEqualTo("UNKNOWN_ACCOUNT: creditor account does not exist");
+        assertThat(status(paymentId)).isEqualTo("FUNDS_RESERVED");
+
+        reply(
+                paymentId,
+                UUID.randomUUID(),
+                FundsReleased.newBuilder()
+                        .setPaymentId(paymentId)
+                        .setTransactionId(UUID.randomUUID().toString())
+                        .setReason(release.getReason())
+                        .build());
+        await(() -> "FAILED".equals(status(paymentId)));
+        assertThat(payment(paymentId).get("reason").asString())
+                .isEqualTo("UNKNOWN_ACCOUNT: creditor account does not exist");
+        assertThat(commandsSentFor(paymentId)).isEqualTo(3); // ReserveFunds, PostTransfer, ReleaseFunds
+    }
+
+    @Test
+    @DisplayName("B1 a redelivered PostingRefused sends no second release")
+    void redeliveredPostingRefusedSendsNoSecondRelease() throws Exception {
+        var paymentId = initiate(UUID.randomUUID(), UUID.randomUUID(), 2_500);
+        nextCommandFor(paymentId, ReserveFunds.class);
+        reply(paymentId, UUID.randomUUID(), fundsReserved(paymentId));
+        nextCommandFor(paymentId, PostTransfer.class);
+        var refusalId = UUID.randomUUID();
+        var markerId = UUID.randomUUID();
+
+        reply(paymentId, refusalId, postingRefused(paymentId));
+        reply(paymentId, refusalId, postingRefused(paymentId));
+        // Stale for FUNDS_RESERVED; on the same key, so once it is recorded both copies were processed.
+        reply(paymentId, markerId, fundsReserved(paymentId));
+
+        await(() -> processed(markerId));
+        assertThat(commandsSentFor(paymentId)).isEqualTo(3); // ReserveFunds, PostTransfer, one ReleaseFunds
+        assertThat(status(paymentId)).isEqualTo("FUNDS_RESERVED");
+    }
+
+    private static PostingRefused postingRefused(String paymentId) {
+        return PostingRefused.newBuilder()
+                .setPaymentId(paymentId)
+                .setReason(RefusalReason.UNKNOWN_ACCOUNT)
+                .setDetail("creditor account does not exist")
+                .build();
     }
 
     private static FundsReserved fundsReserved(String paymentId) {

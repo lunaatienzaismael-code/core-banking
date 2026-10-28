@@ -99,6 +99,47 @@ class AdvancePaymentSagaServiceTest {
     }
 
     @Test
+    @DisplayName("AC4.3 PostingRefused asks the ledger to release the funds, with the reason, and keeps FUNDS_RESERVED")
+    void refusedPostingReleasesTheFunds() {
+        var payment = stored(PaymentStatus.FUNDS_RESERVED);
+
+        saga.advance(new SagaInput.PostingRefused(
+                UUID.randomUUID(), payment.id(), "UNKNOWN_ACCOUNT", "creditor account does not exist"));
+
+        assertThat(payment.status()).isEqualTo(PaymentStatus.FUNDS_RESERVED);
+        verify(ledger).releaseFunds(payment, "UNKNOWN_ACCOUNT: creditor account does not exist");
+        verify(ledger, never()).postTransfer(any());
+        verify(payments, never()).update(any());
+    }
+
+    @Test
+    @DisplayName("AC4.3 FundsReleased fails the payment with the reason the release carried")
+    void releasedFundsFailThePayment() {
+        var payment = stored(PaymentStatus.FUNDS_RESERVED);
+
+        saga.advance(new SagaInput.FundsReleased(
+                UUID.randomUUID(), payment.id(), "UNKNOWN_ACCOUNT: creditor account does not exist"));
+
+        assertThat(payment.status()).isEqualTo(PaymentStatus.FAILED);
+        assertThat(payment.reason()).contains("UNKNOWN_ACCOUNT: creditor account does not exist");
+        verifyNoInteractions(ledger);
+        verify(payments).update(payment);
+    }
+
+    @Test
+    @DisplayName("B1 a redelivered PostingRefused sends no second release")
+    void redeliveredPostingRefusedSendsNoSecondRelease() {
+        var payment = stored(PaymentStatus.FUNDS_RESERVED);
+        var refused = new SagaInput.PostingRefused(UUID.randomUUID(), payment.id(), "UNKNOWN_ACCOUNT", "-");
+        when(inbox.firstDelivery(refused.messageId())).thenReturn(true, false);
+
+        saga.advance(refused);
+        saga.advance(refused);
+
+        verify(ledger).releaseFunds(any(), any());
+    }
+
+    @Test
     @DisplayName("B3 a redelivered input does not re-run its step")
     void redeliveredInputChangesNothing() {
         when(inbox.firstDelivery(any())).thenReturn(false);
@@ -136,17 +177,21 @@ class AdvancePaymentSagaServiceTest {
             "PaymentInitiated", id -> new SagaInput.PaymentInitiated(UUID.randomUUID(), id),
             "FundsReserved", id -> new SagaInput.FundsReserved(UUID.randomUUID(), id),
             "ReservationRefused", id -> new SagaInput.ReservationRefused(UUID.randomUUID(), id, "UNKNOWN_ACCOUNT", "-"),
-            "TransferPosted", id -> new SagaInput.TransferPosted(UUID.randomUUID(), id));
+            "TransferPosted", id -> new SagaInput.TransferPosted(UUID.randomUUID(), id),
+            "PostingRefused", id -> new SagaInput.PostingRefused(UUID.randomUUID(), id, "UNKNOWN_ACCOUNT", "-"),
+            "FundsReleased", id -> new SagaInput.FundsReleased(UUID.randomUUID(), id, "UNKNOWN_ACCOUNT: -"));
 
-    /** Every (input, status) pair except the four the saga table of ADR 0012 acts on. */
+    /** Every (input, status) pair except the six the saga table of ADR 0012 acts on. */
     static Stream<Arguments> inputsTheTransitionTableDoesNotAllow() {
         var allowed = List.of(
                 "PaymentInitiated/INITIATED",
                 "FundsReserved/RISK_APPROVED",
                 "ReservationRefused/RISK_APPROVED",
-                "TransferPosted/FUNDS_RESERVED");
+                "TransferPosted/FUNDS_RESERVED",
+                "PostingRefused/FUNDS_RESERVED",
+                "FundsReleased/FUNDS_RESERVED");
         var pairs = new ArrayList<Arguments>();
-        for (var input : List.of("PaymentInitiated", "FundsReserved", "ReservationRefused", "TransferPosted")) {
+        for (var input : INPUTS.keySet()) {
             for (var status : PaymentStatus.values()) {
                 if (!allowed.contains(input + "/" + status)) {
                     pairs.add(Arguments.of(input, status));

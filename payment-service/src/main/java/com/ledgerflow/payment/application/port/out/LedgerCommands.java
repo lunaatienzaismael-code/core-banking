@@ -13,4 +13,7 @@ public interface LedgerCommands {
 
     /** Payments in transit → creditor. */
     void postTransfer(Payment payment);
+
+    /** Compensation: payments in transit → debtor; {@code reason} comes back in the reply (ADR 0012). */
+    void releaseFunds(Payment payment, String reason);
 }

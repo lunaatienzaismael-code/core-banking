@@ -20,7 +20,11 @@ class SagaInputTest {
                 Arguments.of("FundsReserved", (BiFunction<UUID, PaymentId, SagaInput>) SagaInput.FundsReserved::new),
                 Arguments.of("TransferPosted", (BiFunction<UUID, PaymentId, SagaInput>) SagaInput.TransferPosted::new),
                 Arguments.of("ReservationRefused", (BiFunction<UUID, PaymentId, SagaInput>) (messageId, paymentId) ->
-                        new SagaInput.ReservationRefused(messageId, paymentId, "UNKNOWN_ACCOUNT", "-")));
+                        new SagaInput.ReservationRefused(messageId, paymentId, "UNKNOWN_ACCOUNT", "-")),
+                Arguments.of("PostingRefused", (BiFunction<UUID, PaymentId, SagaInput>) (messageId, paymentId) ->
+                        new SagaInput.PostingRefused(messageId, paymentId, "UNKNOWN_ACCOUNT", "-")),
+                Arguments.of("FundsReleased", (BiFunction<UUID, PaymentId, SagaInput>)
+                        (messageId, paymentId) -> new SagaInput.FundsReleased(messageId, paymentId, "-")));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -37,6 +41,21 @@ class SagaInputTest {
         assertThatThrownBy(() -> input.apply(UUID.randomUUID(), null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("paymentId");
+    }
+
+    @Test
+    void aPostingRefusalNeedsItsReasonAndDetail() {
+        assertThatThrownBy(() -> new SagaInput.PostingRefused(UUID.randomUUID(), PaymentId.random(), null, "-"))
+                .hasMessage("reason");
+        assertThatThrownBy(() ->
+                        new SagaInput.PostingRefused(UUID.randomUUID(), PaymentId.random(), "UNKNOWN_ACCOUNT", null))
+                .hasMessage("detail");
+    }
+
+    @Test
+    void aReleaseNeedsTheReasonItCarried() {
+        assertThatThrownBy(() -> new SagaInput.FundsReleased(UUID.randomUUID(), PaymentId.random(), null))
+                .hasMessage("reason");
     }
 
     @Test
