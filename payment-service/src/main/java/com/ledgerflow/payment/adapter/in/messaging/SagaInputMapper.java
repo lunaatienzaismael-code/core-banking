@@ -1,7 +1,9 @@
 package com.ledgerflow.payment.adapter.in.messaging;
 
+import com.ledgerflow.messaging.FundsReleased;
 import com.ledgerflow.messaging.FundsReserved;
 import com.ledgerflow.messaging.PaymentInitiated;
+import com.ledgerflow.messaging.PostingRefused;
 import com.ledgerflow.messaging.ReservationRefused;
 import com.ledgerflow.messaging.TransferPosted;
 import com.ledgerflow.payment.application.port.in.SagaInput;
@@ -27,6 +29,14 @@ final class SagaInputMapper {
                         reply.getReason().name(),
                         reply.getDetail());
             case TransferPosted reply -> new SagaInput.TransferPosted(messageId, paymentId(reply.getPaymentId()));
+            case PostingRefused reply ->
+                new SagaInput.PostingRefused(
+                        messageId,
+                        paymentId(reply.getPaymentId()),
+                        reply.getReason().name(),
+                        reply.getDetail());
+            case FundsReleased reply ->
+                new SagaInput.FundsReleased(messageId, paymentId(reply.getPaymentId()), reply.getReason());
             default ->
                 throw new IllegalArgumentException(
                         "Unsupported saga message " + message.getClass().getName());

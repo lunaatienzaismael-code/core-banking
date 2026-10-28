@@ -1,6 +1,7 @@
 package com.ledgerflow.payment.adapter.out.messaging;
 
 import com.ledgerflow.messaging.PostTransfer;
+import com.ledgerflow.messaging.ReleaseFunds;
 import com.ledgerflow.messaging.ReserveFunds;
 import com.ledgerflow.messaging.outbox.OutboxWriter;
 import com.ledgerflow.payment.application.port.out.LedgerCommands;
@@ -44,6 +45,21 @@ class LedgerCommandsOutboxAdapter implements LedgerCommands {
                         .setCreditorAccountId(payment.creditor().value().toString())
                         .setAmountMinorUnits(payment.amount().amount())
                         .setCurrency(payment.amount().currency().getCurrencyCode())
+                        .build());
+    }
+
+    @Override
+    public void releaseFunds(Payment payment, String reason) {
+        var paymentId = payment.id().value().toString();
+        outbox.write(
+                LEDGER_COMMANDS,
+                paymentId,
+                ReleaseFunds.newBuilder()
+                        .setPaymentId(paymentId)
+                        .setDebtorAccountId(payment.debtor().value().toString())
+                        .setAmountMinorUnits(payment.amount().amount())
+                        .setCurrency(payment.amount().currency().getCurrencyCode())
+                        .setReason(reason)
                         .build());
     }
 }

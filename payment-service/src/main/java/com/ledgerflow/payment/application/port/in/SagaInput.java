@@ -44,6 +44,23 @@ public sealed interface SagaInput {
         }
     }
 
+    /** The ledger did not post the transfer, for {@code reason}; the funds are still reserved. */
+    record PostingRefused(UUID messageId, PaymentId paymentId, String reason, String detail) implements SagaInput {
+        public PostingRefused {
+            requireIds(messageId, paymentId);
+            Objects.requireNonNull(reason, "reason");
+            Objects.requireNonNull(detail, "detail");
+        }
+    }
+
+    /** The ledger gave the reserved amount back to the debtor; {@code reason} is the one the release carried. */
+    record FundsReleased(UUID messageId, PaymentId paymentId, String reason) implements SagaInput {
+        public FundsReleased {
+            requireIds(messageId, paymentId);
+            Objects.requireNonNull(reason, "reason");
+        }
+    }
+
     private static void requireIds(UUID messageId, PaymentId paymentId) {
         Objects.requireNonNull(messageId, "messageId");
         Objects.requireNonNull(paymentId, "paymentId");

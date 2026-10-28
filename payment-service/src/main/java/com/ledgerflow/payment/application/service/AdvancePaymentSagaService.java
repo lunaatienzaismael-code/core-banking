@@ -2,8 +2,10 @@ package com.ledgerflow.payment.application.service;
 
 import com.ledgerflow.payment.application.port.in.AdvancePaymentSagaUseCase;
 import com.ledgerflow.payment.application.port.in.SagaInput;
+import com.ledgerflow.payment.application.port.in.SagaInput.FundsReleased;
 import com.ledgerflow.payment.application.port.in.SagaInput.FundsReserved;
 import com.ledgerflow.payment.application.port.in.SagaInput.PaymentInitiated;
+import com.ledgerflow.payment.application.port.in.SagaInput.PostingRefused;
 import com.ledgerflow.payment.application.port.in.SagaInput.ReservationRefused;
 import com.ledgerflow.payment.application.port.in.SagaInput.TransferPosted;
 import com.ledgerflow.payment.application.port.out.LedgerCommands;
@@ -65,6 +67,13 @@ class AdvancePaymentSagaService implements AdvancePaymentSagaUseCase {
             }
             case ReservationRefused refused -> payment.reject(refused.reason() + ": " + refused.detail());
             case TransferPosted ignored -> payment.complete();
+            case PostingRefused refused -> {
+                // Compensation (AC4.3): the payment stays FUNDS_RESERVED, which it still is, until the release
+                // comes back; the reason travels with the release, so nothing is stored meanwhile (ADR 0012).
+                ledger.releaseFunds(payment, refused.reason() + ": " + refused.detail());
+                return;
+            }
+            case FundsReleased released -> payment.fail(released.reason());
         }
         payments.update(payment);
     }
@@ -76,6 +85,8 @@ class AdvancePaymentSagaService implements AdvancePaymentSagaUseCase {
             case FundsReserved ignored -> PaymentStatus.RISK_APPROVED;
             case ReservationRefused ignored -> PaymentStatus.RISK_APPROVED;
             case TransferPosted ignored -> PaymentStatus.FUNDS_RESERVED;
+            case PostingRefused ignored -> PaymentStatus.FUNDS_RESERVED;
+            case FundsReleased ignored -> PaymentStatus.FUNDS_RESERVED;
         };
     }
 }
