@@ -36,13 +36,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.json.JsonMapper;
 
 /** AC4.1 transactional outbox for payment initiation (ADR 0013), against real PostgreSQL and Kafka. Fictitious data. */
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {
-            "ledgerflow.outbox.relay-interval=200ms",
-            "ledgerflow.outbox.send-timeout=2s",
-            "spring.kafka.producer.properties.max.block.ms=2000"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration.class)
 class PaymentOutboxIT {
 

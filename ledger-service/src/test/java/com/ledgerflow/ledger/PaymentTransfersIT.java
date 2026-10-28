@@ -44,7 +44,7 @@ import org.springframework.kafka.core.KafkaTemplate;
  * replies, the counters of ADR 0009 and the inbox. The transit account is shared by every test, so its counters are compared as deltas. All data is
  * fictitious.
  */
-@SpringBootTest(properties = "ledgerflow.outbox.relay-interval=200ms")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration.class)
 class PaymentTransfersIT {
 
