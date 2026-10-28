@@ -34,6 +34,9 @@ public class TestcontainersConfiguration {
             registry.add("spring.kafka.properties.schema.registry.url", MessagingContainers::schemaRegistryUrl);
             // A fast relay keeps message round trips in tests well under a second.
             registry.add("ledgerflow.outbox.relay-interval", () -> "200ms");
+            // Short retries so a record reaches its dead-letter topic quickly.
+            registry.add("ledgerflow.kafka.retry.initial-interval", () -> "50ms");
+            registry.add("ledgerflow.kafka.retry.max-interval", () -> "200ms");
             // PaymentOutboxIT pauses Kafka: sends must give up quickly so the relay retries after the outage.
             registry.add("ledgerflow.outbox.send-timeout", () -> "2s");
             registry.add("spring.kafka.producer.properties.max.block.ms", () -> "2000");

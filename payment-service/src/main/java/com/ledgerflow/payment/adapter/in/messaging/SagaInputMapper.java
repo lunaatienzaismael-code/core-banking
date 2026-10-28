@@ -12,7 +12,7 @@ import java.util.UUID;
 
 /**
  * Avro contract → saga input. A message of another type, or with an id that is not a UUID, throws: it is a poison
- * message, which T-031 sends to the dead-letter topic instead of retrying.
+ * message, which the error handler parks on the dead-letter topic without retrying.
  */
 final class SagaInputMapper {
 
