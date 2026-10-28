@@ -23,7 +23,7 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
  * Change set 0002 gives payments created before it a key no client was given and a hash no request matches. Runs the
  * real changelog in an isolated schema: the first change set, then rows, then the rest.
  */
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration.class)
 class PaymentIdempotencyBackfillIT {
 

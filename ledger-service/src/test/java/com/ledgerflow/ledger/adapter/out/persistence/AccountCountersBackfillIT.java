@@ -23,7 +23,7 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
  * Changeset 0003 backfills the posting counters of accounts that already have postings. Runs the real changelog in an
  * isolated schema: the first two changesets, then rows, then the rest.
  */
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration.class)
 class AccountCountersBackfillIT {
 

@@ -56,9 +56,7 @@ import tools.jackson.databind.json.JsonMapper;
  * the same commands, including the money moving, is proven by ledger-service's {@code PaymentTransfersIT}; the two meet
  * in the shared Avro contracts. All data is fictitious.
  */
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = "ledgerflow.outbox.relay-interval=200ms")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestcontainersConfiguration.class)
 class PaymentSagaIT {
 
