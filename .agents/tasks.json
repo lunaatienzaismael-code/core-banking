@@ -371,12 +371,12 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "feat",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-025", "T-026"],
       "acceptance_criteria": ["AC4.2"],
       "issue": 57,
       "branch": "feat/T-027-ledger-reserve-funds",
-      "pr": null,
+      "pr": 66,
       "review_rounds": 1
     },
     {
@@ -385,13 +385,13 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-027"],
       "acceptance_criteria": [],
       "issue": 58,
-      "branch": null,
+      "branch": "feat/T-028-ledger-post-release",
       "pr": null,
-      "review_rounds": 0
+      "review_rounds": 1
     },
     {
       "id": "T-029",
