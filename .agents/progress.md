@@ -109,3 +109,9 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-27 · T-025 · started · branch build/T-025-kafka-avro-contracts (stacked on T-024)
 2026-10-27 · T-025 · in_review · PR #64 (stacked on #63)
 2026-10-27 · T-026 · started · branch feat/T-026-payment-outbox (stacked on T-025)
+2026-10-27 · T-026 · in_review · PR #65 (stacked on #64)
+2026-10-28 · T-023 · done · PR #62 merged
+2026-10-28 · T-024 · done · PR #63 merged
+2026-10-28 · T-025 · done · PR #64 merged
+2026-10-28 · T-026 · done · PR #65 merged
+2026-10-28 · T-027 · started · branch feat/T-027-ledger-reserve-funds (from main)
