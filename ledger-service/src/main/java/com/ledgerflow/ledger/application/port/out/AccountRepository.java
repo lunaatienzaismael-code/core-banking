@@ -8,5 +8,8 @@ public interface AccountRepository {
 
     void save(Account account);
 
+    /** Inserts the account unless one with its id exists; safe when several transactions try at once. */
+    void saveIfAbsent(Account account);
+
     Optional<Account> findById(AccountId id);
 }

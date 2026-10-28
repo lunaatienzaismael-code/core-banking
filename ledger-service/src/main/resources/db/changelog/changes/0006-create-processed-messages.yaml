@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0006-create-processed-messages
+      author: ledgerflow
+      comment: >-
+        Inbox of processed command ids, so a redelivered command changes nothing
+        (AC4.2, ADR 0013). DDL shipped by messaging-support.
+      changes:
+        - sqlFile:
+            path: db/messaging/create-processed-messages.sql
+            relativeToChangelogFile: false

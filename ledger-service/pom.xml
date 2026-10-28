@@ -34,6 +34,23 @@
             <artifactId>spring-boot-starter-liquibase</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ledgerflow</groupId>
+            <artifactId>messaging-contracts</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ledgerflow</groupId>
+            <artifactId>messaging-support</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-avro-serializer</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
@@ -67,6 +84,18 @@
         <dependency>
             <groupId>com.ledgerflow</groupId>
             <artifactId>architecture-rules</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Kafka + Schema Registry fixture (ADR 0013); a test-jar brings no dependencies, so its own are listed. -->
+        <dependency>
+            <groupId>com.ledgerflow</groupId>
+            <artifactId>messaging-contracts</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-kafka</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

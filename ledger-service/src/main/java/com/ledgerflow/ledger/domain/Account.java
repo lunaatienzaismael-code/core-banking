@@ -22,6 +22,15 @@ public record Account(AccountId id, Currency currency, AccountType type, Overdra
         return new Account(AccountId.random(), currency, type, overdraftPolicy);
     }
 
+    /**
+     * The internal account holding the money reserved for payments in one currency (ADR 0012). A liability of the
+     * bank, so credit-normal; it can never be negative, as nothing leaves it that was not reserved into it.
+     */
+    public static Account paymentsInTransit(Currency currency) {
+        return new Account(
+                AccountId.paymentsInTransit(currency), currency, AccountType.LIABILITY, OverdraftPolicy.NOT_ALLOWED);
+    }
+
     public Side normalSide() {
         return type.normalSide();
     }
