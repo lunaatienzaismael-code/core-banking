@@ -10,7 +10,7 @@
 
     <artifactId>messaging-support</artifactId>
     <name>LedgerFlow :: Messaging Support</name>
-    <description>Transactional outbox shared by the services (ADR 0013); infrastructure only, no domain types</description>
+    <description>Transactional outbox and inbox shared by the services (ADR 0013); infrastructure only, no domain types</description>
 
     <dependencies>
         <dependency>
