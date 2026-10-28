@@ -12,7 +12,7 @@ import java.util.UUID;
 
 /**
  * Avro contract → use case command. A malformed message (an id that is not a UUID, a non-positive amount, an unknown
- * currency) throws here; it is a poison message, which T-031 sends to the dead-letter topic instead of retrying.
+ * currency) throws here; it is a poison message, which the error handler parks on the dead-letter topic without retrying.
  */
 final class LedgerCommandMapper {
 
