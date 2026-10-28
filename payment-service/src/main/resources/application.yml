@@ -27,6 +27,13 @@ spring:
       properties:
         # Several message types share a topic, so subjects are per topic and type (ADR 0013).
         value.subject.name.strategy: io.confluent.kafka.serializers.subject.TopicRecordNameStrategy
+    consumer:
+      group-id: payment-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      properties:
+        specific.avro.reader: true
   jackson:
     # Optional fields the contract marks as absent (e.g. a payment's reason) are left out, never sent as null.
     default-property-inclusion: non_null

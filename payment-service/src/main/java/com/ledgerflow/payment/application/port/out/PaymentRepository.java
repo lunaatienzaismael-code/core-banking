@@ -17,6 +17,12 @@ public interface PaymentRepository {
 
     Optional<Payment> findById(PaymentId id);
 
+    /**
+     * Stores the status and reason of a payment read in the same transaction. Optimistic locking (ADR 0011): if another
+     * transaction changed the payment since it was read, the commit fails and nothing is stored.
+     */
+    void update(Payment payment);
+
     /** A stored payment and the fingerprint of the request that created it. */
     record KeyedPayment(Payment payment, RequestFingerprint fingerprint) {}
 }

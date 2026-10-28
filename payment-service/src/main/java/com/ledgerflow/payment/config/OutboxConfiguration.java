@@ -1,5 +1,6 @@
 package com.ledgerflow.payment.config;
 
+import com.ledgerflow.messaging.inbox.Inbox;
 import com.ledgerflow.messaging.outbox.OutboxRelay;
 import com.ledgerflow.messaging.outbox.OutboxWriter;
 import java.time.Clock;
@@ -14,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.support.TransactionTemplate;
 
-/** Wires the shared outbox (ADR 0013) into this service and runs its relay on a schedule. */
+/** Wires the shared outbox and inbox (ADR 0013) into this service and runs the outbox relay on a schedule. */
 @Configuration(proxyBeanMethods = false)
 @EnableScheduling
 @EnableConfigurationProperties(OutboxProperties.class)
@@ -38,6 +39,11 @@ class OutboxConfiguration {
                 kafka,
                 clock,
                 new OutboxRelay.Settings(properties.lockKey(), properties.batchSize(), properties.sendTimeout()));
+    }
+
+    @Bean
+    Inbox inbox(JdbcClient jdbc, Clock clock) {
+        return new Inbox(jdbc, clock);
     }
 
     /** Three partitions so payments spread across consumers; one key always maps to one partition. */
