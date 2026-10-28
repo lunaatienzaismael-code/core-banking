@@ -1,0 +1,34 @@
+{
+  "task_id": "T-029",
+  "round": 1,
+  "base": "29af8169386d8d4c527d1153f0270258041ffcbc",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Saga use case, inbox, listener, outbox commands and optimistic-locking update are correct and well tested; transition, inbox and outbox share one transaction. B1 uses a ledger test double, which is allowed by the brief but does not itself show money moving; the PR must state that.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "PaymentSagaIT#paymentIsCompletedThroughTheSaga asserts statuses and the ReserveFunds/PostTransfer contents (debtor, creditor, amount, currency) on real Kafka; money movement for those commands is proven in ledger-service, not in this IT (design-note choice)."},
+    {"id": "B2", "status": "met", "evidence": "PaymentSagaIT#refusedReservationRejectsThePayment: REJECTED with 'INSUFFICIENT_FUNDS: ...' and only the ReserveFunds command sent."},
+    {"id": "B3", "status": "met", "evidence": "PaymentSagaIT#redeliveredAndStaleRepliesChangeNothing; AdvancePaymentSagaServiceTest#redeliveredInputChangesNothing and parameterised #inputNotAllowedFromTheCurrentStatusIsIgnored."},
+    {"id": "B4", "status": "met", "evidence": "PaymentSagaIT#transitionLosingTheOptimisticLockCommitsNothing (no status, command or inbox row); PaymentPersistenceAdapter.update on the managed entity with @Version."}
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "testing",
+      "defect_type": "indirect-test",
+      "file": "payment-service/src/test/java/com/ledgerflow/payment/PaymentSagaIT.java",
+      "line": 114,
+      "description": "B1 says the debtor is debited and the creditor credited, but no test in this task ties payment-service's commands to a ledger consuming them; only the Avro contract links the two sides.",
+      "suggestion": "State the trade-off in the PR as the brief requires; consider a later cross-service smoke test."
+    },
+    {
+      "severity": "minor",
+      "category": "api",
+      "defect_type": "contract-gap",
+      "file": "payment-service/src/main/java/com/ledgerflow/payment/application/service/AdvancePaymentSagaService.java",
+      "line": 56,
+      "description": "The new reject-reason format '<RefusalReason>: <detail>' is now visible through GET /payments/{id} but is not described in the OpenAPI reason field or an ADR.",
+      "suggestion": "Document the format in the OpenAPI description of reason."
+    }
+  ]
+}
