@@ -3,8 +3,10 @@ package com.ledgerflow.ledger.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Currency;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class AccountTest {
@@ -20,6 +22,29 @@ class AccountTest {
         assertThat(account.type()).isEqualTo(AccountType.LIABILITY);
         assertThat(account.overdraftPolicy()).isEqualTo(OverdraftPolicy.NOT_ALLOWED);
         assertThat(account.normalSide()).isEqualTo(Side.CREDIT);
+    }
+
+    @Test
+    void paymentsInTransitIsACreditNormalLiabilityThatCannotGoNegative() {
+        var transit = Account.paymentsInTransit(EUR);
+
+        assertThat(transit.id()).isEqualTo(AccountId.paymentsInTransit(EUR));
+        assertThat(transit.currency()).isEqualTo(EUR);
+        assertThat(transit.type()).isEqualTo(AccountType.LIABILITY);
+        assertThat(transit.normalSide()).isEqualTo(Side.CREDIT);
+        assertThat(transit.overdraftPolicy()).isEqualTo(OverdraftPolicy.NOT_ALLOWED);
+    }
+
+    @Test
+    void paymentsInTransitHasOneStableIdPerCurrency() {
+        var usd = Currency.getInstance("USD");
+
+        assertThat(AccountId.paymentsInTransit(EUR)).isEqualTo(AccountId.paymentsInTransit(EUR));
+        assertThat(AccountId.paymentsInTransit(EUR)).isNotEqualTo(AccountId.paymentsInTransit(usd));
+        // Pinned: the id names an account already stored, so it must never change between releases.
+        assertThat(AccountId.paymentsInTransit(EUR).value())
+                .isEqualTo(
+                        UUID.nameUUIDFromBytes("ledgerflow:payments-in-transit:EUR".getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test

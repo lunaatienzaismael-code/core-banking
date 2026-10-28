@@ -89,8 +89,11 @@ Three questions have to be answered before any messaging code exists:
 - One *payments in transit* account per supported currency, type `LIABILITY`
   (credit-normal), overdraft not allowed. Its normal-side balance is the total
   amount currently reserved in that currency; it is never negative.
-- The ledger provisions it; how (changeset seed or startup provisioning) is
-  decided by the first task that needs it (T-027).
+- The ledger provisions it lazily: its id is derived from the currency (a
+  name-based UUID of `ledgerflow:payments-in-transit:<code>`), and the first
+  reservation in a currency inserts it with `ON CONFLICT DO NOTHING` in the
+  reservation's own transaction. Any currency works without a seed, and
+  concurrent first reservations cannot create two accounts.
 - Each payment that reaches a terminal state leaves the transit balance where
   it found it: `COMPLETED` moved the amount on to the creditor; `FAILED`
   moved it back to the debtor; `REJECTED` never reached it.

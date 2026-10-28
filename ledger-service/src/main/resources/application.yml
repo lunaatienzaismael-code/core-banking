@@ -15,6 +15,34 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  kafka:
+    bootstrap-servers: ${LEDGER_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    # For every client: producers register schemas, consumers look them up.
+    properties:
+      schema.registry.url: ${LEDGER_SCHEMA_REGISTRY_URL:http://localhost:8085}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      acks: all
+      properties:
+        # Several message types share a topic, so subjects are per topic and type (ADR 0013).
+        value.subject.name.strategy: io.confluent.kafka.serializers.subject.TopicRecordNameStrategy
+    consumer:
+      group-id: ledger-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      properties:
+        specific.avro.reader: true
+
+# Transactional outbox relay (ADR 0013).
+ledgerflow:
+  outbox:
+    relay-interval: 500ms
+    batch-size: 100
+    send-timeout: 10s
+    # Any constant unique among the services sharing a database server; "LEDG" in ASCII.
+    lock-key: 1279608135
 
 management:
   endpoints:
