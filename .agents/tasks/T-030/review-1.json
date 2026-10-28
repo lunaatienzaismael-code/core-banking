@@ -1,0 +1,24 @@
+{
+  "task_id": "T-030",
+  "round": 1,
+  "base": "f620e348d989ad34d886c25b07becb279f098caa",
+  "head": "WORKTREE",
+  "verdict": "approve",
+  "summary": "Compensation matches the ADR 0012 saga table: PostingRefused in FUNDS_RESERVED sends ReleaseFunds carrying the reason, FundsReleased fails the payment. Inbox dedup and the status guard make it idempotent. Test config consolidation is sound. The money half of AC4.3 is covered by T-028 and the planned T-032.",
+  "acceptance_criteria": [
+    {"id": "AC4.3", "status": "met", "evidence": "Saga side: PaymentSagaIT#refusedPostingIsCompensated and AdvancePaymentSagaServiceTest#refusedPostingReleasesTheFunds / #releasedFundsFailThePayment. Ledger money side: PaymentTransfersIT reserve-then-release (T-028); end to end tracked as T-032 (#69)."},
+    {"id": "B1", "status": "met", "evidence": "Named tests redeliveredPostingRefusedSendsNoSecondRelease in PaymentSagaIT (same message id twice, one ReleaseFunds) and in AdvancePaymentSagaServiceTest."},
+    {"id": "B2", "status": "met", "evidence": "No RELEASING state introduced (ADR 0012 lines 152-157); ADR 0011 correctly untouched."}
+  ],
+  "findings": [
+    {
+      "severity": "nit",
+      "category": "idempotency",
+      "defect_type": "untested-enumerated-case",
+      "file": "payment-service/src/main/java/com/ledgerflow/payment/application/service/AdvancePaymentSagaService.java",
+      "line": 70,
+      "description": "A PostingRefused redelivered with a different messageId while still FUNDS_RESERVED would send a second ReleaseFunds, because the payment stays FUNDS_RESERVED. Relies on the ledger's release being idempotent per payment; no test pins that down here.",
+      "suggestion": "Optionally cover the ledger-side idempotency of a duplicate ReleaseFunds in T-032 or T-031."
+    }
+  ]
+}
