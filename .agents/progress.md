@@ -121,3 +121,7 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-28 · T-028 · in_review · PR #67
 2026-10-28 · T-028 · done · PR #67 merged
 2026-10-28 · T-029 · started · branch feat/T-029-payment-saga (from main)
+2026-10-28 · T-029 · in_review · PR #68; evaluator indirect-test minor deferred (cross-service e2e proposed to the user)
+2026-10-28 · T-029 · done · PR #68 merged
+2026-10-28 · phase 7 · planned · T-032 e2e saga smoke (issue #69), from T-029's deferred indirect-test minor; user approved
+2026-10-28 · T-030 · started · branch feat/T-030-saga-compensation (from main)
