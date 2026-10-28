@@ -399,12 +399,12 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "feat",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-026", "T-028"],
       "acceptance_criteria": [],
       "issue": 59,
       "branch": "feat/T-029-payment-saga",
-      "pr": null,
+      "pr": 68,
       "review_rounds": 1
     },
     {
@@ -413,13 +413,13 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-029"],
       "acceptance_criteria": ["AC4.3"],
       "issue": 60,
-      "branch": null,
+      "branch": "feat/T-030-saga-compensation",
       "pr": null,
-      "review_rounds": 0
+      "review_rounds": 1
     },
     {
       "id": "T-031",
@@ -431,6 +431,20 @@
       "depends_on": ["T-029"],
       "acceptance_criteria": ["AC4.4"],
       "issue": 61,
+      "branch": null,
+      "pr": null,
+      "review_rounds": 0
+    },
+    {
+      "id": "T-032",
+      "title": "End-to-end saga smoke test across both services",
+      "phase": 7,
+      "use_case": "UC4",
+      "type": "test",
+      "status": "todo",
+      "depends_on": ["T-030", "T-031"],
+      "acceptance_criteria": [],
+      "issue": 69,
       "branch": null,
       "pr": null,
       "review_rounds": 0
