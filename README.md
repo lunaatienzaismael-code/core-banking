@@ -26,6 +26,7 @@ HTTP contracts (OpenAPI-first, [ADR 0008](docs/adr/0008-openapi-tooling.md)): `l
 Spring interfaces and DTOs are generated from it at build time.
 Local Kafka: `localhost:9092`; Schema Registry: `http://localhost:8085`.
 Compact test report (JSON): `scripts/test-summary.sh`.
+End-to-end saga tests (both services as Docker images, [UC4](docs/spec.md)): `scripts/e2e.sh` (builds the images, then `./mvnw -B verify -Pe2e -pl e2e-tests -am`); slower, so its own CI job.
 Mutation testing (PIT, PR gate, [ADR 0003](docs/adr/0003-testing-strategy.md)): `./mvnw -B verify -Pmutation -DskipITs -Djacoco.skip=true`; report in `<module>/target/pit-reports/`.
 
 ## Layout
@@ -37,6 +38,7 @@ Mutation testing (PIT, PR gate, [ADR 0003](docs/adr/0003-testing-strategy.md)): 
 | `messaging-support/` | Transactional outbox writer and relay shared by the services (ADR 0013) |
 | `ledger-service/` | Double-entry ledger service |
 | `payment-service/` | Payment initiation and lifecycle (UC3; ADRs 0010, 0011) |
+| `e2e-tests/` | End-to-end tests of both services together, as Docker images (profile `e2e`) |
 | `infra/` | Local dependencies (`docker compose`) |
 | `CLAUDE.md`, `.claude/`, `.agents/` | Agent workflow: guide, subagents, skills and file-based task state |
 | `docs/` | [Specification](docs/spec.md), [roadmap](docs/roadmap.md), [ADRs](docs/adr/README.md) |
