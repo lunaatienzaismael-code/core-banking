@@ -294,6 +294,13 @@
 
     <profiles>
         <profile>
+            <!-- End-to-end tests against both services' Docker images, outside the default build: ./mvnw -B verify -Pe2e -->
+            <id>e2e</id>
+            <modules>
+                <module>e2e-tests</module>
+            </modules>
+        </profile>
+        <profile>
             <!-- Mutation testing gate on domain + application: ./mvnw -B verify -Pmutation -->
             <id>mutation</id>
             <build>
