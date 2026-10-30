@@ -427,12 +427,12 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "feat",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-029"],
       "acceptance_criteria": ["AC4.4"],
       "issue": 61,
       "branch": "feat/T-031-retries-dlt",
-      "pr": null,
+      "pr": 71,
       "review_rounds": 1
     },
     {
@@ -441,13 +441,13 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "test",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": ["T-030", "T-031"],
       "acceptance_criteria": [],
       "issue": 69,
-      "branch": null,
+      "branch": "test/T-032-e2e-saga-smoke",
       "pr": null,
-      "review_rounds": 0
+      "review_rounds": 1
     }
   ]
 }

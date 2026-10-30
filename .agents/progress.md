@@ -128,3 +128,7 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-28 · T-030 · in_review · PR #70; test infra: one Spring context per service (several contexts split the Kafka consumer group)
 2026-10-28 · T-030 · done · PR #70 merged
 2026-10-28 · T-031 · started · branch feat/T-031-retries-dlt (from main)
+2026-10-28 · T-031 · in_review · PR #71
+2026-10-30 · T-031 · done · PR #71 merged
+2026-10-30 · T-032 · started · branch test/T-032-e2e-saga-smoke (from main)
+2026-10-30 · T-032 · review-1 · approve (0 findings); local -Pe2e not verified: image builds stall on dependency downloads in the local VM, CI job is the check
