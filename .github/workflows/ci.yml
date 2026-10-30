@@ -85,3 +85,53 @@ jobs:
         run: docker build -f ledger-service/Dockerfile -t ledgerflow/ledger-service:ci .
       - name: Build payment-service image
         run: docker build -f payment-service/Dockerfile -t ledgerflow/payment-service:ci .
+
+  # Both services as Docker images (T-032); its own job so "Build and test" keeps its time.
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    steps:
+      # Full history with tags: -am builds messaging-contracts, whose compatibility check reads the last release tag.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # Each image built once, its layers cached across runs, under the tags the tests use (as scripts/e2e.sh does locally).
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build ledger-service image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ledger-service/Dockerfile
+          tags: ledgerflow/ledger-service:e2e
+          load: true
+          cache-from: type=gha,scope=ledger-service
+          cache-to: type=gha,mode=max,scope=ledger-service
+
+      - name: Build payment-service image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: payment-service/Dockerfile
+          tags: ledgerflow/payment-service:e2e
+          load: true
+          cache-from: type=gha,scope=payment-service
+          cache-to: type=gha,mode=max,scope=payment-service
+
+      - name: End-to-end tests
+        run: ./mvnw -B verify -Pe2e -pl e2e-tests -am
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-test-reports
+          path: e2e-tests/target/failsafe-reports/
+          retention-days: 7
