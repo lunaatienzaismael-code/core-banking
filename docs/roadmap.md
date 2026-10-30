@@ -56,12 +56,16 @@ starts.
   - [x] `payment-service` skeleton, `Payment` aggregate, `POST/GET /payments`, `Idempotency-Key`
   - [x] Close milestone, tag `v0.3.0`
 
-- [ ] **Phase 7 — Events and saga (UC4)**: Kafka (KRaft) + Schema Registry in
+- [x] **Phase 7 — Events and saga (UC4)**: Kafka (KRaft) + Schema Registry in
       compose, Avro contracts with BACKWARD compatibility checked in CI,
       transactional outbox, idempotent consumers, orchestrated saga with
       compensation, retries + DLT. ADR 0012 (orchestrated saga, transit-account
       reservation) and ADR 0013 (polling outbox, inbox, topics keyed by
       `paymentId`, Avro, retries + DLT). New skill `kafka-events`. Tag `v0.4.0`.
+  - [x] ADR 0012 saga + transit-account reservation, ADR 0013 outbox/inbox/contracts
+  - [x] Kafka + Schema Registry, Avro contracts with BACKWARD check, `messaging-support`
+  - [x] Saga with compensation, retries + DLT, end-to-end smoke test (`e2e-tests`)
+  - [x] Skill `kafka-events`; close milestone, tag `v0.4.0`
 
 - [ ] **Phase 8 — Risk and notifications (UC5)**: `risk-service` with Redis,
       `notification-service` as a second consumer group. Tag `v0.5.0`.
