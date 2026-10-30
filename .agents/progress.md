@@ -132,3 +132,6 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-30 · T-031 · done · PR #71 merged
 2026-10-30 · T-032 · started · branch test/T-032-e2e-saga-smoke (from main)
 2026-10-30 · T-032 · review-1 · approve (0 findings); local -Pe2e not verified: image builds stall on dependency downloads in the local VM, CI job is the check
+2026-10-30 · T-032 · in_review · PR #72
+2026-10-30 · T-032 · done · PR #72 merged
+2026-10-30 · phase 7 · done · T-023..T-032 merged (PRs #62–#68, #70–#72); skill kafka-events added; close milestone #7, tag v0.4.0 after this PR

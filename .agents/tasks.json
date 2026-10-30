@@ -441,12 +441,12 @@
       "phase": 7,
       "use_case": "UC4",
       "type": "test",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": ["T-030", "T-031"],
       "acceptance_criteria": [],
       "issue": 69,
       "branch": "test/T-032-e2e-saga-smoke",
-      "pr": null,
+      "pr": 72,
       "review_rounds": 1
     }
   ]
