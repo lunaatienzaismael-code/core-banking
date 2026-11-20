@@ -18,7 +18,7 @@ are kept by the agent on its own.
 |-----------|-------|
 | This policy, `.agents/STATE.md` (`scripts/state.sh`) | in place (PR 1) |
 | `/run-task`, `scripts/gh-rest.sh`, REST-only GitHub access, SHA-bound review evidence | in place (PR 2) |
-| Hooks, protected-path guard, permissions, `CODEOWNERS` | PR 3 |
+| Hooks, protected-path guard, permissions, `CODEOWNERS` | in place (PR 3) |
 | `Autonomy gate` workflow and auto-merge | PR 4 — until then, the owner merges every PR |
 | GitHub settings, cloud environment, scheduled routine | PR 5 (owner) |
 
@@ -81,19 +81,24 @@ The evaluator approves only on evidence bound to a commit:
 
 ## Protected paths
 
-Paths the agent does not edit unless the task brief lists them under
-`Protected paths:`. When it does, the PR needs `human-approved`.
+The list is [`.agents/protected-paths.txt`](.agents/protected-paths.txt): CI
+workflows, existing POMs, the architecture rules, applied changesets and the
+flow files themselves (this file, `.claude/**`, the guard scripts, the list
+and `CODEOWNERS`).
 
-- `.github/workflows/**`;
-- every `pom.xml` that already exists on `main` (new module POMs are fine);
-- `architecture-rules/**` and `**/HexagonalArchitectureTest.java`;
-- `**/db/changelog/changes/*.yaml` already on `main` (new changesets and the
-  master changelog are fine);
-- the flow files: `AUTONOMY.md`, `.claude/**`, the guard scripts,
-  `.agents/protected-paths.txt` and `.github/CODEOWNERS`.
+The agent edits a protected path only when the task brief lists it under
+`## Protected paths`; the PR then needs `human-approved`. Three things read
+the list:
 
-PR 3 turns this list into `.agents/protected-paths.txt`, the single list for
-the hook, the gate and `CODEOWNERS`.
+- the `PreToolUse` hook (`scripts/guard-paths.sh`) blocks undeclared edits
+  made with Edit/Write. It does not see edits made through Bash;
+- the Autonomy gate (PR 4) is the real barrier: it fails any PR that touches
+  a protected path without `human-approved`;
+- `.github/CODEOWNERS` is generated from it
+  (`scripts/guard-paths.sh --codeowners`); `--check-codeowners` detects drift.
+
+The `Stop` hook (`scripts/verify.sh`) keeps a turn from ending on code that
+fails `spotless:check` or the unit and ArchUnit tests of the touched modules.
 
 ## Stop conditions
 
