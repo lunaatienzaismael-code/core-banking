@@ -35,3 +35,4 @@ scripts/verify.sh
 scripts/gh-rest.sh
 scripts/test-summary.sh
 scripts/autonomy-gate.sh
+scripts/cloud-session-start.sh

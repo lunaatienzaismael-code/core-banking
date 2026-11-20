@@ -9,8 +9,10 @@ Rule for this migration and after it: nothing the flow needs may live only in
 `.session/` or in a session's local memory. Cloud sessions start from a fresh
 clone and do not see either.
 
-Status: **step 0 (pilot) done** on 2026-11-20 — T-033 merged as PR #75;
-**PR 1 in progress**. Update this line as steps complete.
+Status: **step 0 (pilot) done** on 2026-11-20 — T-033 merged as PR #75.
+PRs 1–5 opened as #77–#80 and the PR 5 code part, stacked; the owner's
+switch-on follows once they are on `main`. Update this line as steps
+complete.
 
 ## 1. Facts verified before planning (2026-11-20)
 
@@ -270,26 +272,22 @@ cover the wrapper instead of all of `gh api`. **Every** use of `gh pr` and
 
 ### 3.8 Cloud environment and routine
 
-- Environment `ledgerflow` (created on 2026-11-20; setup script still to
-  add): network **Limited** with "Allow package
+- Environment `ledgerflow` (created on 2026-11-20; network and variables set
+  by the owner): network **Limited** with "Allow package
   managers" plus `packages.confluent.io`; `BASH_DEFAULT_TIMEOUT_MS=600000`,
   `BASH_MAX_TIMEOUT_MS=1800000`.
-- Setup script: start from the pilot's candidate (verbatim in
-  `.agents/tasks/T-033/pilot.md`, "Setup script candidato"). Each step fixed
-  a failure seen in the pilot:
-  1. generate `~/.m2/settings.xml` with a `<proxy>` from `HTTPS_PROXY` —
-     Maven's resolver ignores the JVM proxy properties in
-     `JAVA_TOOL_OPTIONS`; the proxy port changes between sessions, so it is
-     read at session start;
-  2. `git fetch --tags origin` — `SchemaCompatibilityTest` needs
-     `git describe`, and the cloud clone has no tags;
-  3. write `/etc/docker/daemon.json` with the `mirror.gcr.io` registry
-     mirror and start `dockerd` — it is not running by default (Testcontainers
-     finds no socket), and anonymous Docker Hub pulls hit `429`.
-
-  Later, once timings are known: `./mvnw dependency:go-offline` and
-  `docker pull` of the Testcontainers images, keeping it under 5 min so it
-  is cached.
+- Per-session preparation: **a `SessionStart` hook, not the setup script**
+  (changed while writing PR 5). The setup script is cached as a filesystem
+  snapshot: files survive but running processes do not, and the proxy port
+  changes between sessions. `scripts/cloud-session-start.sh` does the
+  pilot's three fixes at every cloud session start (Maven proxy from
+  `HTTPS_PROXY`, `git fetch --tags`, `dockerd` with the `mirror.gcr.io`
+  mirror). It acts only when `CLAUDE_CODE_REMOTE` is `true`, which the docs
+  define as set in remote web environments and never in the local CLI, so it
+  leaves a developer's `~/.m2` and Docker alone.
+- Setup script: none for now. Later, once timings are known, it can warm the
+  cache (`./mvnw dependency:go-offline`, `docker pull` of the Testcontainers
+  images), kept under 5 min so it is cached.
 - Routine "LedgerFlow run-task": prompt "Run /run-task; follow AUTONOMY.md;
   push only to the branch it names". Schedule only at first:
   `CRON_TZ=Europe/Madrid 7 9,20 * * *` (09:07 and 20:07, off the hour as the
@@ -359,9 +357,11 @@ protected.
    permissions, `.agents/protected-paths.txt`, `CODEOWNERS`.
 4. **Gate**: `autonomy-gate.yml` (section 3.7); then the
    `pull_request.closed`-with-`GITHUB_TOKEN` check (section 3.8).
-5. **Switch-on** (owner): GitHub settings (section 3.6), make `Autonomy gate`
-   required, the cloud environment and the schedule-only routine; then move
-   to D1 = A when it is worth it.
+5. **Switch-on**: in the repo, the `SessionStart` hook, the routine and
+   environment settings in `docs/development.md`, and T-034 as the first
+   task the routine picks. Then the owner: GitHub settings (section 3.6), make
+   `Autonomy gate` required, and the schedule-only routine; later move to
+   D1 = A when it is worth it.
 
 ## Sources
 
