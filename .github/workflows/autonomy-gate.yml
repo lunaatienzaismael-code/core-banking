@@ -1,0 +1,36 @@
+name: Autonomy gate
+
+# Decides whether a PR may merge without the owner (AUTONOMY.md). Required
+# check on main. pull_request_target runs this file and the scripts from the
+# BASE branch, so a PR cannot rewrite the gate that judges it; the PR's code is
+# only read as data through the API, never checked out or executed.
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled, ready_for_review, converted_to_draft]
+
+# contents: write is what enabling auto-merge needs; pull-requests: write
+# removes human-approved and adds needs-human.
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: autonomy-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: Autonomy gate
+    runs-on: ubuntu-latest
+    steps:
+      # The base branch only (the default for pull_request_target).
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Judge the PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          ACTION: ${{ github.event.action }}
+        run: scripts/autonomy-gate.sh "$PR" --action "$ACTION"

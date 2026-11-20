@@ -234,12 +234,19 @@ cover the wrapper instead of all of `gh api`. **Every** use of `gh pr` and
 ### 3.7 Workflow `.github/workflows/autonomy-gate.yml`
 
 - Job name **`Autonomy gate`**, a required check.
-- Runs on **every** `pull_request` event: `opened`, `edited`, `synchronize`,
+- Runs on **`pull_request_target`**, not `pull_request` (changed while
+  writing PR 4). With `pull_request` the workflow and the scripts come from
+  the PR itself, so a PR could rewrite the gate that judges it.
+  `pull_request_target` runs them from `main` and reads the PR only as data
+  through the API. The cost is that the gate acts only once it is on `main`,
+  which matches making it required after PR 4 is merged. Logic in
+  `scripts/autonomy-gate.sh` (protected); `--dry-run` runs it locally.
+- Runs on **every** event of those types: `opened`, `edited`, `synchronize`,
   `reopened`, `labeled`, `unlabeled`, `ready_for_review`,
   `converted_to_draft`; no `paths` filter, so the required check never stays
   pending.
-- `permissions: contents: read, pull-requests: write` (to remove
-  `human-approved` and to enable or disable auto-merge).
+- `permissions: contents: write` (enabling auto-merge needs it) and
+  `pull-requests: write` (to remove `human-approved` and add `needs-human`).
 - On `synchronize`: remove `human-approved` and evaluate as if it were
   already gone. A label removed with `GITHUB_TOKEN` does not start a new run.
 - **Passes** when either:
