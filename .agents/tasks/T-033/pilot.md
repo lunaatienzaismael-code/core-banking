@@ -11,3 +11,8 @@
 - 2026-11-20T20:30:42Z git push -u origin fix/T-033-ledger-constraint-violation-400 REFUSED, verbatim:
   - `remote: Claude doesn't have GitHub access to lunaatienzaismael-code/core-banking for your organization. An org admin can install the Claude GitHub App at https://github.com/apps/claude/installations/select_target, or reconnect GitHub from claude.ai settings (https://claude.ai/customize/connectors?auth_start=github&auth_start_force=1) to re-link an existing installation`
   - `fatal: unable to access 'https://github.com/lunaatienzaismael-code/core-banking/': The requested URL returned error: 403`
+- 2026-11-20T20:34:24Z test-runner run 2 start (after user changed env network; session NOT restarted)
+- 2026-11-20T20:35:17Z test-runner run 2 end: build_error. Network change DID apply live without session restart: curl https://packages.confluent.io/maven/ via the agent proxy -> HTTP 200.
+  - but Maven still fails, verbatim: `Could not transfer artifact io.confluent:kafka-avro-serializer:pom:8.2.4 from/to confluent (https://packages.confluent.io/maven/): packages.confluent.io: Name or service not known`
+  - same from my own shell (./mvnw -pl messaging-contracts dependency:resolve). getent hosts packages.confluent.io -> rc=2 (no local DNS; only the proxy resolves). Maven's transport apparently resolves DNS itself instead of going through the proxy (JAVA_TOOL_OPTIONS sets https.proxyHost=127.0.0.1, port 42695, which differs from run 1's 33303: the proxy port changed with the network update).
+  - STOP: no workaround attempted. ConstraintViolationTest not executed yet. e2e.sh and evaluator not run.
