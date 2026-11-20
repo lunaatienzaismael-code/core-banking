@@ -1,7 +1,7 @@
 # LedgerFlow — Roadmap
 
 High-level checklist of phases. Each feature phase follows the same cycle:
-`/plan-feature` → `/next-task` (one task per branch/PR) → extract conventions →
+`/plan-feature` → `/run-task` (one task per branch/PR) → extract conventions →
 close milestone → tag. ADRs needed by a phase are proposed and decided before it
 starts.
 
