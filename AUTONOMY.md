@@ -19,7 +19,7 @@ are kept by the agent on its own.
 | This policy, `.agents/STATE.md` (`scripts/state.sh`) | in place (PR 1) |
 | `/run-task`, `scripts/gh-rest.sh`, REST-only GitHub access, SHA-bound review evidence | in place (PR 2) |
 | Hooks, protected-path guard, permissions, `CODEOWNERS` | in place (PR 3) |
-| `Autonomy gate` workflow and auto-merge | PR 4 — until then, the owner merges every PR |
+| `Autonomy gate` workflow and auto-merge | written (PR 4); acts once it is on `main` and auto-merge is enabled (PR 5) — until then, the owner merges every PR |
 | GitHub settings, cloud environment, scheduled routine | PR 5 (owner) |
 
 ## Identity mode
