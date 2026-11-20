@@ -26,8 +26,12 @@ The caller gives you:
 
    A non-zero exit code is normal when tests fail; it is not your problem to solve.
 3. If the command produced no JSON (script crashed, Docker down, timeout), build a
-   JSON yourself with `"status": "build_error"` and put the last 5 relevant error lines
-   in `build_errors`. Do not read the full Maven log otherwise.
+   JSON yourself with `"status": "build_error"` and a `verbatim` array holding the
+   last 20 lines of the log that start with `[ERROR]` or contain `Caused by`,
+   **copied character for character** (`grep -E '^\[ERROR\]|Caused by' <log> | tail -20`).
+   Do not read the full Maven log otherwise.
+4. Never diagnose. Do not name a cause, a fix or a guess ("timeout", "image pull",
+   "Docker down") anywhere in the reply: the caller reads `verbatim` and the log.
 
 ## Output
 

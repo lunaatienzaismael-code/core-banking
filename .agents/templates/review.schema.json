@@ -10,7 +10,22 @@
     "task_id": { "type": "string", "pattern": "^T-[0-9]{3}$" },
     "round": { "type": "integer", "minimum": 1 },
     "base": { "type": "string", "description": "Commit the diff was taken from (merge base with main)." },
-    "head": { "type": "string", "description": "Commit (or 'WORKTREE' for uncommitted changes) that was reviewed." },
+    "head": { "type": "string", "description": "Commit (or 'WORKTREE' for uncommitted changes) that was reviewed. An approve needs a SHA: the Autonomy gate accepts later commits only when they touch .agents/ alone." },
+    "test_run": {
+      "type": "object",
+      "description": "The local run used as evidence (logs/test-summary.json). An approve needs status pass, commit == head and dirty false.",
+      "required": ["commit", "status", "dirty"],
+      "additionalProperties": false,
+      "properties": {
+        "commit": { "type": ["string", "null"] },
+        "status": { "enum": ["pass", "fail", "build_error", "missing"] },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "ci_e2e": {
+      "enum": ["success", "failure", "pending", "absent"],
+      "description": "Conclusion of the CI 'End-to-end tests' check run on head (scripts/gh-rest.sh checks). An approve needs it not to be failure; 'absent' is normal before the PR exists, and the required check blocks the merge until it is green."
+    },
     "verdict": {
       "enum": ["approve", "request_changes"],
       "description": "approve only when no blocker or major finding remains and every acceptance criterion is met."
@@ -25,7 +40,10 @@
         "properties": {
           "id": { "type": "string", "description": "AC id from the spec, or a brief-local id like B1." },
           "status": { "enum": ["met", "not_met", "partial"] },
-          "evidence": { "type": "string", "description": "Test class#method or file:line proving it, or why it is missing." }
+          "evidence": { "type": "string", "description": "Test class#method or file:line proving it, or why it is missing." },
+          "test": { "type": ["string", "null"], "description": "Test class#method that fails without the change. null forces status not_met unless the criterion is not testable by code (then say why in evidence)." },
+          "file": { "type": ["string", "null"], "description": "Production file that implements the criterion." },
+          "line": { "type": ["integer", "null"] }
         }
       }
     },

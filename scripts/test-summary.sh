@@ -17,8 +17,13 @@
 #     "failures": [{"suite": "unit|integration", "class": "...", "test": "...",
 #                   "type": "...", "message": "<= 300 chars"}],   # at most 20
 #     "build_errors": ["<= 20 [ERROR] lines, only when no test failed"],
-#     "log": "<path to the full Maven log, or null>"
+#     "log": "<path to the full Maven log, or null>",
+#     "commit": "<HEAD SHA when the build started, or null outside git>",
+#     "dirty": true | false   # uncommitted changes outside .agents/ at that moment
 #   }
+# `commit` and `dirty` bind the result to a tree: the evaluator accepts a run
+# as evidence only for its own commit and a clean tree (AUTONOMY.md). Changes
+# under .agents/ (bookkeeping, logs) do not make the tree dirty.
 # Exit code: 0 when status is "pass", 1 otherwise.
 set -euo pipefail
 
@@ -36,6 +41,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+COMMIT="$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || true)"
+DIRTY=false
+[[ -n "$(git -C "$ROOT" status --porcelain -- . ':(exclude).agents' 2>/dev/null)" ]] && DIRTY=true
+
 LOG=""
 EXIT_CODE="null"
 if $BUILD; then
@@ -47,11 +56,12 @@ if $BUILD; then
   set -e
 fi
 
-python3 - "$ROOT" "$EXIT_CODE" "$LOG" <<'PY'
+python3 - "$ROOT" "$EXIT_CODE" "$LOG" "$COMMIT" "$DIRTY" <<'PY'
 import glob, json, os, sys
 import xml.etree.ElementTree as ET
 
 root, exit_code, log = sys.argv[1], sys.argv[2], sys.argv[3] or None
+commit, dirty = sys.argv[4] or None, sys.argv[5] == "true"
 exit_code = None if exit_code == "null" else int(exit_code)
 
 def empty():
@@ -115,6 +125,8 @@ print(json.dumps({
     "failures": failures,
     "build_errors": build_errors,
     "log": log,
+    "commit": commit,
+    "dirty": dirty,
 }, indent=None, separators=(",", ":")))
 sys.exit(0 if status == "pass" else 1)
 PY
