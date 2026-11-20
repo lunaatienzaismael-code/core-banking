@@ -462,6 +462,20 @@
       "branch": "fix/T-033-ledger-constraint-violation-400",
       "pr": 75,
       "review_rounds": 1
+    },
+    {
+      "id": "T-034",
+      "title": "Make InitiatePaymentIT independent of saga timing",
+      "phase": 8,
+      "use_case": null,
+      "type": "test",
+      "status": "todo",
+      "depends_on": [],
+      "acceptance_criteria": [],
+      "issue": 81,
+      "branch": null,
+      "pr": null,
+      "review_rounds": 0
     }
   ]
 }
