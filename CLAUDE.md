@@ -44,15 +44,15 @@ Integration tests need Docker; setup in [`docs/development.md`](docs/development
 1. Read `.agents/STATE.md` (regenerate it with `scripts/state.sh`), then
    `docs/roadmap.md`.
 2. `/status` for tasks, branch and open PRs.
-3. Continue the active task, or `/next-task`.
+3. `/run-task`: it resumes the active task or starts the next one.
 
 ## Per-task flow
 
-`/plan-feature UCn` once per use case, then per task `/next-task`:
+`/plan-feature UCn` once per use case, then per task `/run-task`:
 
-read `brief.md` → branch `<type>/<id>-<slug>` → implement with skills →
-`test-runner` → fix → `evaluator` → (fix → review again, max 3 rounds) →
-atomic commits + a `chore(agents)` bookkeeping commit → push + PR
+read `brief.md` → branch `<type>/<id>-<slug>` → implement with skills and
+atomic commits → `test-runner` → fix → `evaluator` → (fix → review again, max
+3 rounds) → a `chore(agents)` bookkeeping commit → push + PR
 `Closes #N` with the verdict → merge (owner, or the gate once it exists; see
 `AUTONOMY.md`) → `done` in the next task's reconciliation.
 
@@ -113,7 +113,7 @@ Add agent infrastructure only when a trigger fires; propose it, do not just add 
 - **Growth rule:** when the evaluator flags the same `defect_type` in two
   tasks, propose a skill rule, an ArchUnit test if it is machine-checkable, or
   an evaluator check. `scripts/review-defects.sh` detects it (alerts for types
-  missing from `.agents/growth-rules.json`); `/next-task` and `/status` run it.
+  missing from `.agents/growth-rules.json`); `/run-task` and `/status` run it.
 - `code-explorer` subagent (Haiku, read-only): when code exceeds ~4–5
   modules/use cases.
 - Agentic GitHub Actions (evaluator on PRs, CI doctor): once the local flow has
