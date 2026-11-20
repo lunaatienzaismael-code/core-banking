@@ -11,9 +11,12 @@
       "Bash(git log:*)",
       "Bash(git show:*)",
       "Bash(git merge-base:*)",
-      "Bash(gh pr view:*)",
-      "Bash(gh pr list:*)",
-      "Bash(gh pr checks:*)"
+      "Bash(scripts/gh-rest.sh list-prs:*)",
+      "Bash(scripts/gh-rest.sh pr-state:*)",
+      "Bash(scripts/gh-rest.sh checks:*)",
+      "Bash(scripts/gh-rest.sh list-issues:*)",
+      "Bash(scripts/check-task-sync.sh)",
+      "Bash(scripts/state.sh:*)"
     ]
   }
 }

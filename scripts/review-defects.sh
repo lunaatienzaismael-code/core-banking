@@ -8,7 +8,7 @@
 # Usage:
 #   scripts/review-defects.sh
 #
-# Output contract (stable; consumed by /status and /next-task):
+# Output contract (stable; consumed by /status and /run-task):
 #   {
 #     "status": "ok" | "alert",
 #     "reviews": <number of review files read>,
