@@ -45,12 +45,13 @@ Open the plan PR (ADRs, briefs, `tasks.json`, `progress.md`) labelled
 The first run after the owner merges the plan PR creates the GitHub objects,
 through REST:
 
-- Ensure the phase milestone exists (`gh api repos/:owner/:repo/milestones`).
-- Create one issue per task: title `T-xxx — <title>`, milestone = the phase,
+- Ensure the phase milestone exists (`scripts/gh-rest.sh create-milestone`
+  when it is missing).
+- Create one issue per task (`scripts/gh-rest.sh create-issue`): title `T-xxx — <title>`, milestone = the phase,
   body = the brief's goal, the AC ids it covers, and a footer line
   "Brief: <brief path> · Depends on: <ids or none>".
   Do not copy criteria, scope or notes: the brief is the source of truth, and
   a copy drifts silently when the brief changes.
 - Write each issue number into the task's `issue` field and the brief header.
 
-Finish with a two-line summary: tasks created and the suggested first `/next-task`.
+Finish with a two-line summary: tasks created and the first task `/run-task` will pick.

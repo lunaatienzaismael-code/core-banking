@@ -17,7 +17,7 @@ are kept by the agent on its own.
 | Mechanism | State |
 |-----------|-------|
 | This policy, `.agents/STATE.md` (`scripts/state.sh`) | in place (PR 1) |
-| `/run-task`, `scripts/gh-rest.sh`, REST-only GitHub access, SHA-bound review evidence | PR 2 — until then, `/next-task` |
+| `/run-task`, `scripts/gh-rest.sh`, REST-only GitHub access, SHA-bound review evidence | in place (PR 2) |
 | Hooks, protected-path guard, permissions, `CODEOWNERS` | PR 3 |
 | `Autonomy gate` workflow and auto-merge | PR 4 — until then, the owner merges every PR |
 | GitHub settings, cloud environment, scheduled routine | PR 5 (owner) |
