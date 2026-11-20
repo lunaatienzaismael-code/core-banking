@@ -16,3 +16,54 @@
   - but Maven still fails, verbatim: `Could not transfer artifact io.confluent:kafka-avro-serializer:pom:8.2.4 from/to confluent (https://packages.confluent.io/maven/): packages.confluent.io: Name or service not known`
   - same from my own shell (./mvnw -pl messaging-contracts dependency:resolve). getent hosts packages.confluent.io -> rc=2 (no local DNS; only the proxy resolves). Maven's transport apparently resolves DNS itself instead of going through the proxy (JAVA_TOOL_OPTIONS sets https.proxyHost=127.0.0.1, port 42695, which differs from run 1's 33303: the proxy port changed with the network update).
   - STOP: no workaround attempted. ConstraintViolationTest not executed yet. e2e.sh and evaluator not run.
+- 2026-11-20T20:37:57Z probe push `git push origin HEAD:claude/t-033-pilot-probe` REFUSED, verbatim:
+  - `remote: Claude doesn't have GitHub access to lunaatienzaismael-code/core-banking for your organization. An org admin can install the Claude GitHub App at https://github.com/apps/claude/installations/select_target, or reconnect GitHub from claude.ai settings (https://claude.ai/customize/connectors?auth_start=github&auth_start_force=1) to re-link an existing installation`
+  - `fatal: unable to access 'https://github.com/lunaatienzaismael-code/core-banking/': The requested URL returned error: 403`
+  - Same 403 as for the task branch: not branch-specific; nothing was created on the remote.
+- 2026-11-20T20:38:56Z Maven proxy fix WORKS (took ~1 min): a generated ~/.m2/settings.xml with <proxy> entries from HTTPS_PROXY makes `./mvnw -pl messaging-contracts dependency:resolve` BUILD SUCCESS (the JVM props from JAVA_TOOL_OPTIONS are not honoured by Maven's resolver). Candidate environment setup script (not the repo's pom.xml/.mvn):
+
+```bash
+#!/usr/bin/env bash
+# Generates ~/.m2/settings.xml with a Maven proxy taken from HTTPS_PROXY.
+set -euo pipefail
+python3 - <<'PY'
+import os, urllib.parse as u
+p = u.urlparse(os.environ["HTTPS_PROXY"])
+auth = ""
+if p.username:
+    auth = f"<username>{u.unquote(p.username)}</username><password>{u.unquote(p.password or '')}</password>"
+nonproxy = "localhost|127.0.0.1"
+xml = f"""<settings>
+  <proxies>
+    <proxy><id>agent-https</id><active>true</active><protocol>https</protocol>
+      <host>{p.hostname}</host><port>{p.port}</port>{auth}<nonProxyHosts>{nonproxy}</nonProxyHosts></proxy>
+    <proxy><id>agent-http</id><active>true</active><protocol>http</protocol>
+      <host>{p.hostname}</host><port>{p.port}</port>{auth}<nonProxyHosts>{nonproxy}</nonProxyHosts></proxy>
+  </proxies>
+</settings>
+"""
+os.makedirs(os.path.expanduser("~/.m2"), exist_ok=True)
+open(os.path.expanduser("~/.m2/settings.xml"), "w").write(xml)
+PY
+```
+
+  - Caveat: the proxy port changes between sessions/network updates, so the script must read HTTPS_PROXY at session start, not at image build.
+- 2026-11-20T20:39:03Z test-runner run 3 start (full verify with generated settings.xml)
+- 2026-11-20T20:39:43Z test-runner run 3 end: fail (35 tests, 1 error): SchemaCompatibilityTest: `No release tag found; a CI checkout needs its tags (fetch-depth: 0): fatal: No names found, cannot describe anything.` Cause: cloud clone has no tags. Fix: `git fetch --tags origin` works (read access OK, v0.2.0..v0.4.0). Candidate for the setup script too.
+- 2026-11-20T20:39:43Z test-runner run 4 start
+- 2026-11-20T20:40:29Z test-runner run 4 end: fail, AvroRoundTripIT ExceptionInInitializerError: `Could not find a valid Docker environment` (/var/run/docker.sock NoSuchFileException). Docker CLI present but dockerd NOT running in the cloud session; started it with `nohup dockerd &` (up in <10 s, overlayfs). ConstraintViolationTest not reached (build stopped in messaging-contracts).
+- 2026-11-20T20:40:29Z test-runner run 5 start (dockerd up)
+- 2026-11-20T20:45:27Z test-runner run 5 end: PASS 446/446 (317 unit, 129 IT); ConstraintViolationTest 1/1 pass
+- 2026-11-20T20:45:27Z docker build ledger-service start
+- 2026-11-20T20:45:28Z docker build ledger-service end rc=0
+- 2026-11-20T20:45:28Z docker build payment-service start
+- 2026-11-20T20:45:29Z docker build payment-service end rc=0
+- 2026-11-20T20:45:33Z scripts/e2e.sh start
+- 2026-11-20T20:45:33Z scripts/e2e.sh end rc=1
+  - CORRECTION: the 'rc=0' above are wrong ($? was clobbered by $(date)); both docker builds FAILED at 20:45:28/29, verbatim:
+    - `ERROR: failed to build: failed to solve: eclipse-temurin:21-jdk: failed to resolve source metadata for docker.io/library/eclipse-temurin:21-jdk: unexpected status from HEAD request to https://registry-1.docker.io/v2/library/eclipse-temurin/manifests/21-jdk: 429 Too Many Requests`
+    - `ERROR: failed to build: failed to solve: eclipse-temurin:21-jre: failed to resolve source metadata for docker.io/library/eclipse-temurin:21-jre: unexpected status from HEAD request to https://registry-1.docker.io/v2/library/eclipse-temurin/manifests/21-jre: 429 Too Many Requests`
+  - scripts/e2e.sh failed identically in 0 s (rc=1). Docker Hub rate-limits (429, anonymous pulls from the shared egress IP). Per pilot rules: STOP, no workaround. evaluator NOT run.
+- peak at stop: mem used ~670 MB of 16087; disk /dev/vda        252G   12G   58G  17% /
+- total: session start 2026-11-20T20:22:53Z, stop 2026-11-20T20:45:45Z
+- Findings for the cloud environment: (1) Maven needs ~/.m2/settings.xml proxy generated from HTTPS_PROXY; (2) git tags must be fetched (git fetch --tags origin); (3) dockerd must be started (nohup dockerd &); (4) Docker Hub 429 blocks e2e image builds; (5) GitHub push 403 (Claude app not installed on the repo).
