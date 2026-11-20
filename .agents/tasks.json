@@ -448,6 +448,20 @@
       "branch": "test/T-032-e2e-saga-smoke",
       "pr": 72,
       "review_rounds": 1
+    },
+    {
+      "id": "T-033",
+      "title": "Ledger ConstraintViolationException as 400 Problem Details",
+      "phase": 8,
+      "use_case": null,
+      "type": "fix",
+      "status": "todo",
+      "depends_on": [],
+      "acceptance_criteria": [],
+      "issue": 74,
+      "branch": "fix/T-033-ledger-constraint-violation-400",
+      "pr": null,
+      "review_rounds": 0
     }
   ]
 }

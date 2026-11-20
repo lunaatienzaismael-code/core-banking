@@ -135,3 +135,5 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-10-30 · T-032 · in_review · PR #72
 2026-10-30 · T-032 · done · PR #72 merged
 2026-10-30 · phase 7 · done · T-023..T-032 merged (PRs #62–#68, #70–#72); skill kafka-events added; close milestone #7, tag v0.4.0 after this PR
+2026-10-30 · phase 7 · closed · milestone #7 closed, tag v0.4.0 on 5bdd6cb
+2026-11-20 · phase 8 · planned · T-033 ledger ConstraintViolationException → 400, cloud pilot of the current flow (before the autonomy migration)
