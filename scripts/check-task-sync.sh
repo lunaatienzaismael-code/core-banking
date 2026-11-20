@@ -24,8 +24,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-issues="$(gh issue list --state all --limit 500 --json number,title,state,body,milestone)" || exit 2
-prs="$(gh pr list --state all --limit 500 --json number,state)" || exit 2
+# REST only, through the wrapper: GraphQL (`gh issue/pr list`) is blocked in
+# cloud sessions.
+issues="$("$ROOT/scripts/gh-rest.sh" list-issues all)" || exit 2
+prs="$("$ROOT/scripts/gh-rest.sh" list-prs all)" || exit 2
 
 ISSUES="$issues" PRS="$prs" python3 - "$ROOT/.agents/tasks.json" <<'PY'
 import json, os, re, sys
