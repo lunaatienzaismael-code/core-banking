@@ -71,14 +71,26 @@ if action == "synchronize" and "human-approved" in labels:
     effect("api", "-X", "DELETE", f"repos/{repo}/issues/{pr_number}/labels/human-approved")
     labels.discard("human-approved")
 
-files = [l for l in api(f"repos/{repo}/pulls/{pr_number}/files?per_page=100", paginate=True, jq=".[].filename").splitlines() if l]
+# Both sides of a rename count: moving a protected file away touches it.
+listed = [json.loads(l) for l in api(
+    f"repos/{repo}/pulls/{pr_number}/files?per_page=100", paginate=True,
+    jq=".[] | {filename, previous_filename}").splitlines() if l]
+files = sorted({f[k] for f in listed for k in ("filename", "previous_filename") if f.get(k)})
+if len(listed) < pr["changed_files"]:
+    # The files API stops at 3000; what it does not list cannot be judged.
+    reasons.append(f"the API lists {len(listed)} of {pr['changed_files']} changed files")
+# `--` keeps a file named like an option (`--base`) from changing the parse.
 check = subprocess.run(
-    [f"{root}/scripts/guard-paths.sh", "--check", "--base", base_ref, *files], capture_output=True, text=True
+    [f"{root}/scripts/guard-paths.sh", "--check", "--base", base_ref, "--", *files], capture_output=True, text=True
 )
-protected = json.loads(check.stdout)["protected"] if check.stdout else files
+try:
+    protected = json.loads(check.stdout)["protected"]
+except (ValueError, KeyError):
+    protected = files  # the guard failed: treat every file as protected
 
 if "human-approved" in labels:
     passed = True
+    reasons = []
 else:
     if protected:
         reasons.append("touches protected paths without human-approved")
@@ -94,7 +106,8 @@ else:
     if m:
         folder = f".agents/tasks/{m.group(2)}"
         listing = gh("api", f"repos/{repo}/contents/{folder}?ref={head_sha}", check=False)
-        names = [e["name"] for e in json.loads(listing.stdout)] if listing.returncode == 0 else []
+        entries = json.loads(listing.stdout) if listing.returncode == 0 else []
+        names = [e["name"] for e in entries] if isinstance(entries, list) else []
         rounds = sorted(int(n[7:-5]) for n in names if re.fullmatch(r"review-\d+\.json", n))
         if not rounds:
             reasons.append(f"no review-N.json in {folder}")
@@ -110,7 +123,15 @@ else:
                 after = json.loads(api(f"repos/{repo}/compare/{reviewed}...{head_sha}"))
                 if after.get("status") not in ("ahead", "identical"):
                     reasons.append(f"reviewed commit {reviewed[:7]} is not an ancestor of the head")
-                outside = [f["filename"] for f in after.get("files", []) if not f["filename"].startswith(".agents/")]
+                after_files = after.get("files", [])
+                if len(after_files) >= 300:
+                    reasons.append("too many files after the reviewed commit to check (compare API limit 300)")
+                outside = [
+                    name
+                    for f in after_files
+                    for name in (f["filename"], f.get("previous_filename"))
+                    if name and not name.startswith(".agents/")
+                ]
                 if outside:
                     reasons.append(f"commits after the reviewed {reviewed[:7]} touch {', '.join(outside[:5])}")
     passed = not reasons

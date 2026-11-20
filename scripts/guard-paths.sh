@@ -4,7 +4,7 @@
 #
 # Usage:
 #   scripts/guard-paths.sh                       # PreToolUse hook: reads the hook JSON on stdin
-#   scripts/guard-paths.sh --check [--base <ref>] [--brief <file>] <path>...
+#   scripts/guard-paths.sh --check [--base <ref>] [--brief <file>] [--] <path>...
 #   scripts/guard-paths.sh --codeowners          # prints the expected .github/CODEOWNERS
 #   scripts/guard-paths.sh --check-codeowners    # exit 1 when .github/CODEOWNERS drifted
 #
@@ -146,7 +146,9 @@ if args[0] == "--check-codeowners":
 if args[0] == "--check":
     ref, brief, paths, rest = "origin/main", None, [], args[1:]
     while rest:
-        if rest[0] == "--base":
+        if rest[0] == "--":
+            paths, rest = paths + rest[1:], []
+        elif rest[0] == "--base":
             ref, rest = rest[1], rest[2:]
         elif rest[0] == "--brief":
             brief, rest = rest[1], rest[2:]
