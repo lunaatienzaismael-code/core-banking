@@ -23,22 +23,26 @@ scripts/test-summary.sh [-- <mvn args>]       # same build, one-line JSON result
 docker compose -f infra/docker-compose.yml up -d
 ```
 
-Integration tests need Docker running (`rdctl start` locally).
+Integration tests need Docker; setup in [`docs/development.md`](docs/development.md).
 
 ## Working rules
 
-- The user decides; I propose. Significant decisions become ADRs.
+- **[`AUTONOMY.md`](AUTONOMY.md) is the autonomy policy**: what I do without
+  stopping, when I stop, protected paths, end of phase and what is always
+  forbidden. It wins over any older rule that contradicts it.
+- Significant decisions become ADRs: a trade-off table, how banks and
+  production ledgers do it, a recommendation on the merits.
 - Talk to the user in **Spanish**; everything in the repo is in **English**.
-- Work phase by phase; **stop for approval at each phase end**.
-- **No commit, push, PR, merge, issue or milestone without explicit OK.**
 - Only fictitious data (IBANs, names, amounts). Never real employer data.
 - Deterministic first: test, ArchUnit or linter before relying on review.
 - No speculative code: build what the current task's brief asks for.
+- Nothing the flow needs lives only in `.session/` or in local memory: cloud
+  sessions start from a fresh clone.
 
 ## Session start
 
-1. Read `.session/HANDOFF.md` and `.session/ORCHESTRATION-PLAN.md` if present
-   (private, gitignored), then `docs/roadmap.md`.
+1. Read `.agents/STATE.md` (regenerate it with `scripts/state.sh`), then
+   `docs/roadmap.md`.
 2. `/status` for tasks, branch and open PRs.
 3. Continue the active task, or `/next-task`.
 
@@ -48,8 +52,9 @@ Integration tests need Docker running (`rdctl start` locally).
 
 read `brief.md` → branch `<type>/<id>-<slug>` → implement with skills →
 `test-runner` → fix → `evaluator` → (fix → review again, max 3 rounds) →
-propose commits → **user OK** → push + PR `Closes #N` → evaluator verdict as
-PR comment → user merges → `done`.
+atomic commits + a `chore(agents)` bookkeeping commit → push + PR
+`Closes #N` with the verdict → merge (owner, or the gate once it exists; see
+`AUTONOMY.md`) → `done` in the next task's reconciliation.
 
 - Skills: `java-hexagonal` (placement, layering, money), `java-testing`
   (what/how to test), `persistence-postgres-liquibase` (changesets, JPA,
