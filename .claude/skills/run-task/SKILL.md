@@ -46,9 +46,11 @@ do not work in cloud sessions. Never merge, push to `main`, force-push or tag.
   phase (first unchecked phase in `docs/roadmap.md`) whose `depends_on` are
   all `done`.
 - None ready, but `todo` tasks wait on unmerged work → exit "waiting".
-- The phase has no planned task for its use case → run `/plan-feature UCn`.
-  It ends with a plan PR labelled `needs-human`. Stop.
-- Every task of the phase is `done` → end of phase (`AUTONOMY.md`): a
+- The phase has no task with its `use_case` set (enabling tasks such as
+  T-033 or T-034 have `use_case: null` and do not count) → run
+  `/plan-feature UCn`. It ends with a plan PR labelled `needs-human`. Stop.
+  Check this before the next bullet.
+- Every task of the phase is `done`, its use case included → end of phase (`AUTONOMY.md`): a
   phase-close PR (roadmap tick, `STATE.md`) and the next phase's plan PR
   (`/plan-feature`), both labelled `needs-human`. Stop.
 - Read the task's `brief.md`, including its `## Protected paths` section if
