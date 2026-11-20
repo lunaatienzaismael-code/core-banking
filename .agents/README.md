@@ -8,6 +8,7 @@ communicate through these files, not through chat history.
 | `tasks.json` | orchestrator only | Task list ([schema](templates/tasks.schema.json)). Edited field by field, never regenerated. |
 | `progress.md` | orchestrator only | Append-only log, one line per event. |
 | `STATE.md` | `scripts/state.sh` | Where we are (phase, active task, open PRs, `needs-human` issues). Read first at session start; never edited by hand. |
+| `protected-paths.txt` | humans | Paths the agent may not edit unless the brief declares them; read by the hook, the gate and `CODEOWNERS` (`AUTONOMY.md`). |
 | `autonomy-migration.md` | humans | Plan and decisions D1–D5 for the autonomous flow; the policy itself is [`AUTONOMY.md`](../AUTONOMY.md). |
 | `templates/` | humans | Contracts: `brief.md`, `tasks.schema.json`, `review.schema.json`. |
 | `tasks/<id>/brief.md` | orchestrator (`/plan-feature`) | What the task delivers and how it is accepted. |

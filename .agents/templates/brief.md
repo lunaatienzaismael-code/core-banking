@@ -21,6 +21,15 @@
 - In: <!-- packages / endpoints / tables touched -->
 - Out: <!-- explicitly deferred to other tasks -->
 
+## Protected paths
+
+<!-- Optional. Only when the task must edit a path in
+     .agents/protected-paths.txt (e.g. the root pom.xml for a new module).
+     One backticked path or glob per bullet; the PR then needs the owner's
+     approval (AUTONOMY.md). Delete this section otherwise. -->
+
+- `pom.xml`
+
 ## Design notes
 
 <!-- Only what the skills and ADRs do not already say: port names, error cases,
