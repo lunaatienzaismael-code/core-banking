@@ -140,3 +140,4 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-11-20 · T-033 · started · branch fix/T-033-ledger-constraint-violation-400 (cloud pilot)
 2026-11-20 · T-033 · review-1 · approve (0 findings above nit); e2e delegated to CI on the PR SHA (docker build has no network in the cloud container, issue #76)
 2026-11-20 · T-033 · in_review · PR #75
+2026-11-20 · T-033 · done · PR #75 merged (rebase via REST with SHA guard; CI 4/4 green, e2e in CI)

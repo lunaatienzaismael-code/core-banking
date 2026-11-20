@@ -455,7 +455,7 @@
       "phase": 8,
       "use_case": null,
       "type": "fix",
-      "status": "in_review",
+      "status": "done",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 74,

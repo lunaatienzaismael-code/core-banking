@@ -7,13 +7,16 @@ communicate through these files, not through chat history.
 |------|--------|---------|
 | `tasks.json` | orchestrator only | Task list ([schema](templates/tasks.schema.json)). Edited field by field, never regenerated. |
 | `progress.md` | orchestrator only | Append-only log, one line per event. |
+| `STATE.md` | `scripts/state.sh` | Where we are (phase, active task, open PRs, `needs-human` issues). Read first at session start; never edited by hand. |
+| `autonomy-migration.md` | humans | Plan and decisions D1–D5 for the autonomous flow; the policy itself is [`AUTONOMY.md`](../AUTONOMY.md). |
 | `templates/` | humans | Contracts: `brief.md`, `tasks.schema.json`, `review.schema.json`. |
 | `tasks/<id>/brief.md` | orchestrator (`/plan-feature`) | What the task delivers and how it is accepted. |
 | `tasks/<id>/review-<n>.json` | `evaluator` | One file per review round ([schema](templates/review.schema.json)); never overwritten. |
 | `growth-rules.json` | orchestrator only | Defect types already turned into a rule, and where; read by `scripts/review-defects.sh`. |
 | `tasks/<id>/logs/` | `test-runner` | Maven logs and `test-summary.json`. Gitignored. |
 
-Rules:
+Rules (the autonomy policy, including when to stop, is
+[`AUTONOMY.md`](../AUTONOMY.md)):
 
 - Subagents write only inside `tasks/<id>/` and return a condensed result plus
   file paths; the orchestrator updates `tasks.json` and `progress.md`.
