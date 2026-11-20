@@ -32,3 +32,4 @@ scripts/guard-paths.sh
 scripts/verify.sh
 scripts/gh-rest.sh
 scripts/autonomy-gate.sh
+scripts/cloud-session-start.sh

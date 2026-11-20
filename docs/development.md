@@ -34,7 +34,25 @@ build until it was fixed:
 | `git push` → `403 … Claude doesn't have GitHub access` | Claude GitHub App not installed on the repository | Install the App on the repository |
 | `gh pr …`, `gh issue …`: `GitHub GraphQL is not available` | The GitHub proxy blocks GraphQL | Use `gh api` with REST endpoints |
 
-The candidate setup script for the `ledgerflow` environment covers rows 2–5
-(row 1 is an environment network setting). It is in the pilot log under
-"Setup script candidato".
-With it, `./mvnw verify` passed in the VM (446 tests).
+Rows 2–5 are handled per session by the `SessionStart` hook
+`scripts/cloud-session-start.sh`. It acts only when `CLAUDE_CODE_REMOTE` is
+`true` (set in cloud sessions, never in the local CLI), so it never touches a
+local `~/.m2/settings.xml` or Docker. It cannot be the environment's setup
+script, because that script is cached as a filesystem snapshot: the proxy port
+changes between sessions and `dockerd` would not be running. Row 1 is an
+environment network setting. With these fixes, `./mvnw verify` passed in the
+VM (446 tests, T-033 pilot).
+
+## Cloud environment and routine (configured by the owner)
+
+- Environment `ledgerflow`: network **Limited** with "Allow package
+  managers" plus `packages.confluent.io`; `BASH_DEFAULT_TIMEOUT_MS=600000`,
+  `BASH_MAX_TIMEOUT_MS=1800000`. No setup script is needed: the session hook
+  does the per-session work.
+- Routine "LedgerFlow run-task": repository `core-banking`, environment
+  `ledgerflow`, prompt
+  `Run /run-task; follow AUTONOMY.md; push only to the branch it names`,
+  schedule trigger only, `7 9,20 * * *` in Europe/Madrid. The GitHub trigger
+  `pull_request.closed` comes later (`.agents/autonomy-migration.md`, 3.8).
+- Labels the flow uses: `needs-human`, `agent:running` and `human-approved`
+  (the last one is only ever set by the owner).
