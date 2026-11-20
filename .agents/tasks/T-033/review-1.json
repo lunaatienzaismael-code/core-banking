@@ -1,0 +1,31 @@
+{
+  "task_id": "T-033",
+  "round": 1,
+  "base": "5bdd6cb9d330d1627f0a19fc0998e789834c475d",
+  "head": "8fac83bf28551c25ab26c42d9fb8507de1e49e48",
+  "verdict": "approve",
+  "summary": "Handler mirrors payment-service mapping (sorted last-node: message pairs, 400, title Invalid request). B1 proven by a named web-slice test with a test-scope @Validated controller; B2 untouched (no existing test modified). Full build 446/446 pass, run after the only code commit (ba6f4da); later commits touch only .agents docs. e2e delegated to CI on the PR SHA by user agreement.",
+  "acceptance_criteria": [
+    {"id": "B1", "status": "met", "evidence": "ConstraintViolationTest#methodValidationViolationIsA400ProblemDetailsNamingParameterAndConstraint asserts 400, application/problem+json, title 'Invalid request', detail starts with 'code:' and contains the violated constraint message; fails without the handler (would be the 500 fallback). Log maven-20261120-204031.log:6454 shows 1/1 pass."},
+    {"id": "B2", "status": "met", "evidence": "git diff origin/main..HEAD touches no existing test file; the Exception.class fallback handler is unchanged and the full suite (446/446) is green."}
+  ],
+  "findings": [
+    {
+      "severity": "nit",
+      "category": "testing",
+      "defect_type": "weak-assertion",
+      "file": "ledger-service/src/test/java/com/ledgerflow/ledger/adapter/in/web/ConstraintViolationTest.java",
+      "line": 37,
+      "description": "Detail assertion checks only prefix and one message; it does not cover multiple violations being sorted and joined by '; '. Acceptable for the brief's single criterion.",
+      "suggestion": "Optional: add a second parameter to assert the sorted '; ' join."
+    },
+    {
+      "severity": "nit",
+      "category": "docs",
+      "defect_type": "other",
+      "file": ".agents/tasks/T-033/brief.md",
+      "line": null,
+      "description": "DoD item 'scripts/e2e.sh green in the cloud session' is not met locally: delegated to CI on the PR SHA (exception agreed by the user). Also .agents/tasks/T-033/pilot.md has an uncommitted change in the worktree (docs only, not part of reviewed SHA)."
+    }
+  ]
+}

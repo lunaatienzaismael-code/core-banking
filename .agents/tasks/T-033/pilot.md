@@ -118,3 +118,6 @@ for i in $(seq 30); do docker info >/dev/null 2>&1 && break; sleep 1; done
 ```
 
 Still missing for scripts/e2e.sh: network inside `docker build` (Maven Central download in the Dockerfile fails: no proxy/CA in the build container). Options to decide: pass HTTPS_PROXY + CA as build args, or build the jars outside Docker and COPY them.
+- 2026-11-20T20:58:02Z evaluator round 1 start (e2e delegated to CI by user decision; SHA 8fac83b)
+- 2026-11-20T20:58:56Z evaluator round 1: approve (0/0/0, 2 nits), review-1.json. PR creation by REST (`gh api -X POST repos/.../pulls`) WORKED: PR #75 at SHA 8fac83b; verdict comment via REST issues/75/comments OK; GraphQL not used.
+- 2026-11-20T20:59:30Z scripts/check-task-sync.sh fails in the cloud: `HTTP 403: GitHub GraphQL is not available from Claude Code sessions; use the REST API` (needs a REST port). Label needs-human created and applied to #76 via REST.
