@@ -31,7 +31,7 @@ Run one task end to end. You are the orchestrator: the only writer of
 
 - Apply `java-hexagonal` and `java-testing`. Write the test for each criterion
   first where practical. Stay inside the brief's scope; if the brief is wrong
-  or too big, stop and tell the user.
+  or too big, stop as `AUTONOMY.md` says (issue comment + `needs-human`).
 - After each meaningful step, delegate to the **test-runner** subagent with the
   task id. Fix until it returns `"status":"pass"`. Read the log path it returns
   only when the failures list is not enough.
@@ -42,21 +42,24 @@ Run one task end to end. You are the orchestrator: the only writer of
   number (`review_rounds + 1`); then increment `review_rounds`.
 - On `request_changes`: read the review file, fix blockers and majors (minors
   when cheap), re-run test-runner, review again. After round 3 without
-  approval, stop and ask the user.
+  approval, open a draft PR with `Verdict: CHANGES` and `needs-human`, and
+  stop (`AUTONOMY.md`).
 - After each review, run `scripts/review-defects.sh`. For every entry in
   `alerts` (a `defect_type` in 2+ tasks with no rule in
   `.agents/growth-rules.json`), tell the user and propose the exact text of a
   skill rule, an ArchUnit test or an evaluator check (growth rule in
   `CLAUDE.md`); once applied, record it in `growth-rules.json`.
 
-## 5. Propose and publish (only with explicit OK)
+## 5. Commit and publish (`AUTONOMY.md`)
 
-- Propose atomic Conventional Commits (message + files each); every commit must
-  compile and pass tests. Wait for the user's OK before committing.
-- On OK to publish: push, open a PR with `.github/pull_request_template.md`,
+- Commit atomic Conventional Commits; every commit must compile and pass
+  tests. The last one is a `chore(agents)` commit with the bookkeeping
+  (`tasks.json`, `progress.md`, `.agents/STATE.md` from `scripts/state.sh`).
+- Push, open a PR with `.github/pull_request_template.md`,
   `Closes #<issue>`, milestone of the phase, and the evaluator verdict + review
   path. Right after opening it, post the evaluator verdict (counts by
   severity) and the latest `review-N.json` path as a PR comment with
   `gh pr comment <pr> --body …`. Set `pr` and `status: "in_review"`; append
   `· in_review · PR #<pr>`.
-- Never merge; the user merges. Step 0 marks it done next time.
+- Never merge; the owner merges (the gate, once it exists). Step 0 marks it
+  done next time, on the next task's branch.
