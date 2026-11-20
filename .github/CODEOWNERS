@@ -1,0 +1,16 @@
+# Generated from .agents/protected-paths.txt by scripts/guard-paths.sh --codeowners.
+# Do not edit by hand. `existing` entries are listed in full: CODEOWNERS
+# cannot tell a new file from an existing one.
+
+/.github/workflows/** @lunaatienzaismael-code
+**/pom.xml @lunaatienzaismael-code
+/architecture-rules/** @lunaatienzaismael-code
+**/HexagonalArchitectureTest.java @lunaatienzaismael-code
+**/db/changelog/changes/*.yaml @lunaatienzaismael-code
+/AUTONOMY.md @lunaatienzaismael-code
+/.claude/** @lunaatienzaismael-code
+/.agents/protected-paths.txt @lunaatienzaismael-code
+/.github/CODEOWNERS @lunaatienzaismael-code
+/scripts/guard-paths.sh @lunaatienzaismael-code
+/scripts/verify.sh @lunaatienzaismael-code
+/scripts/gh-rest.sh @lunaatienzaismael-code
