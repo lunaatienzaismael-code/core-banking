@@ -67,3 +67,54 @@ PY
 - peak at stop: mem used ~670 MB of 16087; disk /dev/vda        252G   12G   58G  17% /
 - total: session start 2026-11-20T20:22:53Z, stop 2026-11-20T20:45:45Z
 - Findings for the cloud environment: (1) Maven needs ~/.m2/settings.xml proxy generated from HTTPS_PROXY; (2) git tags must be fetched (git fetch --tags origin); (3) dockerd must be started (nohup dockerd &); (4) Docker Hub 429 blocks e2e image builds; (5) GitHub push 403 (Claude app not installed on the repo).
+- 2026-11-20T20:54:12Z push of 4 commits to fix/T-033-... OK after GitHub App install (3df6597..8234c4c). No claude/* branch forced.
+- 2026-11-20T20:54:12Z dockerd restarted with /etc/docker/daemon.json registry-mirrors [https://mirror.gcr.io]; docker pull eclipse-temurin:21-jre OK
+- 2026-11-20T20:54:12Z scripts/e2e.sh start (includes docker builds)
+- 2026-11-20T20:54:24Z scripts/e2e.sh end rc=1
+- 2026-11-20T20:54:46Z e2e.sh rc=1 (corrects the line above). The mirror fixed the 429 (base images resolved: `resolve docker.io/library/eclipse-temurin:21-jdk@sha256:8ad1... done`), but the build then failed inside the container, verbatim:
+  - `#19 0.270 wget: Failed to fetch https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.11/apache-maven-3.9.11-bin.tar.gz`
+  - `Dockerfile:18 RUN ./mvnw -B -q -pl ledger-service -am dependency:go-offline` -> `exit code: 1`
+  - Cause: the build container has no route to the internet except through the agent proxy (HTTPS_PROXY is not passed to docker build, and the proxy CA is not in the image). Fixing it means build-args + CA in the image or Dockerfile changes: beyond the agreed limits. PILOT CLOSED here. Evaluator NOT run; no PR proposed.
+- peak mem used seen: ~670 MB of 16087 MB; disk: /dev/vda        252G   13G   56G  19% /
+- total: 2026-11-20T20:22:53Z -> 2026-11-20T20:54:46Z
+
+## Setup script candidato
+
+Everything that was needed in the cloud session (items 1-4 verified; 5 is not enough for e2e):
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+# 1. Maven proxy from HTTPS_PROXY (read at session start: the port changes)
+# Generates ~/.m2/settings.xml with a Maven proxy taken from HTTPS_PROXY.
+set -euo pipefail
+python3 - <<'PY'
+import os, urllib.parse as u
+p = u.urlparse(os.environ["HTTPS_PROXY"])
+auth = ""
+if p.username:
+    auth = f"<username>{u.unquote(p.username)}</username><password>{u.unquote(p.password or '')}</password>"
+nonproxy = "localhost|127.0.0.1"
+xml = f"""<settings>
+  <proxies>
+    <proxy><id>agent-https</id><active>true</active><protocol>https</protocol>
+      <host>{p.hostname}</host><port>{p.port}</port>{auth}<nonProxyHosts>{nonproxy}</nonProxyHosts></proxy>
+    <proxy><id>agent-http</id><active>true</active><protocol>http</protocol>
+      <host>{p.hostname}</host><port>{p.port}</port>{auth}<nonProxyHosts>{nonproxy}</nonProxyHosts></proxy>
+  </proxies>
+</settings>
+"""
+os.makedirs(os.path.expanduser("~/.m2"), exist_ok=True)
+open(os.path.expanduser("~/.m2/settings.xml"), "w").write(xml)
+PY
+# 2. Tags (SchemaCompatibilityTest needs git describe)
+git fetch --tags origin
+# 3. Docker daemon with a Docker Hub mirror (avoids 429 on anonymous pulls)
+mkdir -p /etc/docker
+echo '{"registry-mirrors":["https://mirror.gcr.io"]}' > /etc/docker/daemon.json
+nohup dockerd > /tmp/dockerd.log 2>&1 &
+for i in $(seq 30); do docker info >/dev/null 2>&1 && break; sleep 1; done
+```
+
+Still missing for scripts/e2e.sh: network inside `docker build` (Maven Central download in the Dockerfile fails: no proxy/CA in the build container). Options to decide: pass HTTPS_PROXY + CA as build args, or build the jars outside Docker and COPY them.
