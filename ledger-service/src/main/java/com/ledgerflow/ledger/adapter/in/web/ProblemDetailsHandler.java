@@ -8,6 +8,9 @@ import com.ledgerflow.ledger.domain.InvalidCurrencyException;
 import com.ledgerflow.ledger.domain.InvalidTransactionException;
 import com.ledgerflow.ledger.domain.TransactionNotFoundException;
 import com.ledgerflow.ledger.domain.UnbalancedTransactionException;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -65,6 +68,29 @@ class ProblemDetailsHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidTransactionException.class)
     ProblemDetail invalidTransaction(InvalidTransactionException exception) {
         return unprocessable("Invalid transaction", exception);
+    }
+
+    /**
+     * The generated contract interfaces are {@code @Validated}, so a constraint on a header, path or query parameter
+     * fails through method validation before the controller runs. That is malformed input: 400.
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    ProblemDetail constraintViolation(ConstraintViolationException exception) {
+        var detail = exception.getConstraintViolations().stream()
+                .map(violation -> lastNode(violation.getPropertyPath()) + ": " + violation.getMessage())
+                .sorted()
+                .collect(Collectors.joining("; "));
+        var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+        problem.setTitle("Invalid request");
+        return problem;
+    }
+
+    private static String lastNode(Path path) {
+        String name = null;
+        for (var node : path) {
+            name = node.getName();
+        }
+        return name;
     }
 
     /** Last resort: log the cause, answer 500 without exposing internals (messages, types, stack traces). */
