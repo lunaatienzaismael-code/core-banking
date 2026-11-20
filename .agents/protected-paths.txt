@@ -1,0 +1,33 @@
+# Protected paths (AUTONOMY.md). The single list read by the PreToolUse hook
+# (scripts/guard-paths.sh), the Autonomy gate workflow and .github/CODEOWNERS
+# (generated: scripts/guard-paths.sh --codeowners).
+#
+# One glob per line, relative to the repository root: `*` stays inside a
+# directory, `**` crosses directories. The suffix ` existing` protects a match
+# only when the file already exists on main, so new module POMs and new
+# changesets stay free.
+#
+# A task may edit a protected path only when its brief lists it under
+# `## Protected paths`; its PR then needs the owner's approval.
+
+# CI and repository automation
+.github/workflows/**
+
+# Build: existing POMs (new module POMs are allowed)
+**/pom.xml existing
+
+# Architecture rules
+architecture-rules/**
+**/HexagonalArchitectureTest.java
+
+# Applied Liquibase changesets (new changesets and the master changelog are allowed)
+**/db/changelog/changes/*.yaml existing
+
+# The flow itself
+AUTONOMY.md
+.claude/**
+.agents/protected-paths.txt
+.github/CODEOWNERS
+scripts/guard-paths.sh
+scripts/verify.sh
+scripts/gh-rest.sh
