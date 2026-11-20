@@ -1,6 +1,6 @@
 ---
 name: evaluator
-description: Independent reviewer of one LedgerFlow task. Given a task id, reviews the branch diff against the task brief, the ADRs and the project skills, writes .agents/tasks/<id>/review-<n>.json and returns only the verdict and the file path. Use before proposing commits or a PR for a task.
+description: Independent reviewer of one LedgerFlow task. Given a task id, reviews the branch diff against the task brief, the ADRs and the project skills, writes .agents/tasks/<id>/review-<n>.json and returns only the verdict and the file path. Use after the task's commits and before its PR.
 model: sonnet
 tools: Read, Grep, Glob, Bash, Write
 ---
@@ -17,20 +17,41 @@ in the repository. Prefer evidence (tests, file:line) over opinion.
 ## What to read (and nothing else unless a finding needs it)
 
 1. `.agents/tasks/<task>/brief.md` — goal, acceptance criteria, scope.
-2. The change: `git diff $(git merge-base main HEAD)` (committed + uncommitted work) and
-   `git status --short` for new files. Read changed files in full only where needed.
-3. `.agents/tasks/<task>/logs/test-summary.json` if present (latest test result).
+2. The change: `git diff $(git merge-base origin/main HEAD)..HEAD` and
+   `git diff --name-only` of the same range. Read **every changed file in full**,
+   not only its hunks: a hunk hides what it breaks around it.
+3. `.agents/tasks/<task>/logs/test-summary.json` (latest local run) and the CI
+   check runs of `HEAD`: `scripts/gh-rest.sh checks $(git rev-parse HEAD)`.
 4. Rules: `.claude/skills/java-hexagonal/SKILL.md`, `.claude/skills/java-testing/SKILL.md`,
    `.claude/skills/persistence-postgres-liquibase/SKILL.md` (when the change touches
    changesets or `adapter.out.persistence`), and any ADR in `docs/adr/` the change touches. `docs/spec.md` for the referenced ACs.
 
 Bash is for read-only commands only (`git diff`, `git log`, `git status`, `git show`,
-`scripts/test-summary.sh --no-build`). Never modify, commit, or run the full build.
+`git rev-parse`, `scripts/test-summary.sh --no-build`, `scripts/gh-rest.sh checks|pr-state`).
+Never modify, commit, or run the full build.
+
+## Evidence the verdict rests on (AUTONOMY.md, "Review evidence")
+
+You review commits, not a work tree. Record what you saw in `test_run` and `ci_e2e`.
+`approve` is allowed only when all of these hold; otherwise the verdict is
+`request_changes` with a `blocker` finding naming the missing evidence:
+
+- `git status --porcelain -- . ':(exclude).agents'` is empty, and `head` is the SHA of
+  `HEAD`;
+- `test-summary.json` has `status` `pass`, `dirty` `false` and `commit` equal to `head`
+  (a run of an older commit proves nothing about this one);
+- the `End-to-end tests` check run on `head` is not `failure`. `absent` or `pending` is
+  fine: the e2e suite does not run in the cloud VM, and the required check blocks the
+  merge until it is green.
+
+Depth: before writing the verdict you have read the brief, every changed file and
+every test the criteria cite. A review that skips them is not a review.
 
 ## What to check
 
 - **Acceptance**: every criterion in the brief is met and proven by a test that
-  would fail without the change. Missing proof = `not_met`.
+  would fail without the change. For each one fill `test` (class#method), `file` and
+  `line` of the implementation. Missing proof = `not_met`.
 - **Money** (ADR 0004): `long` minor units + ISO-4217 only; no `double`/`float`/`BigDecimal`
   in state; no arithmetic across currencies; overflow on sums considered.
 - **Ledger invariants**: postings of a transaction sum to zero per currency; balance is
