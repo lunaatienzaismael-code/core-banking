@@ -141,3 +141,5 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-11-20 · T-033 · review-1 · approve (0 findings above nit); e2e delegated to CI on the PR SHA (docker build has no network in the cloud container, issue #76)
 2026-11-20 · T-033 · in_review · PR #75
 2026-11-20 · T-033 · done · PR #75 merged (rebase via REST with SHA guard; CI 4/4 green, e2e in CI)
+2026-11-20 · phase 8 · planned · T-034 InitiatePaymentIT independent of saga timing (issue #81), first task for the routine; Confluent repository order proposed as issue #82 (needs-human)
+2026-11-20 · migration · exception · owner allowed git push --force-with-lease on the branches of #78, #79 and #80 only, only to rebase them onto main after each merge of the stack (one-off; AUTONOMY.md unchanged)
