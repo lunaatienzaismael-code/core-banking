@@ -51,7 +51,8 @@ do not work in cloud sessions. Never merge, push to `main`, force-push or tag.
 - Every task of the phase is `done` → end of phase (`AUTONOMY.md`): a
   phase-close PR (roadmap tick, `STATE.md`) and the next phase's plan PR
   (`/plan-feature`), both labelled `needs-human`. Stop.
-- Read the task's `brief.md`, including `Protected paths:` if present.
+- Read the task's `brief.md`, including its `## Protected paths` section if
+  present.
 
 ## 2. Start
 
