@@ -8,7 +8,7 @@
 #   scripts/state.sh --stdout   # prints it instead
 #
 # Sources: docs/roadmap.md (first unchecked phase), .agents/tasks.json, the
-# last lines of .agents/progress.md, and GitHub through REST only (open PRs,
+# last lines of .agents/progress.md, and GitHub through scripts/gh-rest.sh (open PRs,
 # open issues labelled needs-human). GraphQL is not used: it is blocked in
 # cloud sessions. If GitHub cannot be read, the GitHub lines say so and the
 # exit code is 2; the file is still written.
@@ -20,8 +20,8 @@ TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 
 gh_ok=1
-prs="$(gh api 'repos/{owner}/{repo}/pulls?state=open&per_page=100' 2>/dev/null)" || { prs='[]'; gh_ok=0; }
-asks="$(gh api 'repos/{owner}/{repo}/issues?state=open&labels=needs-human&per_page=100' 2>/dev/null)" || { asks='[]'; gh_ok=0; }
+prs="$("$ROOT/scripts/gh-rest.sh" list-prs open 2>/dev/null)" || { prs='[]'; gh_ok=0; }
+asks="$("$ROOT/scripts/gh-rest.sh" list-issues open needs-human 2>/dev/null)" || { asks='[]'; gh_ok=0; }
 
 PRS="$prs" ASKS="$asks" GH_OK="$gh_ok" python3 - "$ROOT" > "$TMP" <<'PY'
 import json, os, re, sys
@@ -32,7 +32,7 @@ tasks = json.load(open(f"{root}/.agents/tasks.json"))["tasks"]
 progress = [l.rstrip() for l in open(f"{root}/.agents/progress.md") if re.match(r"\d{4}-\d\d-\d\d · ", l)]
 gh_ok = os.environ["GH_OK"] == "1"
 prs = json.loads(os.environ["PRS"])
-asks = [i for i in json.loads(os.environ["ASKS"]) if "pull_request" not in i]
+asks = json.loads(os.environ["ASKS"])
 
 m = re.search(r"^- \[ \] \*\*(Phase (\d+)[^*]*)\*\*", roadmap, re.M)
 phase_title, phase = (m.group(1), int(m.group(2))) if m else ("all phases done", None)
