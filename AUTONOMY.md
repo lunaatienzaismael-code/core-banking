@@ -81,10 +81,7 @@ The evaluator approves only on evidence bound to a commit:
 
 ## Protected paths
 
-The list is [`.agents/protected-paths.txt`](.agents/protected-paths.txt): CI
-workflows, existing POMs, the architecture rules, applied changesets and the
-flow files themselves (this file, `.claude/**`, the guard scripts, the list
-and `CODEOWNERS`).
+The single source is [`.agents/protected-paths.txt`](.agents/protected-paths.txt).
 
 The agent edits a protected path only when the task brief lists it under
 `## Protected paths`; the PR then needs `human-approved`. Three things read
