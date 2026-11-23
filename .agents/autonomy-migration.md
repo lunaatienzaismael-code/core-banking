@@ -54,7 +54,7 @@ tasks (links at the end):
 | D1 | GitHub identity of the agent | **B now** (same account as the owner); move to **A** (bot account) once the pilot works |
 | D2 | How the evaluator proves the full suite ran | It **verifies runs bound to the commit SHA**: the local `verify` (unit + ITs) and the CI **End-to-end tests** job on the PR head SHA (read through REST); it does not re-run the suite. Commits after the reviewed SHA that touch only `.agents/` keep it valid |
 | D3 | Edits to protected paths | Allowed only when the task brief declares them under `Protected paths:`; the PR then needs human approval |
-| D4 | Protect the flow files too | **Yes** (`AUTONOMY.md`, `.claude/**`, guard scripts, `protected-paths.txt`, `CODEOWNERS`) |
+| D4 | Protect the flow files too | **Yes** (`AUTONOMY.md`, `.claude/**`, guard scripts, `gh-rest.sh`, `test-summary.sh`, `autonomy-gate.sh`, `protected-paths.txt`, `CODEOWNERS`) |
 | D5 | Phase gate | The owner's merge of the next-phase plan PR approves the phase |
 
 D1 details (owner's adjustments):
@@ -185,10 +185,12 @@ cover the wrapper instead of all of `gh api`. **Every** use of `gh pr` and
   summary on stderr and exit 2.
 - `PreToolUse` (Edit, Write, NotebookEdit) → `scripts/guard-paths.sh`,
   reading `.agents/protected-paths.txt` (single list for the hook, the gate
-  workflow and `CODEOWNERS`; a test keeps them in sync):
+  workflow and `CODEOWNERS`; `scripts/guard-paths.sh --check-codeowners`
+  detects drift, not yet wired into `verify.sh` or CI):
   - `.github/workflows/**`;
   - every `pom.xml` that already exists on `origin/main` (new module POMs
     allowed);
+  - the Maven wrapper: `mvnw`, `.mvn/**`;
   - `architecture-rules/**`, `**/HexagonalArchitectureTest.java`;
   - `**/db/changelog/changes/*.yaml` already on `main` (new changesets and
     the master changelog allowed);
@@ -201,8 +203,9 @@ cover the wrapper instead of all of `gh api`. **Every** use of `gh pr` and
 - `allow`: `git add`, `git commit`,
   `git push -u origin {feat,fix,test,build,docs,chore,refactor,ci}/*`,
   `scripts/gh-rest.sh:*`, `scripts/state.sh`.
-- `deny`: `git push --force*`, `git push -f*`, `git push origin main*`,
-  `gh pr merge*`, `gh api*merge*`, `git tag*`.
+- `deny`: `git push --force*`, `git push -f*`, `git push origin +*`,
+  `git push --delete*`, `git push origin main*`, `git push origin HEAD:main*`,
+  `gh pr merge*`, `gh api*merge*`, `gh api*human-approved*`, `git tag*`.
 
 ### 3.6 `CODEOWNERS` and GitHub settings (done by the owner)
 
