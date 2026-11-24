@@ -2,7 +2,10 @@ package com.ledgerflow.payment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.ledgerflow.payment.domain.PaymentStatus;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,16 +62,17 @@ class InitiatePaymentIT {
 
         assertThat(payment.get("status").asString()).isEqualTo("INITIATED");
         assertThat(payment.has("reason")).isFalse();
-        assertThat(jdbc.queryForMap(
-                        "select debtor_account_id, creditor_account_id, amount, currency, status, reason"
-                                + " from payments where id = ?",
-                        id))
+        // The saga runs in the background: from INITIATED the payment may already have moved on (ADR 0011).
+        var stored = jdbc.queryForMap(
+                "select debtor_account_id, creditor_account_id, amount, currency, status"
+                        + " from payments where id = ?",
+                id);
+        assertThat(stored)
                 .containsEntry("debtor_account_id", debtor)
                 .containsEntry("creditor_account_id", creditor)
                 .containsEntry("amount", 2_500L)
-                .containsEntry("currency", "EUR")
-                .containsEntry("status", "INITIATED")
-                .containsEntry("reason", null);
+                .containsEntry("currency", "EUR");
+        assertThat((String) stored.get("status")).isIn(statusesFromInitiated());
 
         var read = client.get()
                 .uri(created.getResponseHeaders().getLocation())
@@ -78,7 +82,9 @@ class InitiatePaymentIT {
                 .expectBody(String.class)
                 .returnResult()
                 .getResponseBody();
-        assertThat(json.readTree(read)).isEqualTo(payment);
+        var readBack = json.readTree(read);
+        assertThat(readBack.get("status").asString()).isIn(statusesFromInitiated());
+        assertThat(PaymentJson.withoutProgress(readBack)).isEqualTo(PaymentJson.withoutProgress(payment));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -128,6 +134,13 @@ class InitiatePaymentIT {
                 .isEqualTo("Payment " + unknown + " does not exist")
                 .jsonPath("$.instance")
                 .isEqualTo("/payments/" + unknown);
+    }
+
+    /** INITIATED and every status the state machine allows next; the saga may have advanced the payment already. */
+    private static List<String> statusesFromInitiated() {
+        return Stream.concat(Stream.of(PaymentStatus.INITIATED), PaymentStatus.INITIATED.next().stream())
+                .map(Enum::name)
+                .toList();
     }
 
     private static String body(UUID debtor, UUID creditor, long amount, String currency) {
