@@ -469,13 +469,13 @@
       "phase": 8,
       "use_case": null,
       "type": "test",
-      "status": "todo",
+      "status": "in_review",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 81,
-      "branch": null,
+      "branch": "test/T-034-initiate-payment-it-saga-timing",
       "pr": null,
-      "review_rounds": 0
+      "review_rounds": 1
     }
   ]
 }
