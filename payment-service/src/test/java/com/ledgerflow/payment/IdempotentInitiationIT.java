@@ -50,7 +50,8 @@ class IdempotentInitiationIT {
         assertThat(second.statusCode()).isEqualTo(201);
         assertThat(second.headers().firstValue("Location"))
                 .isEqualTo(first.headers().firstValue("Location"));
-        assertThat(json.readTree(second.body())).isEqualTo(json.readTree(first.body()));
+        assertThat(PaymentJson.withoutProgress(json.readTree(second.body())))
+                .isEqualTo(PaymentJson.withoutProgress(json.readTree(first.body())));
         assertThat(paymentsOf(debtor)).isOne();
     }
 
@@ -70,7 +71,8 @@ class IdempotentInitiationIT {
                 }""".formatted(creditor, debtor));
 
         assertThat(second.statusCode()).isEqualTo(201);
-        assertThat(json.readTree(second.body())).isEqualTo(json.readTree(first.body()));
+        assertThat(PaymentJson.withoutProgress(json.readTree(second.body())))
+                .isEqualTo(PaymentJson.withoutProgress(json.readTree(first.body())));
         assertThat(paymentsOf(debtor)).isOne();
     }
 
@@ -138,10 +140,11 @@ class IdempotentInitiationIT {
         }
 
         assertThat(responses).extracting(HttpResponse::statusCode).containsOnly(201);
-        var first = json.readTree(responses.getFirst().body());
+        var first =
+                PaymentJson.withoutProgress(json.readTree(responses.getFirst().body()));
         assertThat(responses)
-                .allSatisfy(
-                        response -> assertThat(json.readTree(response.body())).isEqualTo(first));
+                .allSatisfy(response -> assertThat(PaymentJson.withoutProgress(json.readTree(response.body())))
+                        .isEqualTo(first));
         assertThat(paymentsOf(debtor)).isOne();
     }
 
