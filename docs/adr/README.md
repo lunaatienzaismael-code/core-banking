@@ -19,6 +19,7 @@ decisions are not deleted; a new ADR supersedes them and says so.
 | [0011](0011-payment-state-machine.md) | Payment State Machine | Accepted |
 | [0012](0012-payment-saga-and-fund-reservation.md) | Payment Saga and Fund Reservation | Accepted |
 | [0013](0013-messaging-outbox-inbox-contracts.md) | Messaging — Outbox, Idempotent Consumers and Contracts | Accepted |
+| [0014](0014-risk-assessment.md) | Risk Assessment Service and Velocity Tracking | Proposed by agent |
 
 ## Deferred decisions (ADRs to be written later)
 
