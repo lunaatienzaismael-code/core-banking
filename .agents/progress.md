@@ -146,4 +146,4 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-11-20 · migration · exception · owner extended the one-off force-with-lease exception to the branch of #83, same conditions (only to rebase onto main after each merge of the stack)
 2026-11-24 · T-034 · started · branch test/T-034-initiate-payment-it-saga-timing
 2026-11-24 · T-034 · review-1 · approve (0 blockers, 0 majors, 1 minor)
-2026-11-24 · T-034 · in_review · PR pending
+2026-11-24 · T-034 · in_review · PR #85
