@@ -15,6 +15,7 @@ COPY messaging-support/pom.xml messaging-support/
 COPY ledger-service/pom.xml ledger-service/
 # Every module the parent POM lists must have its POM, even when it is not built.
 COPY payment-service/pom.xml payment-service/
+COPY risk-service/pom.xml risk-service/
 RUN ./mvnw -B -q -pl ledger-service -am dependency:go-offline
 
 COPY architecture-rules/src architecture-rules/src

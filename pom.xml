@@ -22,6 +22,7 @@
         <module>messaging-support</module>
         <module>ledger-service</module>
         <module>payment-service</module>
+        <module>risk-service</module>
     </modules>
 
     <properties>
