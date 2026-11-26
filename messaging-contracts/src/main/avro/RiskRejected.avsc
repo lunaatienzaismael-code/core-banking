@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "RiskRejected",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Reply on risk.replies to AssessRisk: a rule rejected the payment, nothing was reserved (ADR 0014). Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."},
+    {"name": "reason", "type": "RiskRejectionReason"},
+    {"name": "detail", "type": "string", "doc": "Human-readable explanation."}
+  ]
+}

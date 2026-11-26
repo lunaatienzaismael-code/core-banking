@@ -1,0 +1,7 @@
+{
+  "type": "enum",
+  "name": "RiskRejectionReason",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Which risk rule rejected a payment (ADR 0014).",
+  "symbols": ["AMOUNT_LIMIT_EXCEEDED", "VELOCITY_LIMIT_EXCEEDED"]
+}

@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "name": "RiskApproved",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Reply on risk.replies to AssessRisk: no rule objected, the saga may reserve funds (ADR 0014). Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."}
+  ]
+}
