@@ -483,12 +483,12 @@
       "phase": 8,
       "use_case": "UC5",
       "type": "build",
-      "status": "blocked",
+      "status": "done",
       "depends_on": [],
       "acceptance_criteria": [],
       "issue": 87,
       "branch": "build/T-035-risk-service-skeleton",
-      "pr": null,
+      "pr": 92,
       "review_rounds": 0
     },
     {
