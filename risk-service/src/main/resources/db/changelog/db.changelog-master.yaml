@@ -1,0 +1,4 @@
+# Master changelog. Each change set lives in its own file under changes/ and is
+# included here in order; applied change sets are never edited (ADR 0004).
+# The inbox and outbox tables arrive with the first use case task (T-036).
+databaseChangeLog: []

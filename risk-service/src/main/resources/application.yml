@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: risk-service
+  datasource:
+    url: ${RISK_DB_URL:jdbc:postgresql://localhost:5434/risk}
+    username: ${RISK_DB_USER:risk}
+    password: ${RISK_DB_PASSWORD:risk}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Liquibase owns the schema; Hibernate only checks that the mappings match it.
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  data:
+    redis:
+      host: ${RISK_REDIS_HOST:localhost}
+      port: ${RISK_REDIS_PORT:6379}
+  mvc:
+    problemdetails:
+      enabled: true
+
+# 8080 is the ledger's and 8081 the payment's, so all services run side by side locally.
+server:
+  port: ${RISK_PORT:8082}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
