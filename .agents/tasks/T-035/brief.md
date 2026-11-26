@@ -22,6 +22,7 @@ risk-service module, Redis in compose and risk contracts (ADR 0014).
 ## Protected paths
 
 - `pom.xml`
+- `risk-service/src/test/java/com/ledgerflow/risk/HexagonalArchitectureTest.java` (new; B1 reuses the shared ArchUnit rules)
 
 ## Definition of done
 
