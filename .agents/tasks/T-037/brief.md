@@ -1,7 +1,7 @@
 # T-037 — Velocity rule backed by Redis
 
 - Use case: UC5 (`docs/spec.md`) · Phase: 8 · Type: feat
-- Issue: #TBD · Branch: `feat/T-037-risk-velocity-rule`
+- Issue: #89 · Branch: `feat/T-037-risk-velocity-rule`
 - Depends on: T-036
 
 ## Goal

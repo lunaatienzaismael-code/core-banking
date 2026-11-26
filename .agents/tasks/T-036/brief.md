@@ -1,7 +1,7 @@
 # T-036 — Risk assessment with amount rule
 
 - Use case: UC5 (`docs/spec.md`) · Phase: 8 · Type: feat
-- Issue: #TBD · Branch: `feat/T-036-risk-amount-rule`
+- Issue: #88 · Branch: `feat/T-036-risk-amount-rule`
 - Depends on: T-035
 
 ## Goal

@@ -1,7 +1,7 @@
 # T-039 — End-to-end risk smoke test
 
 - Use case: UC5 (`docs/spec.md`) · Phase: 8 · Type: test
-- Issue: #TBD · Branch: `test/T-039-e2e-risk-smoke`
+- Issue: #91 · Branch: `test/T-039-e2e-risk-smoke`
 - Depends on: T-037, T-038
 
 ## Goal
