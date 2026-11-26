@@ -151,3 +151,6 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-11-24 · phase 8 · planned · UC5 → T-035..T-039 (plan PR, needs-human; ADR 0014 Proposed by agent)
 2026-11-26 · T-035 · started · branch build/T-035-risk-service-skeleton; issues #87-#91 created for T-035..T-039
 2026-11-26 · T-035 · blocked · B1 needs new risk-service/.../HexagonalArchitectureTest.java (protected path, not declared in the brief); draft PR, needs-human
+2026-11-26 · T-035 · started · resumed after PR #92 merged without B1; B1 test + brief protected-path declaration already on branch (b4bc1ee)
+2026-11-26 · T-035 · review-1 · approve (0 blockers, 0 majors, 0 minors)
+2026-11-26 · T-035 · in_review · B1 follow-up on claude/confident-brown-1qklog
