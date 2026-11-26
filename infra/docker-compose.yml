@@ -1,6 +1,7 @@
 # Local dependencies only (ADR 0007). Services run from the IDE or with
 # ./mvnw -pl ledger-service spring-boot:run    (port 8080, ledger-db)
 # ./mvnw -pl payment-service spring-boot:run   (port 8081, payment-db)
+# ./mvnw -pl risk-service spring-boot:run      (port 8082, risk-db, redis)
 #
 #   docker compose -f infra/docker-compose.yml up -d
 name: ledgerflow
@@ -35,6 +36,35 @@ services:
       - payment-db-data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U payment -d payment"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # One database per service (ADR 0004); 5434 so it runs beside the others.
+  risk-db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: risk
+      POSTGRES_USER: risk
+      POSTGRES_PASSWORD: risk
+    ports:
+      - "5434:5432"
+    volumes:
+      - risk-db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U risk -d risk"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Velocity counters for risk-service (ADR 0014): derived, expirable, no persistence needed.
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -85,3 +115,4 @@ services:
 volumes:
   ledger-db-data:
   payment-db-data:
+  risk-db-data:
