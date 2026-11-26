@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "AssessRisk",
+  "namespace": "com.ledgerflow.messaging",
+  "doc": "Command on risk.commands: assess a payment before funds are reserved (ADR 0014). Key: paymentId.",
+  "fields": [
+    {"name": "paymentId", "type": "string", "doc": "UUID of the payment."},
+    {"name": "debtorAccountId", "type": "string", "doc": "UUID of the ledger account debited; the velocity key."},
+    {"name": "amountMinorUnits", "type": "long", "doc": "Positive amount in minor units (ADR 0004)."},
+    {"name": "currency", "type": "string", "doc": "ISO-4217 code."}
+  ]
+}
