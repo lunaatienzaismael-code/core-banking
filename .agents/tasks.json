@@ -483,10 +483,10 @@
       "phase": 8,
       "use_case": "UC5",
       "type": "build",
-      "status": "todo",
+      "status": "blocked",
       "depends_on": [],
       "acceptance_criteria": [],
-      "issue": null,
+      "issue": 87,
       "branch": "build/T-035-risk-service-skeleton",
       "pr": null,
       "review_rounds": 0
@@ -504,7 +504,7 @@
       "acceptance_criteria": [
         "AC5.1"
       ],
-      "issue": null,
+      "issue": 88,
       "branch": "feat/T-036-risk-amount-rule",
       "pr": null,
       "review_rounds": 0
@@ -522,7 +522,7 @@
       "acceptance_criteria": [
         "AC5.2"
       ],
-      "issue": null,
+      "issue": 89,
       "branch": "feat/T-037-risk-velocity-rule",
       "pr": null,
       "review_rounds": 0
@@ -540,7 +540,7 @@
       "acceptance_criteria": [
         "AC5.3"
       ],
-      "issue": null,
+      "issue": 90,
       "branch": "feat/T-038-saga-risk-step",
       "pr": null,
       "review_rounds": 0
@@ -557,7 +557,7 @@
         "T-038"
       ],
       "acceptance_criteria": [],
-      "issue": null,
+      "issue": 91,
       "branch": "test/T-039-e2e-risk-smoke",
       "pr": null,
       "review_rounds": 0

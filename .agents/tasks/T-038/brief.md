@@ -1,7 +1,7 @@
 # T-038 — Saga asks risk-service before reserving funds
 
 - Use case: UC5 (`docs/spec.md`) · Phase: 8 · Type: feat
-- Issue: #TBD · Branch: `feat/T-038-saga-risk-step`
+- Issue: #90 · Branch: `feat/T-038-saga-risk-step`
 - Depends on: T-036
 
 ## Goal

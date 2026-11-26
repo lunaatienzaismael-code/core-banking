@@ -1,7 +1,7 @@
 # T-035 — risk-service module, Redis in compose and risk contracts
 
 - Use case: UC5 (`docs/spec.md`) · Phase: 8 · Type: build
-- Issue: #TBD · Branch: `build/T-035-risk-service-skeleton`
+- Issue: #87 · Branch: `build/T-035-risk-service-skeleton`
 - Depends on: none
 
 ## Goal
