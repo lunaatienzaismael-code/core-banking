@@ -1,0 +1,34 @@
+{
+  "task_id": "T-036",
+  "round": 1,
+  "base": "origin/main merge-base",
+  "head": "250884688bc0cb776467606356da37d8e45b73e3",
+  "test_run": {"commit": "250884688bc0cb776467606356da37d8e45b73e3", "status": "pass", "dirty": false},
+  "ci_e2e": "absent",
+  "verdict": "request_changes",
+  "summary": "AC5.1 and B1 are met and tested at unit and real Kafka/PostgreSQL level. One major finding: the amount rule ignores the command's currency and the 'single-currency' justification is not backed by spec or ADR; a non-EUR amount is compared with a EUR-minor-unit limit.",
+  "acceptance_criteria": [
+    {"id": "AC5.1", "status": "met", "evidence": "AmountRuleTest boundaries 100000/100001; AssessRiskIT reply types over real Kafka", "test": "AssessRiskIT#paymentAboveTheThresholdIsRejected, AssessRiskIT#paymentAtTheThresholdIsApproved", "file": "risk-service/src/main/java/com/ledgerflow/risk/domain/AmountRule.java", "line": 21},
+    {"id": "B1", "status": "met", "evidence": "AssessRiskService writes inbox and outbox reply in one @Transactional; redelivery test asserts exactly one reply", "test": "AssessRiskIT#redeliveredMessageIsAnsweredOnce", "file": "risk-service/src/main/java/com/ledgerflow/risk/application/service/AssessRiskService.java", "line": 29}
+  ],
+  "findings": [
+    {
+      "severity": "major",
+      "category": "money",
+      "defect_type": "unbacked-doc-claim",
+      "file": "risk-service/src/main/java/com/ledgerflow/risk/domain/AmountRule.java",
+      "line": 6,
+      "description": "Javadoc claims the platform is single-currency (EUR) so one threshold serves every payment, but neither docs/spec.md nor ADR 0014 says so. AssessRiskCommand carries currency and AssessRiskService drops it, so a payment in another currency is compared with a minor-unit limit meant for EUR (ADR 0004: no arithmetic/comparison across currencies). No test covers a non-EUR command.",
+      "suggestion": "Pass the currency to the rule and reject/raise on a currency different from the configured one (or record single-currency as a decision in ADR 0014), and add a named test.",
+      "rule": "ADR 0004"
+    },
+    {
+      "severity": "minor",
+      "category": "testing",
+      "defect_type": "untested-enumerated-case",
+      "file": "risk-service/src/test/java/com/ledgerflow/risk/AssessRiskIT.java",
+      "line": null,
+      "description": "A non-positive amount makes the use case throw InvalidAssessmentException after the inbox insert; rollback, retry and DLT behaviour for it is untested, and the redelivery test only covers an approved case."
+    }
+  ]
+}
