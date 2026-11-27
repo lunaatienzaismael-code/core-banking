@@ -1,0 +1,24 @@
+{
+  "task_id": "T-036",
+  "round": 2,
+  "base": "origin/main merge-base",
+  "head": "6212c29dd6a22e7c609e4c5e4d2a79a5df7e81a4",
+  "test_run": {"commit": "6212c29dd6a22e7c609e4c5e4d2a79a5df7e81a4", "status": "pass", "dirty": false},
+  "ci_e2e": "absent",
+  "verdict": "approve",
+  "summary": "Round 1 major fixed: AmountRule now takes the configured limit currency, raises InvalidAssessmentException for a payment in another currency (AmountRuleTest#otherCurrencyIsInvalid), and the service passes command.currency(). AC5.1 and B1 remain met. Working tree clean, test-summary pass on HEAD (464/464). HEAD is not pushed yet, so GitHub has no check runs for it (treated as absent).",
+  "acceptance_criteria": [
+    {"id": "AC5.1", "status": "met", "evidence": "AmountRuleTest boundaries 100000/100001 plus currency guard; AssessRiskIT reply types over real Kafka and PostgreSQL", "test": "AssessRiskIT#paymentAboveTheThresholdIsRejected, AssessRiskIT#paymentAtTheThresholdIsApproved, AmountRuleTest#paymentAboveTheLimitIsRejected", "file": "risk-service/src/main/java/com/ledgerflow/risk/domain/AmountRule.java", "line": 32},
+    {"id": "B1", "status": "met", "evidence": "AssessRiskService writes inbox and outbox reply in one @Transactional; redelivery test asserts exactly one reply", "test": "AssessRiskIT#redeliveredMessageIsAnsweredOnce", "file": "risk-service/src/main/java/com/ledgerflow/risk/application/service/AssessRiskService.java", "line": 30}
+  ],
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "testing",
+      "defect_type": "untested-enumerated-case",
+      "file": "risk-service/src/test/java/com/ledgerflow/risk/AssessRiskIT.java",
+      "line": null,
+      "description": "Carried over from round 1: the malformed paths (non-positive amount, currency mismatch) throw InvalidAssessmentException after the inbox insert, and rollback, retry and DLT behaviour over Kafka is untested. Unit level is covered."
+    }
+  ]
+}
