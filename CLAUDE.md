@@ -63,7 +63,9 @@ atomic commits → `test-runner` → fix → `evaluator` → (fix → review aga
   retries/DLT, messaging tests), `task-planning` (splitting and briefs).
 - Subagents: `test-runner` (Haiku) runs the build, returns only JSON;
   `evaluator` (Sonnet) reviews diff vs brief with clean context, writes
-  `review-N.json`, returns only the verdict.
+  `review-N.json`, returns only the verdict; `staff-engineer` (Opus) takes
+  the judgment calls `AUTONOMY.md` reserves for the owner, writes a record in
+  `.agents/decisions/`, returns only the decision.
 
 ## State and contracts
 
@@ -74,8 +76,8 @@ atomic commits → `test-runner` → fix → `evaluator` → (fix → review aga
   `done` (a task is done only when its PR is merged). Issues mirror
   `tasks.json`; `scripts/check-task-sync.sh` reports any drift, and `/status`
   runs it.
-- Subagents write only inside `.agents/tasks/<id>/` and return compact JSON
-  plus paths.
+- Subagents write only inside `.agents/tasks/<id>/` (the `staff-engineer`,
+  in `.agents/decisions/`) and return compact JSON plus paths.
 - Contracts: test summary JSON (header of `scripts/test-summary.sh`),
   `.agents/templates/{brief.md,tasks.schema.json,review.schema.json}`.
 

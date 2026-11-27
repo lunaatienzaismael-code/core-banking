@@ -13,13 +13,15 @@ communicate through these files, not through chat history.
 | `templates/` | humans | Contracts: `brief.md`, `tasks.schema.json`, `review.schema.json`. |
 | `tasks/<id>/brief.md` | orchestrator (`/plan-feature`) | What the task delivers and how it is accepted. |
 | `tasks/<id>/review-<n>.json` | `evaluator` | One file per review round ([schema](templates/review.schema.json)); never overwritten. |
+| `decisions/<nnnn>-<slug>.md` | `staff-engineer` | Judgment calls taken in the owner's place (`AUTONOMY.md`, "Owner-level decisions"); never edited. |
 | `growth-rules.json` | orchestrator only | Defect types already turned into a rule, and where; read by `scripts/review-defects.sh`. |
 | `tasks/<id>/logs/` | `test-runner` | Maven logs and `test-summary.json`. Gitignored. |
 
 Rules (the autonomy policy, including when to stop, is
 [`AUTONOMY.md`](../AUTONOMY.md)):
 
-- Subagents write only inside `tasks/<id>/` and return a condensed result plus
+- Subagents write only inside `tasks/<id>/` (the `staff-engineer`, inside
+  `decisions/`) and return a condensed result plus
   file paths; the orchestrator updates `tasks.json` and `progress.md`.
 - Task ids (`T-001`, …) are stable and never reused.
 - Status flow: `todo → in_progress → in_review → done`, or `blocked` with a
