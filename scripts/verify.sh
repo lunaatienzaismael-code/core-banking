@@ -11,8 +11,8 @@
 # - exit 0 when nothing outside .agents/, docs/ and *.md differs from
 #   origin/main;
 # - exit 0 when this exact tree already passed (stamp in target/);
-# - otherwise `spotless:check` and `verify -DskipITs` on the touched modules
-#   (all modules when the root POM changed).
+# - otherwise `spotless:check` and `verify -DskipITs -Djacoco.skip=true` on the
+#   touched modules (all modules when the root POM changed).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -51,7 +51,10 @@ fi
 
 mkdir -p "$stamp_dir"
 log="$stamp_dir/last.log"
-if ./mvnw "${args[@]}" spotless:check verify -DskipITs > "$log" 2>&1; then
+# No coverage check here: JaCoCo merges unit and IT runs into one exec file,
+# so without ITs it fails modules whose adapters only ITs cover. CI's full
+# `verify` and the test-runner enforce coverage (record 0005).
+if ./mvnw "${args[@]}" spotless:check verify -DskipITs -Djacoco.skip=true > "$log" 2>&1; then
   rm -f "$stamp_dir"/[0-9a-f]*
   touch "$stamp_dir/$tree"
   exit 0
