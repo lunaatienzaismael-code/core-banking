@@ -170,7 +170,10 @@ not needed:
 
 - changes to `main`: always through a PR merged by the gate (branch
   protection blocks direct pushes for every account, the owner's included);
-- force-pushing a branch other than `main`; creating or moving tags;
+- force-pushing a branch other than `main` (record
+  [0008](.agents/decisions/0008-run-task-rebases-behind-prs.md) is the
+  standing authorization for `/run-task` rebases of PRs behind `main`);
+  creating or moving tags;
 - PRs that touch protected paths, this policy, the gate and the staff
   engineer's own definition included.
 
