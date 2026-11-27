@@ -53,8 +53,8 @@ Integration tests need Docker; setup in [`docs/development.md`](docs/development
 read `brief.md` → branch `<type>/<id>-<slug>` → implement with skills and
 atomic commits → `test-runner` → fix → `evaluator` → (fix → review again, max
 3 rounds) → a `chore(agents)` bookkeeping commit → push + PR
-`Closes #N` with the verdict → merge (owner, or the gate once it exists; see
-`AUTONOMY.md`) → `done` in the next task's reconciliation.
+`Closes #N` with the verdict → merge (the gate's auto-merge, on the evaluator verdict or the
+staff engineer's approval; see `AUTONOMY.md`) → `done` in the next task's reconciliation.
 
 - Skills: `java-hexagonal` (placement, layering, money), `java-testing`
   (what/how to test), `persistence-postgres-liquibase` (changesets, JPA,
@@ -64,8 +64,8 @@ atomic commits → `test-runner` → fix → `evaluator` → (fix → review aga
 - Subagents: `test-runner` (Haiku) runs the build, returns only JSON;
   `evaluator` (Sonnet) reviews diff vs brief with clean context, writes
   `review-N.json`, returns only the verdict; `staff-engineer` (Opus) takes
-  the judgment calls `AUTONOMY.md` reserves for the owner, writes a record in
-  `.agents/decisions/`, returns only the decision.
+  every judgment call and approval that used to be the owner's, writes a
+  record in `.agents/decisions/`, returns only the decision.
 
 ## State and contracts
 

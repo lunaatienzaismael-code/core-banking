@@ -7,8 +7,9 @@
 # only when the file already exists on main, so new module POMs and new
 # changesets stay free.
 #
-# A task may edit a protected path only when its brief lists it under
-# `## Protected paths`; its PR then needs the owner's approval.
+# A task may edit a protected path only when its brief, or a staff-engineer
+# record for its branch, lists it under `## Protected paths`; its PR then needs
+# the staff engineer's approval (`staff-approved`).
 
 # CI and repository automation
 .github/workflows/**
