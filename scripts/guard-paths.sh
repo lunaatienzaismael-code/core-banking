@@ -9,7 +9,8 @@
 #   scripts/guard-paths.sh --check-codeowners    # exit 1 when .github/CODEOWNERS drifted
 #
 # Hook mode: blocks (exit 2, reason on stderr) an Edit/Write/NotebookEdit of a
-# protected path unless the current task's brief lists it under
+# protected path unless the current task's brief, or a staff-engineer record in
+# .agents/decisions/ with `- Branch: <current branch>`, lists it under
 # `## Protected paths`. The brief is .agents/tasks/<id>/brief.md, with <id>
 # taken from the branch `<type>/T-xxx-<slug>`. The hook does not see edits made
 # through Bash; the Autonomy gate is the real barrier.
@@ -18,7 +19,7 @@
 #   {"protected": [...], "declared": [...], "undeclared": [...]}
 # `protected` = given paths that match the list; `declared` = those the brief
 # lists; `undeclared` = the rest. Exit code: 0 when nothing is protected, 1
-# otherwise (declared paths still need the owner's approval, D3).
+# otherwise (declared paths still need `staff-approved`, AUTONOMY.md).
 #
 # `existing` entries are checked against <ref> (default origin/main).
 set -euo pipefail
@@ -89,6 +90,19 @@ def declared_patterns(brief):
     return re.findall(r"^\s*-\s*`([^`]+)`", m.group(1), re.M) if m else []
 
 
+def record_patterns(branch):
+    """Protected paths that staff-engineer records grant to this branch."""
+    folder = os.path.join(root, ".agents/decisions")
+    out = []
+    for name in sorted(os.listdir(folder)) if branch and os.path.isdir(folder) else []:
+        path = os.path.join(folder, name)
+        if re.fullmatch(r"\d{4}-[a-z0-9-]+\.md", name) and re.search(
+            rf"^- Branch: {re.escape(branch)}\s*$", open(path).read(), re.M
+        ):
+            out += declared_patterns(path)
+    return out
+
+
 def declared(path, patterns):
     return any(glob_re(p).match(path) for p in patterns)
 
@@ -121,13 +135,14 @@ if not args:
     if path is None or not is_protected(path, "origin/main"):
         sys.exit(0)
     brief = current_brief()
-    if declared(path, declared_patterns(brief)):
+    branch = git("branch", "--show-current").stdout.strip()
+    if declared(path, declared_patterns(brief) + record_patterns(branch)):
         sys.exit(0)
     where = os.path.relpath(brief, root) if brief else "no task brief for this branch"
     print(
-        f"{path} is a protected path (.agents/protected-paths.txt) and the task brief "
-        f"({where}) does not list it under '## Protected paths'. Ask the staff-engineer "
-        "whether the brief should declare it (AUTONOMY.md, Owner-level decisions).",
+        f"{path} is a protected path (.agents/protected-paths.txt) and neither the task brief "
+        f"({where}) nor a staff-engineer record for this branch lists it under "
+        "'## Protected paths'. Ask the staff-engineer (AUTONOMY.md, Owner-level decisions).",
         file=sys.stderr,
     )
     sys.exit(2)

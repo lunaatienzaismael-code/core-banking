@@ -12,15 +12,18 @@
 # --base: where `existing` protected entries are looked up (default HEAD, the
 # base branch checkout in the workflow; use origin/main when run locally).
 #
-# Passes (exit 0) when either:
-#   - the PR carries `human-approved` (ignored on `synchronize`, which removes it);
+# Passes (exit 0) and enables auto-merge (rebase) when either:
+#   - the PR carries `staff-approved` and its head has a record in
+#     .agents/decisions/ with `- PR: #<n>` and `- Status: Approved by staff
+#     engineer`, or it carries the owner's `human-approved`. A `synchronize`
+#     removes both: an approval covers only the code that was reviewed;
 #   - or all of: no protected path (scripts/guard-paths.sh --check), head branch
 #     `<type>/T-xxx-<slug>` in this repository, not a draft, no `needs-human`,
 #     a body line exactly `Verdict: APPROVE`, the latest review-N.json of that
 #     task says `approve`, and every commit after its `head` touches only
-#     .agents/ (the SHA rule). Then it enables auto-merge (rebase).
-# Fails (exit 1) otherwise; it disables auto-merge, and adds `needs-human` when
-# a protected path is the cause. --dry-run changes nothing on GitHub.
+#     .agents/ (the SHA rule).
+# Fails (exit 1) otherwise and disables auto-merge. --dry-run changes nothing
+# on GitHub.
 # Prints ONE JSON line: {"pr", "pass", "reasons": [...], "protected": [...]}
 set -euo pipefail
 
@@ -65,11 +68,35 @@ def effect(*a):
         gh(*a, check=False)
 
 
-if action == "synchronize" and "human-approved" in labels:
-    # New code: the approval covered the old one. Removing it with
+APPROVALS = {"human-approved", "staff-approved"}
+if action == "synchronize":
+    # New code: an approval covered the old one. Removing it with
     # GITHUB_TOKEN starts no new run, so judge as if it were gone.
-    effect("api", "-X", "DELETE", f"repos/{repo}/issues/{pr_number}/labels/human-approved")
-    labels.discard("human-approved")
+    for mark in sorted(APPROVALS & labels):
+        effect("api", "-X", "DELETE", f"repos/{repo}/issues/{pr_number}/labels/{mark}")
+        labels.discard(mark)
+
+
+def staff_record():
+    """Path of the staff engineer's approval record for this PR at its head, or None."""
+    listing = gh("api", f"repos/{repo}/contents/.agents/decisions?ref={head_sha}", check=False)
+    entries = json.loads(listing.stdout) if listing.returncode == 0 else []
+    for e in entries if isinstance(entries, list) else []:
+        if not re.fullmatch(r"\d{4}-[a-z0-9-]+\.md", e["name"]):
+            continue
+        blob = json.loads(api(f"repos/{repo}/contents/{e['path']}?ref={head_sha}"))
+        text = base64.b64decode(blob["content"]).decode()
+        if re.search(rf"^- PR: #{pr_number}\r?$", text, re.M) and re.search(
+            r"^- Status: Approved by staff engineer\r?$", text, re.M
+        ):
+            return e["path"]
+    return None
+
+
+if "staff-approved" in labels and not staff_record():
+    # The label alone is not an approval: it must point at a committed record.
+    reasons.append("staff-approved without an approval record in .agents/decisions/")
+    labels.discard("staff-approved")
 
 # Both sides of a rename count: moving a protected file away touches it.
 listed = [json.loads(l) for l in api(
@@ -88,12 +115,12 @@ try:
 except (ValueError, KeyError):
     protected = files  # the guard failed: treat every file as protected
 
-if "human-approved" in labels:
+if APPROVALS & labels:
     passed = True
     reasons = []
 else:
     if protected:
-        reasons.append("touches protected paths without human-approved")
+        reasons.append("touches protected paths without staff-approved")
     m = TASK_BRANCH.match(branch)
     if not m or pr["head"]["repo"] is None or pr["head"]["repo"]["full_name"] != repo:
         reasons.append(f"head branch '{branch}' is not a task branch of this repository")
@@ -136,12 +163,10 @@ else:
                     reasons.append(f"commits after the reviewed {reviewed[:7]} touch {', '.join(outside[:5])}")
     passed = not reasons
 
-if passed and "human-approved" not in labels:
+if passed:
     effect("pr", "merge", pr_number, "--repo", repo, "--auto", "--rebase", "--match-head-commit", head_sha)
-elif not passed:
+else:
     effect("pr", "merge", pr_number, "--repo", repo, "--disable-auto")
-    if protected:
-        effect("api", "-X", "POST", f"repos/{repo}/issues/{pr_number}/labels", "-f", "labels[]=needs-human")
 
 result = {"pr": int(pr_number), "pass": passed, "reasons": reasons, "protected": protected}
 print(json.dumps(result))
