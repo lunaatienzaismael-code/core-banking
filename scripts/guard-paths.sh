@@ -126,8 +126,8 @@ if not args:
     where = os.path.relpath(brief, root) if brief else "no task brief for this branch"
     print(
         f"{path} is a protected path (.agents/protected-paths.txt) and the task brief "
-        f"({where}) does not list it under '## Protected paths'. Stop as AUTONOMY.md says: "
-        "comment on the issue, label it needs-human.",
+        f"({where}) does not list it under '## Protected paths'. Ask the staff-engineer "
+        "whether the brief should declare it (AUTONOMY.md, Owner-level decisions).",
         file=sys.stderr,
     )
     sys.exit(2)

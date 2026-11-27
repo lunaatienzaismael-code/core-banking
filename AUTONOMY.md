@@ -71,13 +71,37 @@ The evaluator approves only on evidence bound to a commit:
   `Proposed by agent`. The ADR has a trade-off table and says how banks and
   production ledgers do it, and it recommends on the merits, not on the
   smallest change.
-- Decisions that **stop the run** and wait for the owner:
+- **Owner-level** decisions go to the `staff-engineer` subagent (next
+  section), which decides in the owner's place:
   - money representation, ledger invariants or posting semantics;
   - security and authentication;
   - changes to applied changesets or data migrations;
   - breaking public contracts (OpenAPI, or Avro without BACKWARD
     compatibility);
   - new infrastructure or new dependencies.
+
+  The ADR that records one has status `Decided by staff engineer` and links
+  the decision record.
+
+## Owner-level decisions: the staff engineer
+
+The owner delegates their technical judgment to the `staff-engineer`
+subagent (`.claude/agents/staff-engineer.md`, Opus). Where this policy used
+to stop the run for the owner's judgment, the agent asks it instead and goes
+on with its answer:
+
+- an owner-level decision (list above);
+- the brief is wrong or the task is too big (it decides the fix or the split);
+- the change needs a protected path the brief does not declare (it decides
+  whether the brief declares it; the PR then still needs `human-approved`).
+
+It weighs the options against the project goal (`docs/spec.md`, "Purpose")
+and writes one record in `.agents/decisions/`. The PR that applies a decision
+lists it under "Decisions" in its body, so the owner sees it when they merge
+and can supersede it. It **escalates** (the run stops as below) only when the
+answer needs the owner's hands or rights, not their judgment: secrets,
+repository or GitHub settings, possibly real data, anything under "Always
+forbidden", or a change to this policy or to its own remit.
 
 ## Protected paths
 
@@ -103,13 +127,11 @@ The agent stops the run when:
 
 - 3 review rounds end without approval (it opens a draft PR with
   `Verdict: CHANGES` and `needs-human`);
-- the brief is wrong or the task is too big;
-- the change needs a protected path the brief does not declare;
 - CI is still red after 2 fix attempts;
 - the work needs secrets or repository settings;
 - the data involved might be real (only fictitious IBANs, names and amounts
   are allowed);
-- a decision from the "stop the run" list comes up;
+- the `staff-engineer` escalates a decision;
 - the phase ends.
 
 **How it stops:** a comment on the task's issue with the reason, the label
