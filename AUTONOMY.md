@@ -19,7 +19,7 @@ are kept by the agent on its own.
 | This policy, `.agents/STATE.md` (`scripts/state.sh`) | in place (PR 1) |
 | `/run-task`, `scripts/gh-rest.sh`, REST-only GitHub access, SHA-bound review evidence | in place (PR 2) |
 | Hooks, protected-path guard, permissions, `CODEOWNERS` | in place (PR 3) |
-| `Autonomy gate` workflow and auto-merge | written (PR 4); acts once it is on `main` and auto-merge is enabled (PR 5) — until then, the owner merges every PR |
+| `Autonomy gate` workflow and auto-merge | in place: required check on `main`, auto-merge allowed; merges on the evaluator verdict or `staff-approved` |
 | GitHub settings, cloud environment, scheduled routine | PR 5 (owner) |
 
 ## Identity mode
@@ -34,6 +34,9 @@ account. GitHub cannot tell the agent's actions from the owner's.
   adding it are the deny rules, `scripts/gh-rest.sh` refusing that label,
   and this policy. The agent never adds, removes or asks a tool to add
   `human-approved`.
+- The owner no longer needs to give it: the staff engineer's approval is
+  the label **`staff-approved`**, backed by a committed record (next
+  sections). `human-approved` stays the owner's optional mark.
 
 **Mode A** (later): a bot account with Write access, not admin. A code-owner
 review that the bot cannot give replaces `human-approved`.
@@ -50,8 +53,8 @@ review that the bot cannot give replaces `human-approved`.
 - Mark merged tasks `done` during the next task's reconciliation. That
   bookkeeping rides on the new branch, never on `main`.
 - Merge happens only through the gate's auto-merge, when the PR carries
-  `Verdict: APPROVE` and the required checks are green. Until the gate exists
-  (PR 4), the owner merges.
+  `Verdict: APPROVE` (task PRs) or `staff-approved` (any PR), and the
+  required checks are green.
 
 ### Review evidence
 
@@ -85,36 +88,46 @@ The evaluator approves only on evidence bound to a commit:
 
 ## Owner-level decisions: the staff engineer
 
-The owner delegates their technical judgment to the `staff-engineer`
-subagent (`.claude/agents/staff-engineer.md`, Opus). Where this policy used
-to stop the run for the owner's judgment, the agent asks it instead and goes
-on with its answer:
+The owner has delegated their judgment **and their approvals** to the
+`staff-engineer` subagent (`.claude/agents/staff-engineer.md`, Opus; record
+[0003](.agents/decisions/0003-owner-delegates-all-approvals.md)). The flow
+never waits for the owner. The agent asks the staff engineer, and goes on with
+its answer, for:
 
 - an owner-level decision (list above);
-- the brief is wrong or the task is too big (it decides the fix or the split);
-- the change needs a protected path the brief does not declare (it decides
-  whether the brief declares it; the PR then still needs `human-approved`).
+- a wrong brief or a task too big (it decides the fix or the split);
+- a protected path the brief does not declare (its record declares it for the
+  branch with `- Branch:` and `## Protected paths`);
+- 3 review rounds without approval, or CI red after 2 fix attempts: re-brief
+  or split, one extension, or block the task and move on. It never overrides
+  a `CHANGES` verdict or a red check;
+- approving a PR the evaluator verdict alone cannot merge: protected paths,
+  plan and phase-close PRs, any non-task PR;
+- what "Approved by the staff engineer" lists below.
 
 It weighs the options against the project goal (`docs/spec.md`, "Purpose")
-and writes one record in `.agents/decisions/`. The PR that applies a decision
-lists it under "Decisions" in its body, so the owner sees it when they merge
-and can supersede it. It **escalates** (the run stops as below) only when the
-answer needs the owner's hands or rights, not their judgment: secrets,
-repository or GitHub settings, possibly real data, anything under "Always
-forbidden", or a change to this policy or to its own remit.
+and writes one record in `.agents/decisions/`. An approval record has
+`- PR: #<n>`, `- Approved head: <sha>` and `- Status: Approved by staff
+engineer`. The agent commits it, pushes, and only then adds the label
+`staff-approved`: the gate accepts that label only with the record and
+removes it on every new push. The PR body lists the records under
+"Decisions". The staff engineer **escalates** (the run stops as below) only
+when it cannot act at all: a secret value, an account or a payment the agent
+does not have, or possibly real data.
 
 ## Protected paths
 
 The single source is [`.agents/protected-paths.txt`](.agents/protected-paths.txt).
 
 The agent edits a protected path only when the task brief lists it under
-`## Protected paths`; the PR then needs `human-approved`. Three things read
+`## Protected paths`, or a staff-engineer record for the branch does; the PR
+then needs `staff-approved`. Three things read
 the list:
 
 - the `PreToolUse` hook (`scripts/guard-paths.sh`) blocks undeclared edits
   made with Edit/Write. It does not see edits made through Bash;
 - the Autonomy gate (PR 4) is the real barrier: it fails any PR that touches
-  a protected path without `human-approved`;
+  a protected path without `staff-approved`;
 - `.github/CODEOWNERS` is generated from it
   (`scripts/guard-paths.sh --codeowners`); `--check-codeowners` detects drift.
 
@@ -125,10 +138,10 @@ fails `spotless:check` or the unit and ArchUnit tests of the touched modules.
 
 The agent stops the run when:
 
-- 3 review rounds end without approval (it opens a draft PR with
-  `Verdict: CHANGES` and `needs-human`);
-- CI is still red after 2 fix attempts;
-- the work needs secrets or repository settings;
+- the staff engineer blocks a task after 3 review rounds or 2 CI fix
+  attempts and no other task is ready;
+- the work needs a secret value, an account or a payment the agent does not
+  have;
 - the data involved might be real (only fictitious IBANs, names and amounts
   are allowed);
 - the `staff-engineer` escalates a decision;
@@ -143,17 +156,26 @@ questions to the owner are `needs-human` issues, not free text in a file.
 When no `todo` task of the phase is left:
 
 1. The agent opens a **phase-close PR** (roadmap tick, `STATE.md`) and a
-   **next-phase plan PR** (ADRs, briefs, `tasks.json` entries). Both are
-   labelled `needs-human`.
-2. The owner's merge of the plan PR approves the phase.
+   **next-phase plan PR** (ADRs, briefs, `tasks.json` entries). The staff
+   engineer approves both (`staff-approved`) and the gate merges them.
+2. The merge of the plan PR approves the phase.
 3. The first run after that merge creates the milestone and the issues of the
-   new phase.
+   new phase. After the phase-close PR merges, it asks the staff engineer for
+   a `release` record, closes the milestone and pushes the tag `v0.X.0`.
 
-The owner closes the milestone and creates the tag.
+## Approved by the staff engineer
+
+These need a staff-engineer record before the agent does them; the owner is
+not needed:
+
+- changes to `main`: always through a PR merged by the gate (branch
+  protection blocks direct pushes for every account, the owner's included);
+- force-pushing a branch other than `main`; creating or moving tags;
+- PRs that touch protected paths, this policy, the gate and the staff
+  engineer's own definition included.
 
 ## Always forbidden
 
-- Merging a PR directly (outside the gate's auto-merge), pushing to `main`,
-  force-pushing, creating or moving tags.
-- Adding or removing `human-approved`.
+- Merging a PR outside the gate's auto-merge.
+- Adding or removing `human-approved`: it stays the owner's own mark.
 - Using real personal or employer data.

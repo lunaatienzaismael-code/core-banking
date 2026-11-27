@@ -12,7 +12,8 @@ this skill is the procedure. Talk to the user in Spanish when one is present;
 everything written to the repo or to GitHub is in English.
 
 GitHub only through `scripts/gh-rest.sh` (REST). `gh pr …` and `gh issue …`
-do not work in cloud sessions. Never merge, push to `main`, force-push or tag.
+do not work in cloud sessions. Never merge or push to `main`; tags and
+force-pushes only with a staff-engineer record (`AUTONOMY.md`).
 
 ## 0. Lock and reconcile
 
@@ -22,7 +23,7 @@ do not work in cloud sessions. Never merge, push to `main`, force-push or tag.
    `<type>/T-xxx-…`):
    - checks on its `head_sha` (`gh-rest.sh checks`) red → switch to its
      branch and fix it (step 3 on). That is fix attempt 1 or 2. After 2
-     attempts, stop (step 8);
+     attempts, ask the staff engineer (trigger `ci-red`, step 3);
    - checks green or pending → exit with "waiting for PR #n". Do nothing
      else.
 3. `scripts/gh-rest.sh list-issues open agent:running`. An issue with that
@@ -39,6 +40,11 @@ do not work in cloud sessions. Never merge, push to `main`, force-push or tag.
    `gh-rest.sh create-milestone` / `create-issue`, and write the numbers
    into `tasks.json` and the briefs. These edits ride on this run's branch
    too.
+6. A merged phase-close PR whose milestone is still open: delegate to
+   **staff-engineer** with `trigger: release`. On approve, commit its record
+   on this run's branch, then `scripts/gh-rest.sh close-milestone <n>`,
+   `git tag -a v0.X.0 -m "Phase X" origin/main` and
+   `git push origin v0.X.0`.
 
 ## 1. Select
 
@@ -48,11 +54,12 @@ do not work in cloud sessions. Never merge, push to `main`, force-push or tag.
 - None ready, but `todo` tasks wait on unmerged work → exit "waiting".
 - The phase has no task with its `use_case` set (enabling tasks such as
   T-033 or T-034 have `use_case: null` and do not count) → run
-  `/plan-feature UCn`. It ends with a plan PR labelled `needs-human`. Stop.
+  `/plan-feature UCn`. It ends with a plan PR the staff engineer approves
+  (step 7). Stop.
   Check this before the next bullet.
 - Every task of the phase is `done`, its use case included → end of phase (`AUTONOMY.md`): a
   phase-close PR (roadmap tick, `STATE.md`) and the next phase's plan PR
-  (`/plan-feature`), both labelled `needs-human`. Stop.
+  (`/plan-feature`), both approved by the staff engineer (step 7). Stop.
 - Read the task's `brief.md`, including its `## Protected paths` section if
   present.
 
@@ -74,7 +81,7 @@ do not work in cloud sessions. Never merge, push to `main`, force-push or tag.
   (below).
 - **Judgment calls** (`AUTONOMY.md`, "Owner-level decisions"): an
   owner-level decision, a wrong brief, a task too big, an undeclared
-  protected path. Delegate to **staff-engineer** with `question`, `trigger`,
+  protected path, `review-exhausted`, `ci-red`. Delegate to **staff-engineer** with `question`, `trigger`,
   `options` and `context`. Apply its decision: edit the brief, write the
   ADR (`Decided by staff engineer`) or split the task as its record says,
   and commit the record with that change. `escalate` → stop (step 8).
@@ -121,7 +128,13 @@ SHA may touch only `.agents/`.
   `CHANGES`.
 - `scripts/gh-rest.sh comment <pr> --body-file <file>`: the evaluator verdict
   (counts by severity) and the latest `review-N.json` path.
-- `CHANGES` → `scripts/gh-rest.sh label <pr> needs-human`.
+- `CHANGES` → ask the staff engineer (trigger `review-exhausted`, step 3).
+- **Approval** — a PR that touches a protected path, a plan or phase-close
+  PR, or any non-task PR: delegate to **staff-engineer** with
+  `trigger: approve-pr`, the PR number and its head SHA. On `approve`, commit
+  its record (`.agents/` only), push, and only then
+  `scripts/gh-rest.sh label <pr> staff-approved`: every push removes the
+  label. The gate merges. On `reject`, fix and ask again.
 - Set `pr` in `tasks.json`, add it to the bookkeeping commit (amend it if
   not pushed yet, otherwise a new `.agents/`-only commit), push.
 - `scripts/gh-rest.sh unlabel <issue> agent:running`. Report the PR link.

@@ -24,7 +24,8 @@ user in Spanish; everything written to the repo is in English.
 
 Build a compact table: id, type, title, ACs covered, depends on, rough size.
 Check every AC of the use case is covered exactly once. The table goes in the
-plan PR's body. The owner's merge of that PR approves the plan and the phase
+plan PR's body. The staff engineer's approval of that PR (and the gate's merge) approves
+the plan and the phase
 (`AUTONOMY.md`, "End of phase"); there is no OK to wait for in the session.
 
 ## 3. Record
@@ -38,12 +39,12 @@ For each approved task:
 Then append one line to `.agents/progress.md`:
 `<date> · phase <n> · planned · $ARGUMENTS → T-xxx..T-yyy`.
 
-Open the plan PR (ADRs, briefs, `tasks.json`, `progress.md`) labelled
-`needs-human`, and stop.
+Open the plan PR (ADRs, briefs, `tasks.json`, `progress.md`), get the staff engineer's approval as `/run-task` step 7
+says, and stop.
 
 ## 4. GitHub (after the plan PR is merged)
 
-The first run after the owner merges the plan PR creates the GitHub objects,
+The first run after the plan PR is merged creates the GitHub objects,
 through REST:
 
 - Ensure the phase milestone exists (`scripts/gh-rest.sh create-milestone`

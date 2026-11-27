@@ -1,5 +1,8 @@
 # Autonomy migration plan
 
+> Amended on 2026-11-27 by [record 0003](decisions/0003-owner-delegates-all-approvals.md):
+> the staff engineer approves everything the owner used to approve (D1, D3, D5).
+
 Plan to move LedgerFlow's working flow to an autonomous mode that runs in
 Claude Code cloud sessions with scheduled routines, on the Pro plan. Agreed
 with the user on 2026-11-20. **Only the flow changes**: no change to the

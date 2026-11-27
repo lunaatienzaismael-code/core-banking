@@ -26,16 +26,15 @@
       "Bash(scripts/check-task-sync.sh)",
       "Bash(scripts/review-defects.sh)",
       "Bash(scripts/state.sh:*)",
-      "Bash(scripts/guard-paths.sh --check:*)"
+      "Bash(scripts/guard-paths.sh --check:*)",
+      "Bash(git tag -a v*)",
+      "Bash(git push origin v*)"
     ],
     "deny": [
-      "Bash(git push --force:*)",
-      "Bash(git push -f:*)",
       "Bash(git push origin main:*)",
       "Bash(git push origin HEAD:main:*)",
       "Bash(git push origin +*)",
       "Bash(git push --delete:*)",
-      "Bash(git tag:*)",
       "Bash(gh pr merge:*)",
       "Bash(gh api:*merge*)",
       "Bash(gh api:*human-approved*)"
