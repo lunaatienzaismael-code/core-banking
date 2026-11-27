@@ -32,7 +32,7 @@ class AssessRiskService implements AssessRiskUseCase {
         if (!inbox.firstDelivery(command.messageId())) {
             return;
         }
-        switch (amountRule.assess(command.amountMinorUnits())) {
+        switch (amountRule.assess(command.amountMinorUnits(), command.currency())) {
             case RiskDecision.Approved ignored -> replies.approved(command.paymentId());
             case RiskDecision.Rejected rejected ->
                 replies.rejected(command.paymentId(), rejected.reason(), rejected.detail());

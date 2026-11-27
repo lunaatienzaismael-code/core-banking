@@ -24,7 +24,7 @@ class AssessRiskServiceTest {
 
     private final MessageInbox inbox = mock(MessageInbox.class);
     private final RiskReplies replies = mock(RiskReplies.class);
-    private final AssessRiskService service = new AssessRiskService(inbox, new AmountRule(100_000), replies);
+    private final AssessRiskService service = new AssessRiskService(inbox, new AmountRule(100_000, "EUR"), replies);
 
     @Test
     @DisplayName("AC5.1 a payment above the threshold is answered with a rejection")
