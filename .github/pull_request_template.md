@@ -28,6 +28,10 @@ Closes #
 - [ ] ADR added or updated if a significant decision was made
 - [ ] Only fictitious data (IBANs, names, amounts)
 
+## Decisions
+
+<!-- Staff engineer records in .agents/decisions/ applied by this PR, or "None". -->
+
 ## Evaluator verdict
 
 <!-- Verdict and summary from .agents/tasks/<id>/review-N.json -->

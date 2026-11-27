@@ -70,7 +70,15 @@ do not work in cloud sessions. Never merge, push to `main`, force-push or tag.
   `persistence-postgres-liquibase`, `spring-boot-conventions`,
   `kafka-events`). Write the test for each criterion first where practical.
 - Stay inside the brief. Before editing a protected path (`AUTONOMY.md`),
-  check that the brief declares it. If it does not, stop (step 8).
+  check that the brief declares it. If it does not, ask the staff engineer
+  (below).
+- **Judgment calls** (`AUTONOMY.md`, "Owner-level decisions"): an
+  owner-level decision, a wrong brief, a task too big, an undeclared
+  protected path. Delegate to **staff-engineer** with `question`, `trigger`,
+  `options` and `context`. Apply its decision: edit the brief, write the
+  ADR (`Decided by staff engineer`) or split the task as its record says,
+  and commit the record with that change. `escalate` → stop (step 8).
+  Every record of this run goes in the PR body under "Decisions".
 - Commit as you go: atomic Conventional Commits, each one compiling and
   passing its tests. Review evidence is bound to commits, not to the work
   tree.
@@ -120,7 +128,7 @@ SHA may touch only `.agents/`.
 
 ## 8. Stop
 
-On any stop condition in `AUTONOMY.md`:
+On any stop condition in `AUTONOMY.md` (a judgment call is not one: step 3):
 
 - `scripts/gh-rest.sh comment <issue> --body-file <file>` with the reason,
   what was done, and the exact question for the owner;

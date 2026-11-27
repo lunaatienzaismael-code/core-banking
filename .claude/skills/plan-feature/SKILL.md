@@ -16,8 +16,9 @@ user in Spanish; everything written to the repo is in English.
   `docs/roadmap.md` (which phase it belongs to) and `.agents/tasks.json`
   (existing tasks and the next free id).
 - If a decision is missing (e.g. a deferred ADR this use case needs), write
-  it as an ADR per `AUTONOMY.md`: reversible ones `Proposed by agent`; one
-  from the "stop the run" list stops planning and goes to the owner.
+  it as an ADR per `AUTONOMY.md`: reversible ones `Proposed by agent`; an
+  owner-level one goes to the `staff-engineer` subagent and its ADR is
+  `Decided by staff engineer`. Planning stops only if it escalates.
 
 ## 2. Propose
 
