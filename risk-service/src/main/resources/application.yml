@@ -19,6 +19,27 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  kafka:
+    bootstrap-servers: ${RISK_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    # For every client: producers register schemas, consumers look them up.
+    properties:
+      schema.registry.url: ${RISK_SCHEMA_REGISTRY_URL:http://localhost:8085}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      acks: all
+      properties:
+        # Several message types share a topic, so subjects are per topic and type (ADR 0013).
+        value.subject.name.strategy: io.confluent.kafka.serializers.subject.TopicRecordNameStrategy
+    consumer:
+      group-id: risk-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # A payload that cannot be read reaches the error handler, which parks it on the DLT (ADR 0013).
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: io.confluent.kafka.serializers.KafkaAvroDeserializer
+        specific.avro.reader: true
 
 # 8080 is the ledger's and 8081 the payment's, so all services run side by side locally.
 server:
@@ -33,3 +54,21 @@ management:
     health:
       probes:
         enabled: true
+
+# Outbox relay, consumer retries (ADR 0013) and the risk rules (ADR 0014).
+ledgerflow:
+  kafka:
+    retry:
+      max-retries: 3
+      initial-interval: 500ms
+      multiplier: 2.0
+      max-interval: 5s
+  outbox:
+    relay-interval: 500ms
+    batch-size: 100
+    send-timeout: 10s
+    # Any constant unique among the services sharing a database server; "RISK" in ASCII.
+    lock-key: 1380142923
+  risk:
+    # Payments above this amount, in minor units, are rejected: 10 000.00 in a two-decimal currency.
+    amount-limit-minor-units: 1000000
