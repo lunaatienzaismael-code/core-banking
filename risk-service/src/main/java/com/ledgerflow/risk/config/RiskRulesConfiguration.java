@@ -12,6 +12,6 @@ class RiskRulesConfiguration {
 
     @Bean
     AmountRule amountRule(RiskProperties properties) {
-        return new AmountRule(properties.amountLimitMinorUnits());
+        return new AmountRule(properties.amountLimitMinorUnits(), properties.currency());
     }
 }

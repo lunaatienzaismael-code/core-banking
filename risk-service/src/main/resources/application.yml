@@ -72,3 +72,4 @@ ledgerflow:
   risk:
     # Payments above this amount, in minor units, are rejected: 10 000.00 in a two-decimal currency.
     amount-limit-minor-units: 1000000
+    currency: EUR
