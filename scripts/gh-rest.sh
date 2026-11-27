@@ -14,6 +14,7 @@
 #   scripts/gh-rest.sh label <issue-or-pr> <label>...
 #   scripts/gh-rest.sh unlabel <issue-or-pr> <label>
 #   scripts/gh-rest.sh create-milestone <title>
+#   scripts/gh-rest.sh close-milestone <n>
 #   scripts/gh-rest.sh create-issue --title <title> --body-file <file> [--milestone <n>]
 #
 # Output contract (stable; consumed by /run-task, /status, check-task-sync.sh
@@ -26,11 +27,13 @@
 #   comment      {"id","url"}
 #   label/unlabel {"number","labels":[…]}
 #   create-*     {"number","url"}  (milestone: url is null)
+#   close-milestone {"number","state"}
 # Exit code: 0 on success, 2 on GitHub or usage errors, 3 when refused.
 #
 # Refused on purpose (exit 3): adding or removing the label `human-approved`
-# (only the owner sets it, AUTONOMY.md), and any base branch other than main.
-# There is no merge subcommand: merges happen through the Autonomy gate.
+# (the owner's own mark, AUTONOMY.md), and any base branch other than main.
+# `staff-approved` is allowed: the gate accepts it only with a staff-engineer
+# record. There is no merge subcommand: merges happen through the Autonomy gate.
 set -euo pipefail
 
 die() { echo "gh-rest: $*" >&2; exit 2; }
@@ -113,6 +116,10 @@ case "$cmd" in
   create-milestone)
     [[ $# -eq 1 ]] || die "usage: create-milestone <title>"
     api -X POST "repos/{owner}/{repo}/milestones" -f title="$1" --jq '{number, url: null}'
+    ;;
+  close-milestone)
+    [[ $# -eq 1 ]] || die "usage: close-milestone <n>"
+    api -X PATCH "repos/{owner}/{repo}/milestones/$1" -f state=closed --jq '{number, state}'
     ;;
   create-issue)
     title="" body="" milestone=""
