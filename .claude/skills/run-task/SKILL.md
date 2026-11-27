@@ -19,13 +19,54 @@ force-pushes only with a staff-engineer record (`AUTONOMY.md`).
 
 1. `git fetch origin --prune --tags`. The work starts from `origin/main`
    unless step 0.3 resumes a branch.
-2. `scripts/gh-rest.sh list-prs open`. If a task PR is open (head
-   `<type>/T-xxx-…`):
-   - checks on its `head_sha` (`gh-rest.sh checks`) red → switch to its
-     branch and fix it (step 3 on). That is fix attempt 1 or 2. After 2
-     attempts, ask the staff engineer (trigger `ci-red`, step 3);
-   - checks green or pending → exit with "waiting for PR #n". Do nothing
-     else.
+2. `scripts/gh-rest.sh list-prs open`. For each open flow PR (head
+   `<type>/…` of this repository, never `claude/…`; task or non-task), with
+   `H` its `head_sha`, take the first case that applies
+   ([record 0008](../../../.agents/decisions/0008-run-task-rebases-behind-prs.md)):
+   - **Red** checks on `H` (`gh-rest.sh checks`) → switch to its branch and
+     fix it (step 3 on). That is fix attempt 1 or 2. After 2 attempts, ask
+     the staff engineer (trigger `ci-red`, step 3).
+   - **Behind**: `git merge-base --is-ancestor origin/main H` fails, the PR
+     is not a draft, has no `needs-human`, and has an approval path (a body
+     line `Verdict: APPROVE`, or its own approval record at `H`). At most
+     one rebase per run: the lowest-numbered such PR; the others wait.
+     1. `git switch -C <branch> H`, `git rebase origin/main`. Nothing else:
+        no interactive rebase, squash, reword or edit. A conflict, or a
+        commit that becomes empty or is dropped → `git rebase --abort`, do
+        not push, ask the staff engineer (trigger `force-push`, reason
+        `rebase conflict` with the files).
+     2. `git range-diff $(git merge-base origin/main H)..H origin/main..HEAD`.
+     3. `git push --force-with-lease=<branch>:H origin <branch>`. Never a
+        plain `--force`, never another ref.
+     4. `gh-rest.sh comment <pr>`: one line `Rebase: <H> -> <new head> onto
+        <origin/main sha>; range-diff <n>/<n> identical` (or the `!` lines),
+        then the range-diff. That comment is the audit trail.
+     5. Approval:
+        - all `=`, same commit count, task PR on `Verdict: APPROVE` → a new
+          evaluator round on the new head (steps 4–6: test-runner, a new
+          `review-N.json`, an `.agents/`-only bookkeeping commit, a normal
+          push). Log it as `· review-N · rebase ·`; it does not count toward
+          the 3-round cap;
+        - all `=`, same commit count, PR with its own staff approval record
+          → wait in this run until the Autonomy gate check run on the new
+          head has completed, then `gh-rest.sh label <pr> staff-approved`.
+          Never over a red check;
+        - any `!` or a different commit set → no carry-over: a task PR gets a
+          normal evaluator round; a staff-approved PR gets `approve-pr` for
+          the new head with the range-diff in `context`, then commit, push,
+          wait for the gate run, label.
+   - **Recovery** (a run died partway):
+     - a task PR whose latest `review-N.json` head is not an ancestor of `H`
+       (a missing object counts as not an ancestor) → a rebase evaluator
+       round, as above;
+     - a PR with its own approval record, no `staff-approved`, green checks
+       and a completed gate run on `H` → `approve-pr` for `H` (the
+       carry-over cannot be proven any more: fail closed).
+   - **Otherwise** (green or pending, up to date, approved or auto-merge
+     armed) → exit with "waiting for PR #n". Do nothing else.
+
+   CI on the new head must be green before the merge; auto-merge with strict
+   checks enforces it and no step here bypasses it.
 3. `scripts/gh-rest.sh list-issues open agent:running`. An issue with that
    label and no open PR is a run that died. If its task branch exists on
    `origin`, switch to it and resume at the first step not done yet (commits
