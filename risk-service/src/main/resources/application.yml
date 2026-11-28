@@ -73,3 +73,7 @@ ledgerflow:
     # Payments above this amount, in minor units, are rejected: 10 000.00 in a two-decimal currency.
     amount-limit-minor-units: 1000000
     currency: EUR
+    # At most this many payments per debtor per fixed window; the next one is rejected (ADR 0014).
+    velocity:
+      max-transfers: 5
+      window: 1m

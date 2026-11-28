@@ -44,6 +44,9 @@ public class TestcontainersConfiguration {
             registry.add("ledgerflow.kafka.retry.max-interval", () -> "200ms");
             // A small limit keeps test amounts readable.
             registry.add("ledgerflow.risk.amount-limit-minor-units", () -> "100000");
+            // Three transfers per debtor keep the velocity tests short; every test uses its own debtor.
+            registry.add("ledgerflow.risk.velocity.max-transfers", () -> "3");
+            registry.add("ledgerflow.risk.velocity.window", () -> "1m");
         };
     }
 }
