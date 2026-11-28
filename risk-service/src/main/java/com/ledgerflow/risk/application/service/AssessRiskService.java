@@ -47,7 +47,7 @@ class AssessRiskService implements AssessRiskUseCase {
         }
         var decision = amountRule.assess(command.amountMinorUnits(), command.currency());
         if (decision instanceof RiskDecision.Approved) {
-            decision = velocityRule.assess(velocity.increment(command.debtorAccountId()));
+            decision = velocityRule.assess(velocity.increment(command.debtorAccountId(), command.messageId()));
         }
         switch (decision) {
             case RiskDecision.Approved ignored -> replies.approved(command.paymentId());

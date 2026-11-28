@@ -33,7 +33,7 @@ class RedisVelocityCounterIT {
 
         try (var pool = Executors.newFixedThreadPool(threads)) {
             var tasks = IntStream.range(0, threads)
-                    .<Callable<Long>>mapToObj(i -> () -> counter.increment(debtor))
+                    .<Callable<Long>>mapToObj(i -> () -> counter.increment(debtor, UUID.randomUUID()))
                     .toList();
             var counts = pool.invokeAll(tasks).stream()
                     .map(future -> {
@@ -57,18 +57,33 @@ class RedisVelocityCounterIT {
     void counterExpires() {
         var debtor = UUID.randomUUID().toString();
 
-        counter.increment(debtor);
-        counter.increment(debtor);
+        counter.increment(debtor, UUID.randomUUID());
+        counter.increment(debtor, UUID.randomUUID());
 
         var ttl = redis.getExpire("risk:velocity:" + debtor);
         assertThat(ttl).isPositive().isLessThanOrEqualTo(60);
     }
 
     @Test
+    @DisplayName("B1 a retried message is counted once, even when its first attempt was rolled back after counting")
+    void sameMessageIsCountedOnce() {
+        var debtor = UUID.randomUUID().toString();
+        var message = UUID.randomUUID();
+
+        var first = counter.increment(debtor, message);
+        var retry = counter.increment(debtor, message);
+
+        assertThat(first).isEqualTo(1);
+        assertThat(retry).isEqualTo(1);
+        assertThat(counter.increment(debtor, UUID.randomUUID())).isEqualTo(2);
+    }
+
+    @Test
     @DisplayName("counters of different debtors are independent")
     void debtorsAreIndependent() {
-        counter.increment(UUID.randomUUID().toString());
+        counter.increment(UUID.randomUUID().toString(), UUID.randomUUID());
 
-        assertThat(counter.increment(UUID.randomUUID().toString())).isEqualTo(1);
+        assertThat(counter.increment(UUID.randomUUID().toString(), UUID.randomUUID()))
+                .isEqualTo(1);
     }
 }
