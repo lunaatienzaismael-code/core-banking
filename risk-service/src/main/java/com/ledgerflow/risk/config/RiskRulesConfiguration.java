@@ -1,6 +1,7 @@
 package com.ledgerflow.risk.config;
 
 import com.ledgerflow.risk.domain.AmountRule;
+import com.ledgerflow.risk.domain.VelocityRule;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,5 +14,10 @@ class RiskRulesConfiguration {
     @Bean
     AmountRule amountRule(RiskProperties properties) {
         return new AmountRule(properties.amountLimitMinorUnits(), properties.currency());
+    }
+
+    @Bean
+    VelocityRule velocityRule(RiskProperties properties) {
+        return new VelocityRule(properties.velocity().maxTransfers());
     }
 }

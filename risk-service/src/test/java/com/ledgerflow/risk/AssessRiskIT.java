@@ -37,7 +37,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 class AssessRiskIT {
 
     private static final Duration WAIT = Duration.ofSeconds(30);
-    private static final String DEBTOR = "22222222-2222-2222-2222-222222222222";
 
     @Autowired
     private KafkaTemplate<String, Object> kafka;
@@ -47,7 +46,7 @@ class AssessRiskIT {
     void paymentAboveTheThresholdIsRejected() throws Exception {
         var paymentId = UUID.randomUUID().toString();
 
-        send(paymentId, UUID.randomUUID(), 100_001);
+        send(paymentId, UUID.randomUUID(), newDebtor(), 100_001);
 
         var reply = (RiskRejected) repliesFor(paymentId, 1).getFirst();
         assertThat(reply.getReason()).isEqualTo(RiskRejectionReason.AMOUNT_LIMIT_EXCEEDED);
@@ -59,7 +58,7 @@ class AssessRiskIT {
     void paymentAtTheThresholdIsApproved() throws Exception {
         var paymentId = UUID.randomUUID().toString();
 
-        send(paymentId, UUID.randomUUID(), 100_000);
+        send(paymentId, UUID.randomUUID(), newDebtor(), 100_000);
 
         assertThat(repliesFor(paymentId, 1).getFirst()).isInstanceOf(RiskApproved.class);
     }
@@ -69,17 +68,55 @@ class AssessRiskIT {
     void redeliveredMessageIsAnsweredOnce() throws Exception {
         var paymentId = UUID.randomUUID().toString();
         var messageId = UUID.randomUUID();
+        var debtor = newDebtor();
 
-        send(paymentId, messageId, 100_000);
-        send(paymentId, messageId, 100_000);
+        send(paymentId, messageId, debtor, 100_000);
+        send(paymentId, messageId, debtor, 100_000);
 
         assertThat(repliesFor(paymentId, 1)).hasSize(1);
     }
 
-    private void send(String paymentId, UUID messageId, long amount) throws Exception {
+    @Test
+    @DisplayName("AC5.2 after three transfers by one debtor in the window the fourth is rejected")
+    void fourthTransferInTheWindowIsRejected() throws Exception {
+        var debtor = newDebtor();
+        for (int i = 0; i < 3; i++) {
+            var paymentId = UUID.randomUUID().toString();
+            send(paymentId, UUID.randomUUID(), debtor, 1_000);
+            assertThat(repliesFor(paymentId, 1).getFirst()).isInstanceOf(RiskApproved.class);
+        }
+        var fourth = UUID.randomUUID().toString();
+
+        send(fourth, UUID.randomUUID(), debtor, 1_000);
+
+        var reply = (RiskRejected) repliesFor(fourth, 1).getFirst();
+        assertThat(reply.getReason()).isEqualTo(RiskRejectionReason.VELOCITY_LIMIT_EXCEEDED);
+    }
+
+    @Test
+    @DisplayName("B1 a redelivered AssessRisk does not count twice against the velocity limit")
+    void redeliveryDoesNotCountTwice() throws Exception {
+        var debtor = newDebtor();
+        var first = UUID.randomUUID().toString();
+        var messageId = UUID.randomUUID();
+        send(first, messageId, debtor, 1_000);
+        send(first, messageId, debtor, 1_000);
+        repliesFor(first, 1);
+        for (int i = 0; i < 2; i++) {
+            var paymentId = UUID.randomUUID().toString();
+            send(paymentId, UUID.randomUUID(), debtor, 1_000);
+            assertThat(repliesFor(paymentId, 1).getFirst()).isInstanceOf(RiskApproved.class);
+        }
+    }
+
+    private static String newDebtor() {
+        return UUID.randomUUID().toString();
+    }
+
+    private void send(String paymentId, UUID messageId, String debtor, long amount) throws Exception {
         var command = AssessRisk.newBuilder()
                 .setPaymentId(paymentId)
-                .setDebtorAccountId(DEBTOR)
+                .setDebtorAccountId(debtor)
                 .setAmountMinorUnits(amount)
                 .setCurrency("EUR")
                 .build();
