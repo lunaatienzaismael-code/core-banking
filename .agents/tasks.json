@@ -497,7 +497,7 @@
       "phase": 8,
       "use_case": "UC5",
       "type": "feat",
-      "status": "in_review",
+      "status": "done",
       "depends_on": [
         "T-035"
       ],
@@ -515,7 +515,7 @@
       "phase": 8,
       "use_case": "UC5",
       "type": "feat",
-      "status": "todo",
+      "status": "in_progress",
       "depends_on": [
         "T-036"
       ],
