@@ -121,19 +121,24 @@ technical error handled by retries (ADR 0013), never a business outcome.
 | Payment status | Input | Transition (ADR 0011) | Next message |
 |----------------|-------|-----------------------|--------------|
 | — | `POST /payments` | creates `INITIATED` | `PaymentInitiated` event |
-| `INITIATED` | `PaymentInitiated` | `approveRisk` → `RISK_APPROVED` | `ReserveFunds` |
+| `INITIATED` | `PaymentInitiated` | none | `AssessRisk` (to `risk-service`, ADR 0014) |
+| `INITIATED` | `RiskApproved` | `approveRisk` → `RISK_APPROVED` | `ReserveFunds` |
+| `INITIATED` | `RiskRejected` | `reject(reason)` → `REJECTED` | — |
 | `RISK_APPROVED` | `FundsReserved` | `reserveFunds` → `FUNDS_RESERVED` | `PostTransfer` |
 | `RISK_APPROVED` | `ReservationRefused` | `reject(reason)` → `REJECTED` | — |
 | `FUNDS_RESERVED` | `TransferPosted` | `complete` → `COMPLETED` | — |
 | `FUNDS_RESERVED` | `PostingRefused` | none | `ReleaseFunds` (carries the reason) |
 | `FUNDS_RESERVED` | `FundsReleased` | `fail(reason)` → `FAILED` | — |
 
-- **Risk step.** Initiation commits the payment and a `PaymentInitiated`
-  event; the orchestrator consumes it, approves risk and sends `ReserveFunds`.
-  Until Phase 8 every payment is approved. Phase 8 replaces the approval with
-  a request to `risk-service` at the same point, and `PaymentInitiated` is
-  the event a notification service can already consume. `POST /payments` keeps
-  answering `INITIATED` (UC3).
+- **Risk step (Phase 8, ADR 0014).** Initiation commits the payment and a
+  `PaymentInitiated` event; the orchestrator consumes it and sends `AssessRisk`
+  on `risk.commands`, leaving the payment `INITIATED`. `ReserveFunds` is sent
+  only after `RiskApproved` arrives on `risk.replies`; `RiskRejected` rejects
+  the payment with the reason and no funds are ever reserved. The saga used to
+  approve every payment at this point. `PaymentInitiated` stays the event a
+  notification service can consume. `POST /payments` keeps answering
+  `INITIATED` (UC3). A redelivered reply, or one that arrives when the payment
+  is no longer `INITIATED`, is recorded and ignored like any stale input.
 - **One step, one local transaction.** Each row of the table is one database
   transaction in `payment-service`: record the incoming message as processed,
   apply the transition, write the next message to the outbox (ADR 0013). The
@@ -170,7 +175,7 @@ pending" from "reserved, release pending" — then ADR 0011 gains `RELEASING`.
   like any other, so postings sum to zero per currency, reserved money
   included. A reconciliation can also compare the transit balance with the
   sum of `FUNDS_RESERVED` payments.
-- Phase 8 changes one saga step (risk) without touching the others.
+- Phase 8 changed one saga step (risk) without touching the others.
 
 ## References
 

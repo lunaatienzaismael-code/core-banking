@@ -72,8 +72,8 @@ payment row.
 
 | From | To | Event (method) | Driven by |
 |------|----|----------------|-----------|
-| `INITIATED` | `RISK_APPROVED` | `approveRisk` | risk step (Phase 8; until then the saga approves every payment) |
-| `INITIATED` | `REJECTED` | `reject` | risk step or saga validation |
+| `INITIATED` | `RISK_APPROVED` | `approveRisk` | saga, after `risk-service` replied `RiskApproved` (ADR 0014) |
+| `INITIATED` | `REJECTED` | `reject` | saga, after `risk-service` replied `RiskRejected` (ADR 0014) |
 | `RISK_APPROVED` | `FUNDS_RESERVED` | `reserveFunds` | saga, after the ledger reserved the funds |
 | `RISK_APPROVED` | `REJECTED` | `reject` | saga, when the ledger refuses the reservation |
 | `FUNDS_RESERVED` | `COMPLETED` | `complete` | saga, after the transfer is posted |
