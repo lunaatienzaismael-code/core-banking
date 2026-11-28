@@ -165,3 +165,5 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-11-28 · T-037 · review-1 · request_changes (1 blocker, 1 major, 1 minor)
 2026-11-28 · T-037 · review-2 · approve (0 blockers, 0 majors, 0 minors)
 2026-11-28 · T-037 · in_review · feat/T-037-risk-velocity-rule
+2026-11-28 · T-037 · done · PR #99 merged
+2026-11-28 · T-038 · started · branch feat/T-038-saga-risk-step
