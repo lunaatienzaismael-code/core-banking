@@ -169,3 +169,4 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-11-28 · T-038 · started · branch feat/T-038-saga-risk-step
 2026-11-28 · T-038 · review-1 · approve (0 blockers, 0 majors, 0 minors)
 2026-11-28 · T-038 · in_review · feat/T-038-saga-risk-step
+2026-11-28 · T-038 · note · e2e stack work (risk-service Dockerfile, Redis/DB in LedgerFlowStack, CI image build) moved here from T-039 per decision 0010; T-039 keeps the rejection and approved-path smoke tests
