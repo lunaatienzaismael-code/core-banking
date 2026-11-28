@@ -3,6 +3,7 @@ package com.ledgerflow.payment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.ledgerflow.messaging.AssessRisk;
 import com.ledgerflow.messaging.FundsReleased;
 import com.ledgerflow.messaging.FundsReserved;
 import com.ledgerflow.messaging.PostTransfer;
@@ -11,6 +12,9 @@ import com.ledgerflow.messaging.RefusalReason;
 import com.ledgerflow.messaging.ReleaseFunds;
 import com.ledgerflow.messaging.ReservationRefused;
 import com.ledgerflow.messaging.ReserveFunds;
+import com.ledgerflow.messaging.RiskApproved;
+import com.ledgerflow.messaging.RiskRejected;
+import com.ledgerflow.messaging.RiskRejectionReason;
 import com.ledgerflow.messaging.TransferPosted;
 import com.ledgerflow.messaging.outbox.OutboxHeaders;
 import com.ledgerflow.messaging.testing.MessagingContainers;
@@ -86,14 +90,20 @@ class PaymentSagaIT {
     private final HttpClient http = HttpClient.newHttpClient();
     private final JsonMapper json = JsonMapper.builder().build();
     private KafkaConsumer<String, Object> ledgerCommands;
+    private KafkaConsumer<String, Object> riskCommands;
 
     @BeforeEach
-    void listenAsTheLedger() {
-        ledgerCommands = new KafkaConsumer<>(Map.of(
+    void listenAsTheLedgerAndRisk() {
+        ledgerCommands = consumerOf("ledger.commands");
+        riskCommands = consumerOf("risk.commands");
+    }
+
+    private static KafkaConsumer<String, Object> consumerOf(String topic) {
+        var consumer = new KafkaConsumer<String, Object>(Map.of(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 MessagingContainers.bootstrapServers(),
                 ConsumerConfig.GROUP_ID_CONFIG,
-                "fake-ledger-" + UUID.randomUUID(),
+                "fake-" + topic + "-" + UUID.randomUUID(),
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
                 "earliest",
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
@@ -104,12 +114,14 @@ class PaymentSagaIT {
                 MessagingContainers.schemaRegistryUrl(),
                 KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG,
                 true));
-        ledgerCommands.subscribe(List.of("ledger.commands"));
+        consumer.subscribe(List.of(topic));
+        return consumer;
     }
 
     @AfterEach
     void stopListening() {
         ledgerCommands.close();
+        riskCommands.close();
     }
 
     @Test
@@ -119,6 +131,7 @@ class PaymentSagaIT {
         var debtor = UUID.randomUUID();
         var creditor = UUID.randomUUID();
         var paymentId = initiate(debtor, creditor, 2_500);
+        approveRisk(paymentId);
 
         var reserve = nextCommandFor(paymentId, ReserveFunds.class);
         assertThat(reserve.getDebtorAccountId()).isEqualTo(debtor.toString());
@@ -145,9 +158,85 @@ class PaymentSagaIT {
     }
 
     @Test
+    @DisplayName("AC5.3 the saga asks risk first: AssessRisk is sent, ReserveFunds only after RiskApproved")
+    void fundsAreReservedOnlyAfterRiskApproves() throws Exception {
+        var debtor = UUID.randomUUID();
+        var paymentId = initiate(debtor, UUID.randomUUID(), 2_500);
+
+        var assess = nextCommandFor(riskCommands, paymentId, AssessRisk.class);
+        assertThat(assess.getDebtorAccountId()).isEqualTo(debtor.toString());
+        assertThat(assess.getAmountMinorUnits()).isEqualTo(2_500L);
+        assertThat(assess.getCurrency()).isEqualTo("EUR");
+        assertThat(status(paymentId)).isEqualTo("INITIATED");
+        assertThat(commandsSentFor(paymentId)).isZero();
+
+        riskReply(
+                paymentId,
+                UUID.randomUUID(),
+                RiskApproved.newBuilder().setPaymentId(paymentId).build());
+
+        nextCommandFor(paymentId, ReserveFunds.class);
+        assertThat(status(paymentId)).isEqualTo("RISK_APPROVED");
+    }
+
+    @Test
+    @DisplayName("AC5.3 RiskRejected: REJECTED with the reason, and no funds are ever reserved")
+    void riskRejectionRejectsThePaymentWithoutReserving() throws Exception {
+        var paymentId = initiate(UUID.randomUUID(), UUID.randomUUID(), 2_500);
+        nextCommandFor(riskCommands, paymentId, AssessRisk.class);
+        var rejectionId = UUID.randomUUID();
+
+        riskReply(
+                paymentId,
+                rejectionId,
+                RiskRejected.newBuilder()
+                        .setPaymentId(paymentId)
+                        .setReason(RiskRejectionReason.AMOUNT_LIMIT_EXCEEDED)
+                        .setDetail("Amount 2500 exceeds the limit")
+                        .build());
+
+        await(() -> "REJECTED".equals(status(paymentId)));
+        assertThat(payment(paymentId).get("reason").asString())
+                .isEqualTo("AMOUNT_LIMIT_EXCEEDED: Amount 2500 exceeds the limit");
+        assertThat(commandsSentFor(paymentId)).isZero();
+    }
+
+    @Test
+    @DisplayName("B1 a redelivered or stale risk reply is ignored: one ReserveFunds, status unchanged")
+    void redeliveredAndStaleRiskRepliesChangeNothing() throws Exception {
+        var paymentId = initiate(UUID.randomUUID(), UUID.randomUUID(), 2_500);
+        nextCommandFor(riskCommands, paymentId, AssessRisk.class);
+        var approvalId = UUID.randomUUID();
+        var staleId = UUID.randomUUID();
+
+        riskReply(
+                paymentId,
+                approvalId,
+                RiskApproved.newBuilder().setPaymentId(paymentId).build());
+        riskReply(
+                paymentId,
+                approvalId,
+                RiskApproved.newBuilder().setPaymentId(paymentId).build());
+        // Stale once RISK_APPROVED; on the same key, so once it is recorded both approvals were processed.
+        riskReply(
+                paymentId,
+                staleId,
+                RiskRejected.newBuilder()
+                        .setPaymentId(paymentId)
+                        .setReason(RiskRejectionReason.VELOCITY_LIMIT_EXCEEDED)
+                        .setDetail("late")
+                        .build());
+
+        await(() -> processed(staleId));
+        assertThat(status(paymentId)).isEqualTo("RISK_APPROVED");
+        assertThat(commandsSentFor(paymentId)).isOne();
+    }
+
+    @Test
     @DisplayName("B2 reservation refused: REJECTED with the reason, and no transfer is ever requested")
     void refusedReservationRejectsThePayment() throws Exception {
         var paymentId = initiate(UUID.randomUUID(), UUID.randomUUID(), 2_500);
+        approveRisk(paymentId);
         nextCommandFor(paymentId, ReserveFunds.class);
 
         reply(
@@ -169,6 +258,7 @@ class PaymentSagaIT {
     @DisplayName("B3 a redelivered reply does not re-run its step; a stale reply afterwards is ignored")
     void redeliveredAndStaleRepliesChangeNothing() throws Exception {
         var paymentId = initiate(UUID.randomUUID(), UUID.randomUUID(), 2_500);
+        approveRisk(paymentId);
         nextCommandFor(paymentId, ReserveFunds.class);
         var replyId = UUID.randomUUID();
         var staleId = UUID.randomUUID();
@@ -196,6 +286,7 @@ class PaymentSagaIT {
             "B4 a transition that loses an optimistic-lock race commits nothing: no status, no command, no inbox row")
     void transitionLosingTheOptimisticLockCommitsNothing() throws Exception {
         var paymentId = initiate(UUID.randomUUID(), UUID.randomUUID(), 2_500);
+        approveRisk(paymentId);
         nextCommandFor(paymentId, ReserveFunds.class);
         var id = new PaymentId(UUID.fromString(paymentId));
         var losingInput = UUID.randomUUID();
@@ -225,6 +316,7 @@ class PaymentSagaIT {
     void refusedPostingIsCompensated() throws Exception {
         var debtor = UUID.randomUUID();
         var paymentId = initiate(debtor, UUID.randomUUID(), 2_500);
+        approveRisk(paymentId);
         nextCommandFor(paymentId, ReserveFunds.class);
         reply(paymentId, UUID.randomUUID(), fundsReserved(paymentId));
         nextCommandFor(paymentId, PostTransfer.class);
@@ -256,6 +348,7 @@ class PaymentSagaIT {
     @DisplayName("B1 a redelivered PostingRefused sends no second release")
     void redeliveredPostingRefusedSendsNoSecondRelease() throws Exception {
         var paymentId = initiate(UUID.randomUUID(), UUID.randomUUID(), 2_500);
+        approveRisk(paymentId);
         nextCommandFor(paymentId, ReserveFunds.class);
         reply(paymentId, UUID.randomUUID(), fundsReserved(paymentId));
         nextCommandFor(paymentId, PostTransfer.class);
@@ -315,9 +408,28 @@ class PaymentSagaIT {
     }
 
     private <T> T nextCommandFor(String paymentId, Class<T> type) {
+        return nextCommandFor(ledgerCommands, paymentId, type);
+    }
+
+    /** The risk-service's side: the payment is approved, so the saga may go on. */
+    private void approveRisk(String paymentId) throws Exception {
+        nextCommandFor(riskCommands, paymentId, AssessRisk.class);
+        riskReply(
+                paymentId,
+                UUID.randomUUID(),
+                RiskApproved.newBuilder().setPaymentId(paymentId).build());
+    }
+
+    private void riskReply(String paymentId, UUID messageId, SpecificRecord reply) throws Exception {
+        var record = new ProducerRecord<String, Object>("risk.replies", paymentId, reply);
+        record.headers().add(OutboxHeaders.MESSAGE_ID, messageId.toString().getBytes(StandardCharsets.UTF_8));
+        kafka.send(record).get();
+    }
+
+    private static <T> T nextCommandFor(KafkaConsumer<String, Object> consumer, String paymentId, Class<T> type) {
         var deadline = Instant.now().plus(WAIT);
         while (Instant.now().isBefore(deadline)) {
-            for (var record : ledgerCommands.poll(Duration.ofMillis(500))) {
+            for (var record : consumer.poll(Duration.ofMillis(500))) {
                 if (paymentId.equals(record.key())) {
                     assertThat(record.value()).isInstanceOf(type);
                     return type.cast(record.value());

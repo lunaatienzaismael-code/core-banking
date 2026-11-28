@@ -17,6 +17,9 @@ class SagaInputTest {
         return Stream.of(
                 Arguments.of(
                         "PaymentInitiated", (BiFunction<UUID, PaymentId, SagaInput>) SagaInput.PaymentInitiated::new),
+                Arguments.of("RiskApproved", (BiFunction<UUID, PaymentId, SagaInput>) SagaInput.RiskApproved::new),
+                Arguments.of("RiskRejected", (BiFunction<UUID, PaymentId, SagaInput>) (messageId, paymentId) ->
+                        new SagaInput.RiskRejected(messageId, paymentId, "AMOUNT_LIMIT_EXCEEDED", "-")),
                 Arguments.of("FundsReserved", (BiFunction<UUID, PaymentId, SagaInput>) SagaInput.FundsReserved::new),
                 Arguments.of("TransferPosted", (BiFunction<UUID, PaymentId, SagaInput>) SagaInput.TransferPosted::new),
                 Arguments.of("ReservationRefused", (BiFunction<UUID, PaymentId, SagaInput>) (messageId, paymentId) ->
@@ -56,6 +59,15 @@ class SagaInputTest {
     void aReleaseNeedsTheReasonItCarried() {
         assertThatThrownBy(() -> new SagaInput.FundsReleased(UUID.randomUUID(), PaymentId.random(), null))
                 .hasMessage("reason");
+    }
+
+    @Test
+    void aRiskRejectionNeedsItsReasonAndDetail() {
+        assertThatThrownBy(() -> new SagaInput.RiskRejected(UUID.randomUUID(), PaymentId.random(), null, "-"))
+                .hasMessage("reason");
+        assertThatThrownBy(() -> new SagaInput.RiskRejected(
+                        UUID.randomUUID(), PaymentId.random(), "AMOUNT_LIMIT_EXCEEDED", null))
+                .hasMessage("detail");
     }
 
     @Test
