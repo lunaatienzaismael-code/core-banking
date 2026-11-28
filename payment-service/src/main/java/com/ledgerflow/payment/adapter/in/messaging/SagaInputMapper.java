@@ -5,13 +5,15 @@ import com.ledgerflow.messaging.FundsReserved;
 import com.ledgerflow.messaging.PaymentInitiated;
 import com.ledgerflow.messaging.PostingRefused;
 import com.ledgerflow.messaging.ReservationRefused;
+import com.ledgerflow.messaging.RiskApproved;
+import com.ledgerflow.messaging.RiskRejected;
 import com.ledgerflow.messaging.TransferPosted;
 import com.ledgerflow.payment.application.port.in.SagaInput;
 import com.ledgerflow.payment.domain.PaymentId;
 import java.util.UUID;
 
 /**
- * Avro contract → saga input. A message of another type, or with an id that is not a UUID, throws: it is a poison
+ * Avro contract → saga input (payment events, risk and ledger replies). A message of another type, or with an id that is not a UUID, throws: it is a poison
  * message, which the error handler parks on the dead-letter topic without retrying.
  */
 final class SagaInputMapper {
@@ -21,6 +23,13 @@ final class SagaInputMapper {
     static SagaInput toInput(UUID messageId, Object message) {
         return switch (message) {
             case PaymentInitiated event -> new SagaInput.PaymentInitiated(messageId, paymentId(event.getPaymentId()));
+            case RiskApproved reply -> new SagaInput.RiskApproved(messageId, paymentId(reply.getPaymentId()));
+            case RiskRejected reply ->
+                new SagaInput.RiskRejected(
+                        messageId,
+                        paymentId(reply.getPaymentId()),
+                        reply.getReason().name(),
+                        reply.getDetail());
             case FundsReserved reply -> new SagaInput.FundsReserved(messageId, paymentId(reply.getPaymentId()));
             case ReservationRefused reply ->
                 new SagaInput.ReservationRefused(

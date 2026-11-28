@@ -515,7 +515,7 @@
       "phase": 8,
       "use_case": "UC5",
       "type": "feat",
-      "status": "in_review",
+      "status": "done",
       "depends_on": [
         "T-036"
       ],
@@ -533,7 +533,7 @@
       "phase": 8,
       "use_case": "UC5",
       "type": "feat",
-      "status": "todo",
+      "status": "in_review",
       "depends_on": [
         "T-036"
       ],
@@ -542,8 +542,8 @@
       ],
       "issue": 90,
       "branch": "feat/T-038-saga-risk-step",
-      "pr": null,
-      "review_rounds": 0
+      "pr": 100,
+      "review_rounds": 2
     },
     {
       "id": "T-039",

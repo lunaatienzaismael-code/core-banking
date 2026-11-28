@@ -50,6 +50,14 @@ class KafkaErrorHandlingConfiguration {
     }
 
     @Bean
+    NewTopic riskRepliesDeadLetterTopic() {
+        return TopicBuilder.name("risk.replies" + DeadLetters.SUFFIX)
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
     NewTopic ledgerRepliesDeadLetterTopic() {
         return TopicBuilder.name("ledger.replies" + DeadLetters.SUFFIX)
                 .partitions(3)

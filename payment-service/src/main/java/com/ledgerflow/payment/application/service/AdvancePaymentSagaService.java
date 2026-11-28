@@ -7,10 +7,13 @@ import com.ledgerflow.payment.application.port.in.SagaInput.FundsReserved;
 import com.ledgerflow.payment.application.port.in.SagaInput.PaymentInitiated;
 import com.ledgerflow.payment.application.port.in.SagaInput.PostingRefused;
 import com.ledgerflow.payment.application.port.in.SagaInput.ReservationRefused;
+import com.ledgerflow.payment.application.port.in.SagaInput.RiskApproved;
+import com.ledgerflow.payment.application.port.in.SagaInput.RiskRejected;
 import com.ledgerflow.payment.application.port.in.SagaInput.TransferPosted;
 import com.ledgerflow.payment.application.port.out.LedgerCommands;
 import com.ledgerflow.payment.application.port.out.MessageInbox;
 import com.ledgerflow.payment.application.port.out.PaymentRepository;
+import com.ledgerflow.payment.application.port.out.RiskCommands;
 import com.ledgerflow.payment.domain.PaymentNotFoundException;
 import com.ledgerflow.payment.domain.PaymentStatus;
 import org.slf4j.Logger;
@@ -31,11 +34,14 @@ class AdvancePaymentSagaService implements AdvancePaymentSagaUseCase {
 
     private final MessageInbox inbox;
     private final PaymentRepository payments;
+    private final RiskCommands risk;
     private final LedgerCommands ledger;
 
-    AdvancePaymentSagaService(MessageInbox inbox, PaymentRepository payments, LedgerCommands ledger) {
+    AdvancePaymentSagaService(
+            MessageInbox inbox, PaymentRepository payments, RiskCommands risk, LedgerCommands ledger) {
         this.inbox = inbox;
         this.payments = payments;
+        this.risk = risk;
         this.ledger = ledger;
     }
 
@@ -57,10 +63,15 @@ class AdvancePaymentSagaService implements AdvancePaymentSagaUseCase {
         }
         switch (input) {
             case PaymentInitiated ignored -> {
-                // Until the risk check exists (Phase 8), every payment is approved (ADR 0012).
+                // The payment stays INITIATED until risk-service answers (ADR 0014); nothing to store meanwhile.
+                risk.assess(payment);
+                return;
+            }
+            case RiskApproved ignored -> {
                 payment.approveRisk();
                 ledger.reserveFunds(payment);
             }
+            case RiskRejected rejected -> payment.reject(rejected.reason() + ": " + rejected.detail());
             case FundsReserved ignored -> {
                 payment.reserveFunds();
                 ledger.postTransfer(payment);
@@ -82,6 +93,8 @@ class AdvancePaymentSagaService implements AdvancePaymentSagaUseCase {
     private static PaymentStatus expectedStatusOf(SagaInput input) {
         return switch (input) {
             case PaymentInitiated ignored -> PaymentStatus.INITIATED;
+            case RiskApproved ignored -> PaymentStatus.INITIATED;
+            case RiskRejected ignored -> PaymentStatus.INITIATED;
             case FundsReserved ignored -> PaymentStatus.RISK_APPROVED;
             case ReservationRefused ignored -> PaymentStatus.RISK_APPROVED;
             case TransferPosted ignored -> PaymentStatus.FUNDS_RESERVED;

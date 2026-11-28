@@ -14,10 +14,26 @@ public sealed interface SagaInput {
 
     PaymentId paymentId();
 
-    /** The payment was initiated; the saga approves risk and asks the ledger to reserve funds. */
+    /** The payment was initiated; the saga asks risk-service to assess it (ADR 0014). */
     record PaymentInitiated(UUID messageId, PaymentId paymentId) implements SagaInput {
         public PaymentInitiated {
             requireIds(messageId, paymentId);
+        }
+    }
+
+    /** risk-service found no objection; the saga may ask the ledger to reserve funds. */
+    record RiskApproved(UUID messageId, PaymentId paymentId) implements SagaInput {
+        public RiskApproved {
+            requireIds(messageId, paymentId);
+        }
+    }
+
+    /** risk-service rejected the payment, for {@code reason} (e.g. AMOUNT_LIMIT_EXCEEDED), explained by {@code detail}. */
+    record RiskRejected(UUID messageId, PaymentId paymentId, String reason, String detail) implements SagaInput {
+        public RiskRejected {
+            requireIds(messageId, paymentId);
+            Objects.requireNonNull(reason, "reason");
+            Objects.requireNonNull(detail, "detail");
         }
     }
 

@@ -3,6 +3,7 @@ package com.ledgerflow.payment;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.ledgerflow.messaging.FundsReserved;
+import com.ledgerflow.messaging.RiskApproved;
 import com.ledgerflow.messaging.outbox.OutboxHeaders;
 import com.ledgerflow.messaging.testing.MessagingContainers;
 import java.net.URI;
@@ -57,6 +58,7 @@ class DeadLetterIT {
             "AC4.4 an undeserialisable reply is parked on the DLT with its key and bytes; the next reply moves the payment on")
     void undeserialisableReplyIsParkedAndThePartitionMovesOn() throws Exception {
         var paymentId = initiate();
+        approveRisk(paymentId);
         await(() -> "RISK_APPROVED".equals(status(paymentId)));
         var poison = "not avro".getBytes(StandardCharsets.UTF_8);
 
@@ -91,6 +93,17 @@ class DeadLetterIT {
 
         assertThat(header(deadLetterFor(paymentId), "kafka_dlt-exception-cause-fqcn"))
                 .contains("IllegalArgumentException");
+    }
+
+    /** The test plays risk-service: the saga only moves on from INITIATED after RiskApproved (ADR 0014). */
+    private void approveRisk(String paymentId) throws Exception {
+        var record = new ProducerRecord<String, Object>(
+                "risk.replies",
+                paymentId,
+                RiskApproved.newBuilder().setPaymentId(paymentId).build());
+        record.headers()
+                .add(OutboxHeaders.MESSAGE_ID, UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8));
+        kafka.send(record).get();
     }
 
     private static FundsReserved fundsReserved(String paymentId) {

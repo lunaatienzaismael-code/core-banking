@@ -12,8 +12,8 @@ import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * Both services as their Docker images, each with its own PostgreSQL (ADR 0004), plus Kafka and Schema Registry, on one
- * network; started once per JVM on first use. Wired as {@code infra/docker-compose.yml} wires them, through the
+ * The three services as their Docker images, each with its own PostgreSQL (ADR 0004), plus Redis for risk-service, Kafka
+ * and Schema Registry, on one network; started once per JVM on first use. Wired as {@code infra/docker-compose.yml} wires them, through the
  * services' own environment variables.
  *
  * <p>The service images are built from their Dockerfiles beforehand, by {@code scripts/e2e.sh} or CI, as
@@ -26,6 +26,8 @@ final class LedgerFlowStack {
     private static final String SCHEMA_REGISTRY_URL = "http://schema-registry:8081";
     private static final int LEDGER_PORT = 8080;
     private static final int PAYMENT_PORT = 8081;
+    private static final int RISK_PORT = 8082;
+    private static final String REDIS_IMAGE = "redis:8-alpine";
     // Liquibase, Kafka clients and Spring on a cold container; well above a warm start.
     private static final Duration SERVICE_STARTUP = Duration.ofMinutes(2);
 
@@ -49,6 +51,14 @@ final class LedgerFlowStack {
     private static final PostgreSQLContainer LEDGER_DB = database("ledger");
     private static final PostgreSQLContainer PAYMENT_DB = database("payment");
 
+    private static final PostgreSQLContainer RISK_DB = database("risk");
+
+    private static final GenericContainer<?> REDIS = new GenericContainer<>(REDIS_IMAGE)
+            .withNetwork(NETWORK)
+            .withNetworkAliases("redis")
+            .withExposedPorts(6379)
+            .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*", 1));
+
     private static final GenericContainer<?> LEDGER =
             service("ledger-service", "LEDGER", LEDGER_PORT, "ledger").dependsOn(LEDGER_DB, SCHEMA_REGISTRY);
 
@@ -56,8 +66,14 @@ final class LedgerFlowStack {
     private static final GenericContainer<?> PAYMENT = service("payment-service", "PAYMENT", PAYMENT_PORT, "payment")
             .dependsOn(PAYMENT_DB, SCHEMA_REGISTRY, LEDGER);
 
+    // Payment's saga asks risk-service before reserving funds (ADR 0014), so the payment needs it to move on.
+    private static final GenericContainer<?> RISK = service("risk-service", "RISK", RISK_PORT, "risk")
+            .withEnv("RISK_REDIS_HOST", "redis")
+            .withEnv("RISK_REDIS_PORT", "6379")
+            .dependsOn(RISK_DB, REDIS, SCHEMA_REGISTRY, LEDGER);
+
     static {
-        Startables.deepStart(PAYMENT).join();
+        Startables.deepStart(PAYMENT, RISK).join();
     }
 
     private LedgerFlowStack() {}

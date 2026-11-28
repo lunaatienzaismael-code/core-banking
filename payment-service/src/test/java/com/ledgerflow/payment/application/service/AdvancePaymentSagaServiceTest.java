@@ -13,6 +13,7 @@ import com.ledgerflow.payment.application.port.in.SagaInput;
 import com.ledgerflow.payment.application.port.out.LedgerCommands;
 import com.ledgerflow.payment.application.port.out.MessageInbox;
 import com.ledgerflow.payment.application.port.out.PaymentRepository;
+import com.ledgerflow.payment.application.port.out.RiskCommands;
 import com.ledgerflow.payment.domain.AccountId;
 import com.ledgerflow.payment.domain.Money;
 import com.ledgerflow.payment.domain.Payment;
@@ -38,8 +39,9 @@ class AdvancePaymentSagaServiceTest {
 
     private final MessageInbox inbox = mock(MessageInbox.class);
     private final PaymentRepository payments = mock(PaymentRepository.class);
+    private final RiskCommands risk = mock(RiskCommands.class);
     private final LedgerCommands ledger = mock(LedgerCommands.class);
-    private final AdvancePaymentSagaService saga = new AdvancePaymentSagaService(inbox, payments, ledger);
+    private final AdvancePaymentSagaService saga = new AdvancePaymentSagaService(inbox, payments, risk, ledger);
 
     @BeforeEach
     void firstDeliveryUnlessATestSaysOtherwise() {
@@ -47,15 +49,43 @@ class AdvancePaymentSagaServiceTest {
     }
 
     @Test
-    @DisplayName("ADR 0012 PaymentInitiated approves risk and asks the ledger to reserve funds")
-    void initiatedPaymentIsApprovedAndItsFundsRequested() {
+    @DisplayName("AC5.3 PaymentInitiated asks risk-service to assess the payment and reserves nothing")
+    void initiatedPaymentIsSentToRisk() {
         var payment = stored(PaymentStatus.INITIATED);
 
         saga.advance(new SagaInput.PaymentInitiated(UUID.randomUUID(), payment.id()));
 
+        assertThat(payment.status()).isEqualTo(PaymentStatus.INITIATED);
+        verify(risk).assess(payment);
+        verifyNoInteractions(ledger);
+        verify(payments, never()).update(any());
+    }
+
+    @Test
+    @DisplayName("AC5.3 RiskApproved approves the payment and only then asks the ledger to reserve funds")
+    void approvedRiskLeadsToTheReservation() {
+        var payment = stored(PaymentStatus.INITIATED);
+
+        saga.advance(new SagaInput.RiskApproved(UUID.randomUUID(), payment.id()));
+
         assertThat(payment.status()).isEqualTo(PaymentStatus.RISK_APPROVED);
         verify(ledger).reserveFunds(payment);
         verify(ledger, never()).postTransfer(any());
+        verifyNoInteractions(risk);
+        verify(payments).update(payment);
+    }
+
+    @Test
+    @DisplayName("AC5.3 RiskRejected rejects the payment with the reason and reserves no funds")
+    void rejectedRiskRejectsThePaymentWithoutReserving() {
+        var payment = stored(PaymentStatus.INITIATED);
+
+        saga.advance(new SagaInput.RiskRejected(
+                UUID.randomUUID(), payment.id(), "AMOUNT_LIMIT_EXCEEDED", "Amount 2500 exceeds the limit"));
+
+        assertThat(payment.status()).isEqualTo(PaymentStatus.REJECTED);
+        assertThat(payment.reason()).contains("AMOUNT_LIMIT_EXCEEDED: Amount 2500 exceeds the limit");
+        verifyNoInteractions(ledger);
         verify(payments).update(payment);
     }
 
@@ -146,7 +176,7 @@ class AdvancePaymentSagaServiceTest {
 
         saga.advance(new SagaInput.FundsReserved(UUID.randomUUID(), PaymentId.random()));
 
-        verifyNoInteractions(payments, ledger);
+        verifyNoInteractions(payments, ledger, risk);
     }
 
     @ParameterizedTest(name = "{0} in {1}")
@@ -159,7 +189,7 @@ class AdvancePaymentSagaServiceTest {
         saga.advance(INPUTS.get(input).apply(payment.id()));
 
         assertThat(payment.status()).isEqualTo(status);
-        verifyNoInteractions(ledger);
+        verifyNoInteractions(ledger, risk);
         verify(payments, never()).update(any());
     }
 
@@ -175,16 +205,20 @@ class AdvancePaymentSagaServiceTest {
 
     private static final Map<String, Function<PaymentId, SagaInput>> INPUTS = Map.of(
             "PaymentInitiated", id -> new SagaInput.PaymentInitiated(UUID.randomUUID(), id),
+            "RiskApproved", id -> new SagaInput.RiskApproved(UUID.randomUUID(), id),
+            "RiskRejected", id -> new SagaInput.RiskRejected(UUID.randomUUID(), id, "AMOUNT_LIMIT_EXCEEDED", "-"),
             "FundsReserved", id -> new SagaInput.FundsReserved(UUID.randomUUID(), id),
             "ReservationRefused", id -> new SagaInput.ReservationRefused(UUID.randomUUID(), id, "UNKNOWN_ACCOUNT", "-"),
             "TransferPosted", id -> new SagaInput.TransferPosted(UUID.randomUUID(), id),
             "PostingRefused", id -> new SagaInput.PostingRefused(UUID.randomUUID(), id, "UNKNOWN_ACCOUNT", "-"),
             "FundsReleased", id -> new SagaInput.FundsReleased(UUID.randomUUID(), id, "UNKNOWN_ACCOUNT: -"));
 
-    /** Every (input, status) pair except the six the saga table of ADR 0012 acts on. */
+    /** Every (input, status) pair except the eight the saga table of ADR 0012 acts on. */
     static Stream<Arguments> inputsTheTransitionTableDoesNotAllow() {
         var allowed = List.of(
                 "PaymentInitiated/INITIATED",
+                "RiskApproved/INITIATED",
+                "RiskRejected/INITIATED",
                 "FundsReserved/RISK_APPROVED",
                 "ReservationRefused/RISK_APPROVED",
                 "TransferPosted/FUNDS_RESERVED",
