@@ -85,6 +85,8 @@ jobs:
         run: docker build -f ledger-service/Dockerfile -t ledgerflow/ledger-service:ci .
       - name: Build payment-service image
         run: docker build -f payment-service/Dockerfile -t ledgerflow/payment-service:ci .
+      - name: Build risk-service image
+        run: docker build -f risk-service/Dockerfile -t ledgerflow/risk-service:ci .
 
   # Both services as Docker images (T-032); its own job so "Build and test" keeps its time.
   e2e:
@@ -124,6 +126,16 @@ jobs:
           load: true
           cache-from: type=gha,scope=payment-service
           cache-to: type=gha,mode=max,scope=payment-service
+
+      - name: Build risk-service image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: risk-service/Dockerfile
+          tags: ledgerflow/risk-service:e2e
+          load: true
+          cache-from: type=gha,scope=risk-service
+          cache-to: type=gha,mode=max,scope=risk-service
 
       - name: End-to-end tests
         run: ./mvnw -B verify -Pe2e -pl e2e-tests -am
