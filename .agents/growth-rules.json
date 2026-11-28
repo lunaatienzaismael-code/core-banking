@@ -10,6 +10,8 @@
     "contract-gap": "evaluator check 'Contract completeness' (T-013, 2026-10-18)",
     "test-data-gap": "skill java-testing rule 14 (T-017, 2026-10-19)",
     "scope-creep": "no rule: the two findings share no cause (T-012 a docs line wrap, T-015 a kept extra test that the evaluator judged relevant); revisit on a third finding (T-015, 2026-10-19)",
+    "concurrency-gap": "proposed, not applied (needs .claude/**, protected): kafka-events rule that a side effect outside the DB transaction (Redis, HTTP) must be idempotent per messageId, with a test of the retry after rollback (T-037, 2026-11-28)",
+    "naming-convention": "no rule: the T-037 nit was a Javadoc wrap that spotless:apply handles; revisit on a third finding (T-037, 2026-11-28)",
     "other": "catch-all, no rule by design: findings are reclassified once two of them share a cause (2026-10-18; T-010 and T-016 nits were unrelated)"
   }
 }
