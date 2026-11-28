@@ -1,0 +1,39 @@
+{
+  "task_id": "T-038",
+  "round": 1,
+  "base": "17affe290c61ce0dd110338c3f5fd0a3036dde99",
+  "head": "b1f3ca9bb18dd593824870820c8182103fcdc52d",
+  "test_run": {"commit": "b1f3ca9bb18dd593824870820c8182103fcdc52d", "status": "pass", "dirty": false},
+  "ci_e2e": "absent",
+  "verdict": "approve",
+  "summary": "The saga now sends AssessRisk on PaymentInitiated and leaves the payment INITIATED. ReserveFunds goes out only after RiskApproved, and RiskRejected rejects the payment with its reason. Stale and redelivered replies are absorbed by the existing inbox and expected-status guard. ADR 0011 and 0012 are updated. Unit and IT tests cover every criterion. No blocker or major findings.",
+  "acceptance_criteria": [
+    {
+      "id": "AC5.3",
+      "status": "met",
+      "evidence": "The unit tests check that PaymentInitiated only calls risk.assess and touches no ledger. RiskApproved calls approveRisk and then reserveFunds. RiskRejected gives REJECTED with no ledger interaction. The ITs run it over Kafka: ReserveFunds appears only after RiskApproved, and after RiskRejected the status is REJECTED with the reason and zero ledger commands.",
+      "test": "PaymentSagaIT#fundsAreReservedOnlyAfterRiskApproves; PaymentSagaIT#riskRejectionRejectsThePaymentWithoutReserving; AdvancePaymentSagaServiceTest#initiatedPaymentIsSentToRisk",
+      "file": "payment-service/src/main/java/com/ledgerflow/payment/application/service/AdvancePaymentSagaService.java",
+      "line": 65
+    },
+    {
+      "id": "B1",
+      "status": "met",
+      "evidence": "ADR 0011 and ADR 0012 tables are updated. Stale and redelivered replies are covered by PaymentSagaIT#redeliveredAndStaleRiskRepliesChangeNothing (one ReserveFunds, status unchanged). The unit parameterised test inputsTheTransitionTableDoesNotAllow now includes the RiskApproved and RiskRejected inputs in every status except INITIATED. The auto-approval in PaymentInitiated is removed.",
+      "test": "PaymentSagaIT#redeliveredAndStaleRiskRepliesChangeNothing",
+      "file": "payment-service/src/main/java/com/ledgerflow/payment/application/service/AdvancePaymentSagaService.java",
+      "line": 93
+    }
+  ],
+  "findings": [
+    {
+      "severity": "nit",
+      "category": "testing",
+      "defect_type": "indirect-test",
+      "file": "payment-service/src/main/java/com/ledgerflow/payment/adapter/out/messaging/RiskCommandsOutboxAdapter.java",
+      "line": 144,
+      "description": "The AssessRisk field mapping (debtor, amount, currency) is asserted only through PaymentSagaIT, with no focused adapter test. It is covered, just indirectly.",
+      "suggestion": "Optional: add a small adapter test if the mapping grows."
+    }
+  ]
+}
