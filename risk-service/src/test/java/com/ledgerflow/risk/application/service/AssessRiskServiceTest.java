@@ -57,7 +57,7 @@ class AssessRiskServiceTest {
     @DisplayName("AC5.2 the transfer after the limit is rejected with VELOCITY_LIMIT_EXCEEDED")
     void transferAfterTheVelocityLimitIsRejected() {
         when(inbox.firstDelivery(any())).thenReturn(true);
-        when(velocity.increment(DEBTOR)).thenReturn(4L);
+        when(velocity.increment(eq(DEBTOR), any())).thenReturn(4L);
 
         service.assess(command(UUID.randomUUID(), 1_000));
 
@@ -68,7 +68,7 @@ class AssessRiskServiceTest {
     @DisplayName("AC5.2 the transfer that reaches the limit is still approved")
     void transferThatReachesTheVelocityLimitIsApproved() {
         when(inbox.firstDelivery(any())).thenReturn(true);
-        when(velocity.increment(DEBTOR)).thenReturn(3L);
+        when(velocity.increment(eq(DEBTOR), any())).thenReturn(3L);
 
         service.assess(command(UUID.randomUUID(), 1_000));
 
@@ -89,7 +89,7 @@ class AssessRiskServiceTest {
     @DisplayName("B2 when the counter store fails the assessment fails and nothing is answered")
     void counterFailureNeverApproves() {
         when(inbox.firstDelivery(any())).thenReturn(true);
-        when(velocity.increment(DEBTOR)).thenThrow(new IllegalStateException("Redis is down"));
+        when(velocity.increment(eq(DEBTOR), any())).thenThrow(new IllegalStateException("Redis is down"));
 
         assertThatThrownBy(() -> service.assess(command(UUID.randomUUID(), 1_000)))
                 .isInstanceOf(IllegalStateException.class);
@@ -106,7 +106,7 @@ class AssessRiskServiceTest {
         service.assess(command(messageId, 100_001));
 
         verifyNoInteractions(replies);
-        verify(velocity, never()).increment(any());
+        verify(velocity, never()).increment(any(), any());
     }
 
     private static AssessRiskCommand command(UUID messageId, long amount) {
