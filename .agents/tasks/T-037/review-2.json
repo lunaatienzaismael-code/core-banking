@@ -1,0 +1,25 @@
+{
+  "task_id": "T-037",
+  "round": 2,
+  "base": "origin/main merge-base",
+  "head": "567106cc0fff5a952bc3873a17e3ac58f3f1b408",
+  "test_run": {"commit": "567106cc0fff5a952bc3873a17e3ac58f3f1b408", "status": "pass", "dirty": false},
+  "ci_e2e": "absent",
+  "verdict": "approve",
+  "summary": "Round 1 findings are resolved. The blocker is cleared: test-summary.json is pass, clean, 86/86 on 567106c. The only later commit (2c9ebd5) touches .agents/ only, and the tree is clean outside .agents. The major is fixed: the Lua script takes a per-messageId SET NX marker before INCR, and RedisVelocityCounterIT#sameMessageIsCountedOnce covers it. The minor is fixed: RedisVelocityCounterUnavailableTest covers B2 against an unreachable Redis. CI checks for HEAD are empty (e2e absent), and the PR validates them.",
+  "acceptance_criteria": [
+    {"id": "AC5.2", "status": "met", "evidence": "AssessRiskIT#fourthTransferInTheWindowIsRejected runs real Kafka and Redis. The fourth transfer in the window gets a VELOCITY_LIMIT_EXCEEDED rejection. VelocityRuleTest covers the boundary.", "test": "AssessRiskIT#fourthTransferInTheWindowIsRejected", "file": "risk-service/src/main/java/com/ledgerflow/risk/domain/VelocityRule.java", "line": 20},
+    {"id": "B1", "status": "met", "evidence": "The Lua script is atomic: SET NX marker, INCR, then PEXPIRE on the first hit. The inbox check precedes the counter. Tests: concurrentIncrementsAreAtomic, sameMessageIsCountedOnce, AssessRiskIT#redeliveryDoesNotCountTwice.", "test": "RedisVelocityCounterIT#sameMessageIsCountedOnce", "file": "risk-service/src/main/java/com/ledgerflow/risk/adapter/out/redis/RedisVelocityCounter.java", "line": 20},
+    {"id": "B2", "status": "met", "evidence": "An unreachable Redis makes the counter throw (RedisVelocityCounterUnavailableTest). The exception rolls back the use-case transaction and the message is retried (AssessRiskServiceTest#counterFailureNeverApproves).", "test": "RedisVelocityCounterUnavailableTest#unreachableRedisThrows", "file": "risk-service/src/main/java/com/ledgerflow/risk/application/service/AssessRiskService.java", "line": 46}
+  ],
+  "findings": [
+    {
+      "severity": "nit",
+      "category": "style",
+      "defect_type": "naming-convention",
+      "file": "risk-service/src/main/java/com/ledgerflow/risk/application/service/AssessRiskService.java",
+      "line": 16,
+      "description": "The class Javadoc has one overlong, badly wrapped line. The VelocityCounter Javadoc has the same problem. Spotless passes, so this is cosmetic."
+    }
+  ]
+}

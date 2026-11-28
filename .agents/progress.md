@@ -162,3 +162,6 @@ Append-only. One line per event: `YYYY-MM-DD · <task|phase> · <event> · <deta
 2026-11-27 · T-036 · rebased onto main (record 0006) · head 3bb7b37 · range-diff: 6/6 commits identical (=)
 2026-11-28 · T-036 · done · PR #96 merged
 2026-11-28 · T-037 · started · branch feat/T-037-risk-velocity-rule
+2026-11-28 · T-037 · review-1 · request_changes (1 blocker, 1 major, 1 minor)
+2026-11-28 · T-037 · review-2 · approve (0 blockers, 0 majors, 0 minors)
+2026-11-28 · T-037 · in_review · feat/T-037-risk-velocity-rule
