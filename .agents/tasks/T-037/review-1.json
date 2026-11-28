@@ -1,0 +1,54 @@
+{
+  "task_id": "T-037",
+  "round": 1,
+  "base": "origin/main merge-base",
+  "head": "67cadffed4f5fa80b2f815f124a3eaaa54f5af58",
+  "test_run": {"commit": "34111620bf0cb7bf23454a185aa0867b6e332fc6", "status": "fail", "dirty": false},
+  "ci_e2e": "absent",
+  "verdict": "request_changes",
+  "summary": "Design is sound (atomic Lua INCR+PEXPIRE, inbox before counter, amount rule first). But the evidence is missing: test-summary.json is for an older commit and status fail; the Redis ITs never ran; HEAD has no CI. Also a Redis increment is not undone when the transaction rolls back, so a retry can count twice.",
+  "acceptance_criteria": [
+    {"id": "AC5.2", "status": "partial", "evidence": "VelocityRuleTest and AssessRiskServiceTest (mocked counter) pass locally; the real-Kafka/Redis IT AssessRiskIT#fourthTransferInTheWindowIsRejected has not run on this head.", "test": "AssessRiskIT#fourthTransferInTheWindowIsRejected", "file": "risk-service/src/main/java/com/ledgerflow/risk/domain/VelocityRule.java", "line": 20},
+    {"id": "B1", "status": "partial", "evidence": "Lua script is atomic (RedisVelocityCounter:20) and the inbox check precedes the counter (AssessRiskService:45), but RedisVelocityCounterIT and AssessRiskIT#redeliveryDoesNotCountTwice have not run; the counter is not rolled back with the DB transaction.", "test": "RedisVelocityCounterIT#concurrentIncrementsAreAtomic", "file": "risk-service/src/main/java/com/ledgerflow/risk/adapter/out/redis/RedisVelocityCounter.java", "line": 20},
+    {"id": "B2", "status": "partial", "evidence": "Unit test shows the exception propagates and nothing is answered (AssessRiskServiceTest#counterFailureNeverApproves) with a mocked port; no test against a real unavailable Redis.", "test": "AssessRiskServiceTest#counterFailureNeverApproves", "file": "risk-service/src/main/java/com/ledgerflow/risk/application/service/AssessRiskService.java", "line": 50}
+  ],
+  "findings": [
+    {
+      "severity": "blocker",
+      "category": "testing",
+      "defect_type": "other",
+      "file": ".agents/tasks/T-037/logs/test-summary.json",
+      "line": null,
+      "description": "Review evidence is missing. test-summary.json has status fail (AvroRoundTripIT error) and commit 3411162, not HEAD 67cadff. The Redis ITs never ran, and gh checks finds no commit 67cadff on the remote (not pushed). An approve is not allowed.",
+      "suggestion": "Push, get a test-runner pass for HEAD (or CI green with Docker), then request round 2.",
+      "rule": "AUTONOMY.md Review evidence"
+    },
+    {
+      "severity": "major",
+      "category": "idempotency",
+      "defect_type": "concurrency-gap",
+      "file": "risk-service/src/main/java/com/ledgerflow/risk/application/service/AssessRiskService.java",
+      "line": 50,
+      "description": "The Redis INCR is outside the DB transaction. If the inbox or outbox write fails or the commit rolls back after increment, the inbox row disappears and the retry increments again, so one payment counts twice. B1 holds only for committed redeliveries. Not tested or documented as accepted.",
+      "suggestion": "Make the count idempotent per messageId (e.g. a Lua SADD/SET NX of the messageId plus INCR), or record in ADR 0014 that overcounting is accepted, and add a test.",
+      "rule": "B1"
+    },
+    {
+      "severity": "minor",
+      "category": "testing",
+      "defect_type": "untested-enumerated-case",
+      "file": "risk-service/src/test/java/com/ledgerflow/risk/RedisVelocityCounterIT.java",
+      "line": null,
+      "description": "B2 is proven only with a mocked port. Nothing checks that RedisVelocityCounter throws when Redis is unreachable, or that the null-count branch (line 39) behaves.",
+      "suggestion": "Add an IT or unit test with an unreachable or stopped Redis expecting an exception."
+    },
+    {
+      "severity": "nit",
+      "category": "style",
+      "defect_type": "naming-convention",
+      "file": "risk-service/src/main/java/com/ledgerflow/risk/application/service/AssessRiskService.java",
+      "line": 16,
+      "description": "Javadoc line exceeds the wrapped width and is badly wrapped after the edit."
+    }
+  ]
+}
